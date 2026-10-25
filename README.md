@@ -54,16 +54,16 @@ Also in 1.1.0:
 
 ## Wider source coverage (new in 1.2.0)
 
-The seed catalog previously leaned heavily on Russia; this release fills the other claimed jurisdictions, with URLs checked in October 2026:
+The seed catalog previously leaned heavily on Russia; this release expands coverage of the other claimed jurisdictions; archive coverage and current access still need checking for each case:
 
-- **Central imperial/Soviet archives of Russia:** RGIA (St. Petersburg), RGADA, RVIA, RGAVMF, GARF, plus digitized provincial address-calendars (Presidential Library).
-- **Ukraine's historical archives:** CDIAL (Lviv) and CDIAK (Kyiv) with their metric-book catalogs, the national archives portal, and the National Archive of Belarus.
+- **Central imperial/Soviet archives of Russia:** RGIA (St. Petersburg), RGADA, RGVIA, RGAVMF, GARF, plus digitized provincial address-calendars (Presidential Library).
+- **Ukraine and Belarus:** CDIAL (Lviv), CDIAK (Kyiv), Ukraine's national archives portal, and the National Historical Archive of Belarus (Minsk).
 - **Moldova:** Bessarabian metric books 1820–1924 at the National Archives, with online certificate requests (the domain changed to `arhiva.gov.md`).
 - **The Baltics:** Latvia's Raduraksti (church books, revision lists, 1935 census), Lithuania's ePaveldas, Estonia's Saaga.
-- **Poland and the Habsburg layer:** Szukajwarchiwach, Geneteka (volunteer index covering Polish, Lithuanian, Belarusian and western-Ukrainian parishes), AGAD (registers of the western gubernias), Matricula Online, Mapire (Habsburg cadastral and military maps), Vienna's Kriegsarchiv (conscription records of Galicia and Bukovina).
+- **Poland and the Habsburg layer:** Szukajwarchiwach, Geneteka (volunteer index covering Polish, Lithuanian, Belarusian and western-Ukrainian parishes), AGAD (historical eastern-territory collections), Matricula Online, Mapire (Habsburg cadastral and military maps), Kriegsarchiv and successor-state archives (military personnel records; custody and survival depend on period and origin).
 - **Jewish families of the region:** JewishGen, JRI-Poland, Yad Vashem, Routes to Roots Foundation (which archive holds which town's surviving records).
 
-New reference **`references/habsburg-galicia-bukovina.md`**: the jurisdiction chain 1772–1945, Austrian-era metric books and consistorial copies, the Gregorian-vs-Julian trap across the former imperial border (Galician records were already Gregorian while neighboring Volhynia stayed Julian until 1918), Habsburg conscription records, Galician land cadastres (Josephine and Franciscan fassions — household-level lists that disambiguate namesakes), and a storage map for each record type. New eval cases cover the Galician jurisdiction chain and the 13-day date conflict.
+New reference **`references/habsburg-galicia-bukovina.md`**: the jurisdiction chain 1772–1945, Austrian-era metric books and consistorial copies, calendar verification by confession, period, and individual register (a 12- or 13-day discrepancy is a hypothesis to investigate), Habsburg conscription records, Galician land cadastres (Josephine and Franciscan records — household and landholding evidence that helps disambiguate namesakes), and a storage map for each record type. New eval cases cover the Galician jurisdiction chain and the 13-day date conflict.
 
 ## Install
 
