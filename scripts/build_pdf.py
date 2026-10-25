@@ -16,21 +16,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from urllib.request import url2pathname
 
-SERVICE_PATTERNS = [
-    (re.compile(r"\b[ACPRS]-\d{4}\b"), "идентификатор реестра (A-/C-/P-/R-/S-NNNN)"),
-    (re.compile(r"\bIG-[\w-]+"), "independence_group"),
-    (
-        re.compile(
-            r"\b(strongly-corroborated|single-source|corroborated|hypothesis|unresolved|contradicted|lead-only)\b"
-        ),
-        "английский статус из реестра",
-    ),
-    (
-        re.compile(r"\b(artifact_id|claim_id|person_id|relationship_id|independence_group)\b"),
-        "имя поля реестра",
-    ),
-    (re.compile(r"<[^<>\n]{1,300}>"), "незаполненный плейсхолдер <…>"),
-]
+PLACEHOLDER_RE = re.compile(r"<[^<>\n]+>")
 
 CHROME_NAMES = [
     "google-chrome",
@@ -94,7 +80,7 @@ class VisibleText(html.parser.HTMLParser):
         for key, value in attrs:
             if key.startswith("on") or key in {"srcdoc", "ping", "action", "formaction", "srcset"}:
                 self.problems.append(f"активный или неподдерживаемый атрибут запрещён: {key}")
-            if value and SERVICE_PATTERNS[-1][0].search(value):
+            if value and PLACEHOLDER_RE.search(value):
                 self.problems.append(f"незаполненный плейсхолдер в атрибуте {key}: {value}")
             if key == "href" and tag in {"a", "area"} and value:
                 try:
@@ -135,11 +121,8 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Только проверить текст и изображения, PDF не собирать",
     )
-    parser.add_argument(
-        "--allow-service-ids",
-        action="store_true",
-        help="Не останавливаться на служебных идентификаторах (для рабочей версии)",
-    )
+    # Accepted for older invocations; presentation choices no longer block printing.
+    parser.add_argument("--allow-service-ids", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--chrome", help="Путь к Chrome/Chromium/Edge; иначе переменная CHROME_PATH или автопоиск")
     parser.add_argument(
         "--png-dir",
@@ -148,20 +131,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def inspect_html(
-    source: str, html_path: Path, *, allow_service_ids: bool = False
-) -> tuple[list[str], list[str]]:
+def inspect_html(source: str, html_path: Path) -> tuple[list[str], list[str]]:
     parser = VisibleText()
     parser.feed(source)
     parser.close()
     text = re.sub(r"\s+", " ", "".join(parser.chunks))
 
     problems = parser.problems[:]
-    patterns = SERVICE_PATTERNS[-1:] if allow_service_ids else SERVICE_PATTERNS
-    for pattern, label in patterns:
-        hits = sorted(set(m.group(0) for m in pattern.finditer(text)))
-        if hits:
-            problems.append(f"{label}: {', '.join(hits[:10])}")
+    placeholders = sorted(set(PLACEHOLDER_RE.findall(text)))
+    if placeholders:
+        problems.append("незаполненный плейсхолдер <…>: " + ", ".join(placeholders[:10]))
 
     missing: list[str] = []
     for src in parser.images:
@@ -184,10 +163,8 @@ def inspect_html(
     return problems, missing
 
 
-def check_html(html_path: Path, *, allow_service_ids: bool = False) -> tuple[list[str], list[str]]:
-    return inspect_html(
-        html_path.read_text(encoding="utf-8"), html_path, allow_service_ids=allow_service_ids
-    )
+def check_html(html_path: Path) -> tuple[list[str], list[str]]:
+    return inspect_html(html_path.read_text(encoding="utf-8"), html_path)
 
 
 def find_chrome(explicit: str | None) -> str | None:
@@ -210,7 +187,7 @@ def print_pdf(chrome: str, html_path: Path, out_path: Path) -> int:
         print("Ошибка: исходный HTML и выходной PDF должны быть разными файлами.", file=sys.stderr)
         return 2
     source = html_path.read_text(encoding="utf-8")
-    problems, missing = inspect_html(source, html_path, allow_service_ids=True)
+    problems, missing = inspect_html(source, html_path)
     if problems or missing:
         print("Ошибка: HTML не прошёл проверку перед печатью: " + "; ".join(problems + missing), file=sys.stderr)
         return 1
@@ -292,7 +269,7 @@ def main() -> int:
         print(f"Ошибка: нет файла {html_path}", file=sys.stderr)
         return 2
 
-    problems, missing = check_html(html_path, allow_service_ids=args.allow_service_ids)
+    problems, missing = check_html(html_path)
     if missing:
         print("Ошибка: не найдены изображения: " + ", ".join(missing), file=sys.stderr)
     if problems:

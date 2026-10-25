@@ -1,3 +1,5 @@
+# Заполняйте из запроса и находок; неизвестные поля не требуют отдельного вопроса пользователю.
+# Оставляйте неизвестное пустым и дополняйте по ходу поиска.
 case_id: ""
 created_at: ""
 research_question: ""
@@ -8,7 +10,7 @@ scope:
   target_relationship: ""
   time_range: ""
   geographic_scope: []
-  allowed_sources: []
+  allowed_sources: []  # пусто = обычные доступные источники по задаче; ограничивать только по явному указанию
   prohibited_sources: []
   paid_sources_allowed: false
   third_party_upload_allowed: false
@@ -35,7 +37,7 @@ subjects:
 prior_family_research:
   asked: false  # общий вопрос об имеющихся материалах, если они ещё не описаны (SKILL.md, шаг 1, п. 6)
   researchers: []  # кто из родственников уже искал и что нашёл
-  family_pages: []  # URL деревьев и страниц, которые вела семья (FamilySearch, Geni, MyHeritage, ВГД, мемориальные базы по типу дела)
+  family_pages: []  # семейные страницы и деревья, уже сообщённые пользователем или найденные при поиске
   holders_of_materials: []  # у кого хранятся документы, письма, альбомы, семейные записи, награды
   notes: ""  # если ответа пока нет, отметить это и продолжить исследование
 
