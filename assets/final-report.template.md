@@ -10,7 +10,7 @@
 
 ## 2. Краткий вывод
 
-Сформулируйте вывод в 3–8 предложениях. Для каждой связи используйте только статусы `single-source`, `corroborated`, `strongly-corroborated`, `contradicted` или `unresolved` и ссылки на артефакты `[A-....]`.
+Сформулируйте вывод в 3–8 предложениях. Для каждой связи используйте только статусы `hypothesis`, `single-source`, `corroborated`, `strongly-corroborated`, `contradicted` или `unresolved` и ссылки на артефакты `[A-....]`.
 
 ## 3. Исходные данные
 

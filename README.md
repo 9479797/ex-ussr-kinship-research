@@ -100,14 +100,18 @@ Just describe the family question; the skill triggers on genealogy requests. For
 - *"Here are scans of a marriage certificate and a soldier card. Check whether they are the same person and build the evidence chain."*
 - *"Find the parish and the right FamilySearch film for a village in Podolia in the 1890s and read the births for the surname X."*
 
-The agent will set up a case folder:
+Keep private case data outside the skill's Git checkout. From the skill folder:
 
 ```bash
-python scripts/init_case.py --case-dir ./my-case --research-question "Who were Maria's parents?" --subject-label "Maria"
-python scripts/hash_artifact.py ./scans/marriage-1902.jpg     # SHA-256 for every saved artifact
-python scripts/audit_evidence.py --case-dir ./my-case          # check registers before the final report
-python scripts/build_pdf.py --html ./my-case/pdf-source/report.html --out ./my-case/report.pdf   # readable PDF for the family
+python scripts/init_case.py --case-dir ~/kinship-cases/my-case --research-question "Who were Maria's parents?" --subject-label "Maria"
+python scripts/hash_artifact.py ~/kinship-cases/my-case/scans/marriage-1902.jpg   # SHA-256 for every saved artifact
+python scripts/audit_evidence.py --case-dir ~/kinship-cases/my-case             # check registers before the final report
+python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.html --out ~/kinship-cases/my-case/report.pdf
 ```
+
+`init_case.py` refuses to create a case inside the skill folder, including with
+`--force`. Git ignores common legacy case-folder names as an additional safeguard;
+check staged files before contributing, especially if moving an existing case.
 
 `build_pdf.py` needs Chrome, Chromium or Edge installed (or `CHROME_PATH`). With `--png-dir` it also renders pages to PNG for review if `pypdfium2` is available.
 

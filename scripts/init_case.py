@@ -46,6 +46,13 @@ def main() -> int:
     assets_dir = script_dir.parent / "assets"
     case_dir = Path(args.case_dir).expanduser().resolve()
 
+    if case_dir == script_dir.parent or script_dir.parent in case_dir.parents:
+        print(
+            "Ошибка: храните дело вне папки навыка, например ~/kinship-cases/my-case.",
+            file=sys.stderr,
+        )
+        return 2
+
     missing = [name for name in ASSET_FILES if not (assets_dir / name).is_file()]
     if missing:
         print(
