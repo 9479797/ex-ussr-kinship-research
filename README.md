@@ -20,7 +20,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 
-## New in 1.2.0
+## New in 1.3.0
 
 General rules for a complete first pass, photo search and a readable PDF for the family. They were prompted by a real case (a WWII officer), where a family memorial page with a certified service-record extract and photos turned up only after the report was "done", but they apply to any line: peasant, urban, repressed, emigrant or Jewish families, and women's lines.
 
@@ -125,7 +125,7 @@ references/
   privacy-and-safety.md          living people, minors, DNA, sensitive findings
   seed-sources.md                curated starting resources with reliability classes
   field-lessons.md               practical lessons from a real case (new in 1.1.0)
-  photo-search.md                finding, identifying, dating and storing photos (new in 1.2.0)
+  photo-search.md                finding, identifying, dating and storing photos (new in 1.3.0)
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after (new in 1.2.0)
 assets/                          case intake, CSV registers, final report template,
                                  photos README template, readable PDF template (report-pdf.template.html)
