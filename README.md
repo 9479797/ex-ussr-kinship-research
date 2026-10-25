@@ -52,6 +52,19 @@ Also in 1.1.0:
 - More seed sources, each with a reliability class and role.
 - New eval cases: language matching, unindexed scans, house-number identity, birthplace conflicts, exhausted sources, repression lists.
 
+## Wider source coverage (new in 1.2.0)
+
+The seed catalog previously leaned heavily on Russia; this release fills the other claimed jurisdictions, with URLs checked in October 2026:
+
+- **Central imperial/Soviet archives of Russia:** RGIA (St. Petersburg), RGADA, RVIA, RGAVMF, GARF, plus digitized provincial address-calendars (Presidential Library).
+- **Ukraine's historical archives:** CDIAL (Lviv) and CDIAK (Kyiv) with their metric-book catalogs, the national archives portal, and the National Archive of Belarus.
+- **Moldova:** Bessarabian metric books 1820–1924 at the National Archives, with online certificate requests (the domain changed to `arhiva.gov.md`).
+- **The Baltics:** Latvia's Raduraksti (church books, revision lists, 1935 census), Lithuania's ePaveldas, Estonia's Saaga.
+- **Poland and the Habsburg layer:** Szukajwarchiwach, Geneteka (volunteer index covering Polish, Lithuanian, Belarusian and western-Ukrainian parishes), AGAD (registers of the western gubernias), Matricula Online, Mapire (Habsburg cadastral and military maps), Vienna's Kriegsarchiv (conscription records of Galicia and Bukovina).
+- **Jewish families of the region:** JewishGen, JRI-Poland, Yad Vashem, Routes to Roots Foundation (which archive holds which town's surviving records).
+
+New reference **`references/habsburg-galicia-bukovina.md`**: the jurisdiction chain 1772–1945, Austrian-era metric books and consistorial copies, the Gregorian-vs-Julian trap across the former imperial border (Galician records were already Gregorian while neighboring Volhynia stayed Julian until 1918), Habsburg conscription records, Galician land cadastres (Josephine and Franciscan fassions — household-level lists that disambiguate namesakes), and a storage map for each record type. New eval cases cover the Galician jurisdiction chain and the 13-day date conflict.
+
 ## Install
 
 Clone the repository into your agent's skills folder:
@@ -94,6 +107,7 @@ references/
   privacy-and-safety.md          living people, minors, DNA, sensitive findings
   seed-sources.md                curated starting resources with reliability classes
   field-lessons.md               practical lessons from a real case (new in 1.1.0)
+  habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after (new in 1.2.0)
 assets/                          case intake, CSV registers, final report template
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
