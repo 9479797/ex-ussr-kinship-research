@@ -38,7 +38,7 @@ For a single project, put the folder in `.claude/skills/` inside the repository.
 
 ## Use
 
-Just describe the family question; the skill triggers on genealogy requests. For example:
+Describe the family question. The agent works from available information and continues while questions or access requests await a reply. For example:
 
 - *"My great-grandfather was exiled to Kazakhstan in the 1930s. Help me find his parents in church records."*
 - *"Here are scans of a marriage certificate and a soldier card. Check whether they are the same person and build the evidence chain."*
@@ -80,7 +80,7 @@ assets/                          case intake, CSV registers, final report templa
                                  photos README template, readable PDF template (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
-tests/                           unit tests for audit_evidence.py (python3 -m unittest discover -s tests)
+tests/                           unit tests (python3 -m unittest discover -s tests)
 ```
 
 ## Responsible use
@@ -93,7 +93,7 @@ tests/                           unit tests for audit_evidence.py (python3 -m un
 
 ## Contributing
 
-New sources are welcome. Add them to `references/seed-sources.md` with these fields: owner, jurisdiction, collection type, originals or index, stable IDs, access, restrictions, typical errors, date last checked. Please keep personal data out of examples.
+New sources are welcome in `references/seed-sources.md`. Record verified owner, jurisdiction, collection, provenance, IDs, access, restrictions and check date where known; mark gaps instead of guessing. Keep personal data out of examples.
 
 ## License
 
