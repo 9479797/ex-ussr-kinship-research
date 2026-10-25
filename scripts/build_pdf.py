@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import html.parser
 import os
 import re
@@ -12,6 +13,8 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
+from urllib.request import url2pathname
 
 SERVICE_PATTERNS = [
     (re.compile(r"\b[ACPRS]-\d{4}\b"), "идентификатор реестра (A-/C-/P-/R-/S-NNNN)"),
@@ -47,17 +50,62 @@ CHROME_PATHS = [
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
 ]
 
+STATIC_TAGS = set(
+    "html head body title meta style a abbr address area article aside b bdi bdo "
+    "blockquote br caption cite code col colgroup data dd del details dfn div dl dt "
+    "em figcaption figure footer h1 h2 h3 h4 h5 h6 header hgroup hr i img ins kbd "
+    "li main map mark menu nav ol p pre q rp rt ruby s samp section small span "
+    "strong sub summary sup table tbody td th thead time tr u ul var wbr".split()
+)
+ACTIVE_TAGS = {
+    "script", "iframe", "frame", "frameset", "object", "embed", "applet",
+    "portal", "fencedframe", "form", "input", "button", "select", "textarea",
+    "base", "link",
+}
+PRINT_CSP = (
+    "default-src 'none'; script-src 'none'; connect-src 'none'; "
+    "frame-src 'none'; object-src 'none'; media-src 'none'; "
+    "img-src file: data:; font-src file: data:; style-src 'unsafe-inline'; "
+    "base-uri file:; form-action 'none'"
+)
+
 
 class VisibleText(html.parser.HTMLParser):
-    """Collect visible text and image sources; comments, <style> and <script> are skipped."""
+    """Collect text and images, rejecting active HTML and unknown placeholder tags."""
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.skip = 0
         self.chunks: list[str] = []
         self.images: list[str] = []
+        self.problems: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in ACTIVE_TAGS:
+            self.problems.append(f"активный или внешний HTML запрещён: <{tag}>")
+        elif tag not in STATIC_TAGS:
+            self.problems.append(
+                "незаполненный плейсхолдер или неподдерживаемый тег: "
+                + (self.get_starttag_text() or f"<{tag}>")
+            )
+        attributes = dict(attrs)
+        if tag == "meta" and (attributes.get("http-equiv") or "").strip().lower() == "refresh":
+            self.problems.append("автоматический переход meta refresh запрещён")
+        for key, value in attrs:
+            if key.startswith("on") or key in {"srcdoc", "ping", "action", "formaction", "srcset"}:
+                self.problems.append(f"активный или неподдерживаемый атрибут запрещён: {key}")
+            if value and SERVICE_PATTERNS[-1][0].search(value):
+                self.problems.append(f"незаполненный плейсхолдер в атрибуте {key}: {value}")
+            if key == "href" and tag in {"a", "area"} and value:
+                try:
+                    target = urlsplit(re.sub(r"[\x00-\x20\x7f]", "", value))
+                except ValueError:
+                    self.problems.append(f"некорректная ссылка: {value}")
+                    continue
+                if target.scheme.lower() not in {"", "http", "https", "mailto", "file"}:
+                    self.problems.append(f"небезопасная схема ссылки: {value}")
+                elif (not target.scheme or target.scheme == "file") and target.netloc not in {"", "localhost"}:
+                    self.problems.append(f"сетевая файловая ссылка запрещена: {value}")
         if tag in ("style", "script", "title"):
             self.skip += 1
         if tag == "img":
@@ -100,13 +148,17 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def check_html(html_path: Path) -> tuple[list[str], list[str]]:
+def inspect_html(
+    source: str, html_path: Path, *, allow_service_ids: bool = False
+) -> tuple[list[str], list[str]]:
     parser = VisibleText()
-    parser.feed(html_path.read_text(encoding="utf-8"))
+    parser.feed(source)
+    parser.close()
     text = re.sub(r"\s+", " ", "".join(parser.chunks))
 
-    problems: list[str] = []
-    for pattern, label in SERVICE_PATTERNS:
+    problems = parser.problems[:]
+    patterns = SERVICE_PATTERNS[-1:] if allow_service_ids else SERVICE_PATTERNS
+    for pattern, label in patterns:
         hits = sorted(set(m.group(0) for m in pattern.finditer(text)))
         if hits:
             problems.append(f"{label}: {', '.join(hits[:10])}")
@@ -116,11 +168,26 @@ def check_html(html_path: Path) -> tuple[list[str], list[str]]:
         if not src or "<" in src:
             missing.append(src or "<пустой src>")
             continue
-        if re.match(r"^(https?:|data:)", src):
+        try:
+            target = urlsplit(src)
+        except ValueError:
+            problems.append(f"некорректный путь изображения: {src}")
             continue
-        if not (html_path.parent / src).is_file():
+        if target.scheme.lower() == "data" and src.lower().startswith("data:image/"):
+            continue
+        if target.scheme.lower() not in {"", "file"} or target.netloc not in {"", "localhost"}:
+            problems.append(f"изображение должно быть локальным или data:image: {src}")
+            continue
+        image_path = Path(url2pathname(target.path)) if target.scheme else Path(unquote(target.path))
+        if not (html_path.parent / image_path).is_file():
             missing.append(src)
     return problems, missing
+
+
+def check_html(html_path: Path, *, allow_service_ids: bool = False) -> tuple[list[str], list[str]]:
+    return inspect_html(
+        html_path.read_text(encoding="utf-8"), html_path, allow_service_ids=allow_service_ids
+    )
 
 
 def find_chrome(explicit: str | None) -> str | None:
@@ -138,35 +205,68 @@ def find_chrome(explicit: str | None) -> str | None:
 
 
 def print_pdf(chrome: str, html_path: Path, out_path: Path) -> int:
-    uri = html_path.resolve().as_uri()
-    with tempfile.TemporaryDirectory(prefix="kinship-pdf-") as profile:
+    html_path, out_path = html_path.resolve(), out_path.resolve()
+    if html_path == out_path or (out_path.exists() and html_path.samefile(out_path)):
+        print("Ошибка: исходный HTML и выходной PDF должны быть разными файлами.", file=sys.stderr)
+        return 2
+    source = html_path.read_text(encoding="utf-8")
+    problems, missing = inspect_html(source, html_path, allow_service_ids=True)
+    if problems or missing:
+        print("Ошибка: HTML не прошёл проверку перед печатью: " + "; ".join(problems + missing), file=sys.stderr)
+        return 1
+    # The first policy is enforced before any report content is parsed. A trusted
+    # local base preserves relative image paths while the temporary copy is printed.
+    printable = (
+        '<!doctype html>\n<meta charset="utf-8">\n'
+        f'<meta http-equiv="Content-Security-Policy" content="{html.escape(PRINT_CSP, quote=True)}">\n'
+        f'<base href="{html.escape(html_path.parent.as_uri() + "/", quote=True)}">\n'
+        + source
+    )
+    diagnostics = ""
+    with tempfile.TemporaryDirectory(prefix=".kinship-pdf-", dir=out_path.parent) as staging:
+        stage = Path(staging)
+        staged_html, staged_pdf = stage / "report.html", stage / "report.pdf"
+        staged_html.write_text(printable, encoding="utf-8")
         base = [
             chrome,
             "--disable-gpu",
+            "--disable-background-networking",
+            "--disable-extensions",
+            "--disable-sync",
+            "--host-resolver-rules=MAP * ~NOTFOUND",
             "--no-first-run",
             "--no-default-browser-check",
-            f"--user-data-dir={profile}",
+            f"--user-data-dir={stage / 'profile'}",
             "--no-pdf-header-footer",
-            f"--print-to-pdf={out_path}",
-            uri,
+            f"--print-to-pdf={staged_pdf}",
+            staged_html.as_uri(),
         ]
         for headless in ("--headless=new", "--headless"):
-            if out_path.exists():
-                out_path.unlink()
-            result = subprocess.run(
-                [base[0], headless, *base[1:]],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=180,
-            )
-            if out_path.is_file() and out_path.stat().st_size > 0:
-                return 0
-        sys.stderr.write(result.stderr.decode("utf-8", "replace")[-2000:])
+            staged_pdf.unlink(missing_ok=True)
+            try:
+                result = subprocess.run(
+                    [base[0], headless, *base[1:]],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=180,
+                )
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                diagnostics = str(exc)
+                continue
+            diagnostics = result.stderr.decode("utf-8", "replace")[-2000:]
+            if result.returncode == 0 and staged_pdf.is_file():
+                data = staged_pdf.read_bytes()
+                if data.startswith(b"%PDF-") and data.rstrip().endswith(b"%%EOF") and count_pages(staged_pdf):
+                    # Staging is on the destination filesystem: a failed render
+                    # never removes or truncates an existing report.
+                    staged_pdf.replace(out_path)
+                    return 0
+        sys.stderr.write(diagnostics)
     return 3
 
 
 def count_pages(pdf_path: Path) -> int:
-    return len(re.findall(rb"/Type\s*/Page[^s]", pdf_path.read_bytes()))
+    return len(re.findall(rb"/Type\s*/Page\b", pdf_path.read_bytes()))
 
 
 def render_png(pdf_path: Path, png_dir: Path) -> None:
@@ -192,15 +292,14 @@ def main() -> int:
         print(f"Ошибка: нет файла {html_path}", file=sys.stderr)
         return 2
 
-    problems, missing = check_html(html_path)
+    problems, missing = check_html(html_path, allow_service_ids=args.allow_service_ids)
     if missing:
         print("Ошибка: не найдены изображения: " + ", ".join(missing), file=sys.stderr)
     if problems:
-        stream = sys.stdout if args.allow_service_ids else sys.stderr
-        print("В видимом тексте найдены служебные данные:", file=stream)
+        print("HTML не прошёл проверку:", file=sys.stderr)
         for problem in problems:
-            print(f"- {problem}", file=stream)
-    if missing or (problems and not args.allow_service_ids):
+            print(f"- {problem}", file=sys.stderr)
+    if missing or problems:
         return 1
     if args.check_only:
         print("Проверка пройдена.")

@@ -27,9 +27,9 @@ General rules for a complete first pass, photo search and a readable PDF for the
 - **Ask the family first.** Before searching, the agent asks once whether relatives have researched this person before, which trees and pages the family keeps (FamilySearch, Geni, MyHeritage, VGD forum threads, and memorial bases that fit the case: Immortal Regiment, Bessmertny Barak, Posledny Adres, Yad Vashem testimonies) and who holds documents, letters, albums and family records. The answer goes to `prior_family_research` in the intake.
 - **Coverage checklists.** `references/source-strategy.md` section 12 has checklists for church books, revision lists and censuses, civil registration after 1918, repression and deportation, evacuation, POWs and Ostarbeiter, emigration, Jewish communities and military service. Every item must be closed in `search-log.csv` as `found`, `not-found`, `blocked` or `skipped` before the report. A rich first database no longer ends the search.
 - **Name variants in every database.** е/ё, -ев/-ов, female forms, maiden and married surnames, Polish, Yiddish, German and Romanian spellings, church and everyday first names.
-- **Site-internal search for family and memorial pages.** Profiles on Geni, MyHeritage, FamilySearch and memorial sites are poorly indexed by web search engines; the agent uses each site's own search.
+- **Site-internal search for family and memorial pages.** An empty web search does not cover a site's internal database; the agent uses the site's own search when available.
 - **Grade materials, not websites.** A scan of an original on a family page is an `image-of-original` artifact with its own provenance; the page's text is family testimony.
-- **Photos in the main pass.** `references/photo-search.md`: where to look (documents, albums, family pages, school and workplace groups, gravestones, files that require photos), identification by caption and provenance only (no face recognition), dating by studio stamps and mounts or by uniform as a hypothesis, maximum available resolution, an honest `not-found` when no photo can exist, a `photos/` folder with a README (`assets/photos-readme.template.md`). `init_case.py` now creates `photos/`.
+- **Photos in the main pass.** `references/photo-search.md`: where to look (documents, albums, family pages, school and workplace groups, gravestones, files that may contain photos), identification by caption and provenance only (no face recognition), dating by studio stamps and mounts or by uniform as a hypothesis, maximum available resolution, `not-found` limited to the sources actually checked, a `photos/` folder with a README (`assets/photos-readme.template.md`). `init_case.py` now creates `photos/`.
 - **Readable PDF for the family.** `assets/report-pdf.template.html` and `scripts/build_pdf.py`: a clean A4 layout with plain-language reliability labels instead of internal statuses. Required sections: summary, the person and their family, a "how we are related" chain with a label on every parent–child link, timeline, documents, contradictions, where we searched without result, next steps and sources. Optional blocks: places and jurisdictions, military service with awards, repression and rehabilitation, migration and emigration, photos and document scans. The script refuses to build if internal IDs, English statuses or unfilled placeholders remain in the visible text, then prints via headless Chrome, Chromium or Edge.
 - **Military database notes** (field lessons): award sheets have higher commanders' resolutions on the reverse side; 1944–1957 long-service awards are distinguished from combat awards by the decree title.
 
@@ -97,6 +97,8 @@ python scripts/build_pdf.py --html ./my-case/pdf-source/report.html --out ./my-c
 ```
 
 `build_pdf.py` needs Chrome, Chromium or Edge installed (or `CHROME_PATH`). With `--png-dir` it also renders pages to PNG for review if `pypdfium2` is available.
+
+Use static HTML with local or embedded images. Active HTML and network image sources are rejected; source links remain clickable. A failed render preserves any existing output PDF.
 
 ## Repository layout
 
