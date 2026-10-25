@@ -29,6 +29,7 @@ Lessons from a real WWII officer case, where a family memorial page with a certi
 - **Site-internal search for memorial pages.** Profiles on moypolk.ru, 1418museum.ru, Geni and MyHeritage are poorly indexed by web search engines; the agent uses each site's own search with every name variant (е/ё, -ев/-ов).
 - **Grade materials, not websites.** A scan of an original on a family page is an `image-of-original` artifact with its own provenance; the page's text is family testimony.
 - **Photos in the main pass.** `references/photo-search.md`: where to look, identification by caption and provenance only (no face recognition), dating by uniform as a hypothesis, maximum available resolution, a `photos/` folder with a README (`assets/photos-readme.template.md`). `init_case.py` now creates `photos/`.
+- **Readable PDF for the family.** `assets/report-pdf.template.html` and `scripts/build_pdf.py`: a clean A4 layout with a portrait header, plain-language reliability labels instead of internal statuses, a timeline, key-episode and awards tables, a photo row, document scans, contradictions, next steps and sources. The script refuses to build if internal IDs, English statuses or unfilled placeholders remain in the visible text, then prints via headless Chrome, Chromium or Edge.
 - **Military database notes.** Award sheets have higher commanders' resolutions on the reverse side; 1944–1957 long-service awards are distinguished from combat awards by the decree title.
 
 ## Field lessons (new in 1.1.0)
@@ -75,7 +76,7 @@ git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.codex/
 git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.claude/skills/ex-ussr-kinship-research
 ```
 
-For a single project, put the folder in `.claude/skills/` inside the repository. The scripts need only Python 3 and the standard library.
+For a single project, put the folder in `.claude/skills/` inside the repository. The scripts need only Python 3 and the standard library; `build_pdf.py` also needs a Chromium-based browser.
 
 ## Use
 
@@ -91,7 +92,10 @@ The agent will set up a case folder:
 python scripts/init_case.py --case-dir ./my-case --research-question "Who were Maria's parents?" --subject-label "Maria"
 python scripts/hash_artifact.py ./scans/marriage-1902.jpg     # SHA-256 for every saved artifact
 python scripts/audit_evidence.py --case-dir ./my-case          # check registers before the final report
+python scripts/build_pdf.py --html ./my-case/pdf-source/report.html --out ./my-case/report.pdf   # readable PDF for the family
 ```
+
+`build_pdf.py` needs Chrome, Chromium or Edge installed (or `CHROME_PATH`). With `--png-dir` it also renders pages to PNG for review if `pypdfium2` is available.
 
 ## Repository layout
 
@@ -107,8 +111,8 @@ references/
   field-lessons.md               practical lessons from a real case (new in 1.1.0)
   photo-search.md                finding, identifying, dating and storing photos (new in 1.2.0)
 assets/                          case intake, CSV registers, final report template,
-                                 photos README template
-scripts/                         init_case.py, hash_artifact.py, audit_evidence.py
+                                 photos README template, readable PDF template (report-pdf.template.html)
+scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 ```
 
