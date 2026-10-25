@@ -28,6 +28,7 @@ Lessons from a real WWII officer case, where a family memorial page with a certi
 - **Coverage checklists.** `references/source-strategy.md` section 12 has checklists by task type (WWII serviceman, church and civil records, repression). Every item must be closed in `search-log.csv` as `found`, `not-found`, `blocked` or `skipped` before the report. A rich first database no longer ends the search.
 - **Site-internal search for memorial pages.** Profiles on moypolk.ru, 1418museum.ru, Geni and MyHeritage are poorly indexed by web search engines; the agent uses each site's own search with every name variant (е/ё, -ев/-ов).
 - **Grade materials, not websites.** A scan of an original on a family page is an `image-of-original` artifact with its own provenance; the page's text is family testimony.
+- **Photos in the main pass.** `references/photo-search.md`: where to look, identification by caption and provenance only (no face recognition), dating by uniform as a hypothesis, maximum available resolution, a `photos/` folder with a README (`assets/photos-readme.template.md`). `init_case.py` now creates `photos/`.
 - **Military database notes.** Award sheets have higher commanders' resolutions on the reverse side; 1944–1957 long-service awards are distinguished from combat awards by the decree title.
 
 ## Field lessons (new in 1.1.0)
@@ -104,7 +105,9 @@ references/
   privacy-and-safety.md          living people, minors, DNA, sensitive findings
   seed-sources.md                curated starting resources with reliability classes
   field-lessons.md               practical lessons from a real case (new in 1.1.0)
-assets/                          case intake, CSV registers, final report template
+  photo-search.md                finding, identifying, dating and storing photos (new in 1.2.0)
+assets/                          case intake, CSV registers, final report template,
+                                 photos README template
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 ```
