@@ -17,7 +17,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Source strategy.** Originals first, then official catalogs, indexes, published document collections, and only then trees and forums as leads.
 - **Evidence protocol.** Claims get explainable statuses, not percentages: `hypothesis`, `single-source`, `corroborated`, `strongly-corroborated`, `contradicted`, `unresolved`. Copies and mirrors of one record share an `independence_group`, so they never count as independent proof.
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
-- **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions.
+- **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 
 ## Field lessons (new in 1.1.0)
@@ -97,6 +97,7 @@ references/
 assets/                          case intake, CSV registers, final report template
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
+tests/                           unit tests for audit_evidence.py (python3 -m unittest discover -s tests)
 ```
 
 ## Responsible use

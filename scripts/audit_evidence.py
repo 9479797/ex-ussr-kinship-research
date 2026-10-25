@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -82,6 +83,72 @@ def duplicate_ids(rows: Iterable[dict[str, str]], field: str) -> list[str]:
     return sorted(key for key, count in Counter(ids).items() if count > 1)
 
 
+def artifact_groups(artifact_ids: Iterable[str], artifact_by_id: dict[str, dict[str, str]]) -> set[str]:
+    return {
+        artifact_by_id[artifact_id]["independence_group"]
+        for artifact_id in artifact_ids
+        if artifact_id in artifact_by_id and artifact_by_id[artifact_id].get("independence_group", "")
+    }
+
+
+def id_prefix(value: str) -> str:
+    """Префикс ID без номера: 'A-0001' -> 'A-'."""
+    return value.rstrip("0123456789")
+
+
+REPORT_MARKERS = ("[неразборчиво]", "[предположительно")
+HEADING_RE = re.compile(r"^#{2,6}\s")
+
+
+def audit_report(
+    text: str,
+    known_ids: dict[str, set[str]],
+    statuses: dict[str, str],
+) -> tuple[list[str], dict[str, int]]:
+    """Сверить ID и статусы итогового отчёта с реестрами.
+
+    known_ids: префикс -> ID этого префикса из реестров. Проверяются только префиксы,
+    которые уже есть в реестрах, поэтому плейсхолдеры шаблона (`A-....`) не мешают.
+    statuses: ID утверждения или связи -> статус в реестре.
+    """
+    errors: list[str] = []
+    for prefix, ids in sorted(known_ids.items()):
+        pattern = re.compile(rf"(?<![\w-]){re.escape(prefix)}\d+(?!\w)")
+        for cited in sorted(set(pattern.findall(text)) - ids):
+            errors.append(f"final-report.md: ссылка на {cited}, которого нет в реестрах")
+
+    valid = VALID_CLAIM_STATUSES - {""}
+    section_id = ""
+    section_checked = False
+    for number, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if HEADING_RE.match(stripped):
+            words = re.findall(r"[\w-]+", stripped)
+            section_id = next((word for word in words if word in statuses), "")
+            section_checked = False
+            continue
+        if stripped.startswith("|"):
+            # Строка таблицы с ID в первой ячейке и статусом в одной из ячеек.
+            cells = [cell.strip().strip("`") for cell in stripped.strip("|").split("|")]
+            row_id, row_statuses = cells[0], [cell for cell in cells[1:] if cell in valid]
+            if row_id in statuses and row_statuses and statuses[row_id] not in row_statuses:
+                errors.append(
+                    f"final-report.md:{number}: {row_id} — в отчёте {row_statuses[0]}, в реестре {statuses[row_id] or 'пусто'}"
+                )
+            continue
+        # Первое поле вида **Статус:** value в секции связи/утверждения.
+        match = re.match(r"^\*\*[^*]+:\*\*\s*`?([\w-]+)`?", stripped)
+        if section_id and not section_checked and match and match.group(1) in valid:
+            section_checked = True
+            if match.group(1) != statuses[section_id]:
+                errors.append(
+                    f"final-report.md:{number}: {section_id} — в отчёте {match.group(1)}, в реестре {statuses[section_id] or 'пусто'}"
+                )
+
+    markers = {marker.strip("[]"): text.count(marker) for marker in REPORT_MARKERS}
+    return errors, markers
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Проверяет целостность реестров и минимальные условия кроссподтверждения."
@@ -156,14 +223,11 @@ def main() -> int:
             if artifact_id not in artifact_by_id:
                 errors.append(f"{claim_id}: неизвестный artifact_id {artifact_id}")
 
-        groups_from_artifacts = {
-            artifact_by_id[artifact_id].get("independence_group", "")
-            for artifact_id in referenced
-            if artifact_id in artifact_by_id
-            and artifact_by_id[artifact_id].get("independence_group", "")
-        }
-        groups_declared = set(split_ids(row.get("supporting_independence_groups", "")))
-        groups = groups_from_artifacts | groups_declared
+        groups = artifact_groups(referenced, artifact_by_id)
+        for group in sorted(set(split_ids(row.get("supporting_independence_groups", ""))) - groups):
+            errors.append(
+                f"{claim_id}: independence_group {group} заявлен, но ни один из artifact_ids к нему не относится"
+            )
 
         if status in CORROBORATED and len(groups) < 2:
             warnings.append(
@@ -209,21 +273,57 @@ def main() -> int:
         for artifact_id in artifact_refs:
             if artifact_id not in artifact_by_id:
                 errors.append(f"{relation_id}: неизвестный artifact_id {artifact_id}")
-        if row.get("status", "") in CORROBORATED:
-            supporting_ids = split_ids(row.get("supporting_artifact_ids", ""))
-            groups = set(split_ids(row.get("independence_groups", "")))
-            groups.update(
-                artifact_by_id[artifact_id].get("independence_group", "")
-                for artifact_id in supporting_ids
-                if artifact_id in artifact_by_id
-                and artifact_by_id[artifact_id].get("independence_group", "")
+        # Группа засчитывается, только если за ней стоит артефакт: прямой или через claim_ids.
+        backing_ids = split_ids(row.get("supporting_artifact_ids", ""))
+        for claim_id in split_ids(row.get("claim_ids", "")):
+            if claim_id in claim_by_id:
+                backing_ids += split_ids(claim_by_id[claim_id].get("artifact_ids", ""))
+        groups = artifact_groups(backing_ids, artifact_by_id)
+        for group in sorted(set(split_ids(row.get("independence_groups", ""))) - groups):
+            errors.append(
+                f"{relation_id}: independence_group {group} заявлен, но ни один из артефактов связи к нему не относится"
             )
+        if row.get("status", "") in CORROBORATED:
             if len(groups) < 2:
                 warnings.append(
                     f"{relation_id}: статус {row.get('status')}, но указано независимых групп: {len(groups)}"
                 )
             if not row.get("rationale"):
                 warnings.append(f"{relation_id}: отсутствует rationale")
+
+    # Итоговый отчёт: ссылки и статусы должны совпадать с реестрами.
+    markers: dict[str, int] = {}
+    report = case_dir / "final-report.md"
+    if report.is_file():
+        known_ids: dict[str, set[str]] = {}
+        for rows, field in [
+            (artifacts, "artifact_id"),
+            (claims, "claim_id"),
+            (relationships, "relationship_id"),
+            (persons, "person_id"),
+        ]:
+            for row in rows:
+                if row.get(field, "") and id_prefix(row[field]) != row[field]:
+                    known_ids.setdefault(id_prefix(row[field]), set()).add(row[field])
+        statuses = {claim_id: row.get("status", "") for claim_id, row in claim_by_id.items()}
+        statuses.update(
+            (row["relationship_id"], row.get("status", ""))
+            for row in relationships
+            if row.get("relationship_id")
+        )
+        report_errors, markers = audit_report(
+            report.read_text(encoding="utf-8-sig"), known_ids, statuses
+        )
+        errors.extend(report_errors)
+
+    # Сводка готовности: что ещё не снято. Не ошибки — для решения, выдавать ли отчёт.
+    summary = {
+        "claims_by_status": dict(Counter(row.get("status", "") or "пусто" for row in claims)),
+        "relationships_by_status": dict(
+            Counter(row.get("status", "") or "пусто" for row in relationships)
+        ),
+        "report_markers": markers,
+    }
 
     result = {
         "case_dir": str(case_dir),
@@ -233,6 +333,7 @@ def main() -> int:
             "claims": len(claims),
             "relationships": len(relationships),
         },
+        "summary": summary,
         "errors": errors,
         "warnings": warnings,
     }
@@ -246,6 +347,15 @@ def main() -> int:
             f"лица={len(persons)}, артефакты={len(artifacts)}, "
             f"утверждения={len(claims)}, связи={len(relationships)}"
         )
+        open_statuses = ("hypothesis", "single-source", "unresolved", "contradicted", "пусто")
+        print("\nСВОДКА:")
+        for label, key in [("утверждения", "claims_by_status"), ("связи", "relationships_by_status")]:
+            counts = summary[key]
+            line = ", ".join(f"{status}={counts[status]}" for status in sorted(counts))
+            pending = sum(counts.get(status, 0) for status in open_statuses)
+            print(f"- {label}: {line or 'нет'}; без кроссподтверждения: {pending}")
+        if markers:
+            print("- в отчёте: " + ", ".join(f"[{name}]={count}" for name, count in markers.items()))
         if errors:
             print("\nОШИБКИ:")
             for item in errors:
