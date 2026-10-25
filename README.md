@@ -20,6 +20,19 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 
+## New in 1.3.0
+
+General rules for a complete first pass, photo search and a readable PDF for the family. They were prompted by a real case (a WWII officer), where a family memorial page with a certified service-record extract and photos turned up only after the report was "done", but they apply to any line: peasant, urban, repressed, emigrant or Jewish families, and women's lines.
+
+- **Ask the family first.** Before searching, the agent asks once whether relatives have researched this person before, which trees and pages the family keeps (FamilySearch, Geni, MyHeritage, VGD forum threads, and memorial bases that fit the case: Immortal Regiment, Bessmertny Barak, Posledny Adres, Yad Vashem testimonies) and who holds documents, letters, albums and family records. The answer goes to `prior_family_research` in the intake.
+- **Coverage checklists.** `references/source-strategy.md` section 12 has checklists for church books, revision lists and censuses, civil registration after 1918, repression and deportation, evacuation, POWs and Ostarbeiter, emigration, Jewish communities and military service. Every item must be closed in `search-log.csv` as `found`, `not-found`, `blocked` or `skipped` before the report. A rich first database no longer ends the search.
+- **Name variants in every database.** е/ё, -ев/-ов, female forms, maiden and married surnames, Polish, Yiddish, German and Romanian spellings, church and everyday first names.
+- **Site-internal search for family and memorial pages.** An empty web search does not cover a site's internal database; the agent uses the site's own search when available.
+- **Grade materials, not websites.** A scan of an original on a family page is an `image-of-original` artifact with its own provenance; the page's text is family testimony.
+- **Photos in the main pass.** `references/photo-search.md`: where to look (documents, albums, family pages, school and workplace groups, gravestones, files that may contain photos), identification by caption and provenance only (no face recognition), dating by studio stamps and mounts or by uniform as a hypothesis, maximum available resolution, `not-found` limited to the sources actually checked, a `photos/` folder with a README (`assets/photos-readme.template.md`). `init_case.py` now creates `photos/`.
+- **Readable PDF for the family.** `assets/report-pdf.template.html` and `scripts/build_pdf.py`: a clean A4 layout with plain-language reliability labels instead of internal statuses. Required sections: summary, the person and their family, a "how we are related" chain with a label on every parent–child link, timeline, documents, contradictions, where we searched without result, next steps and sources. Optional blocks: places and jurisdictions, military service with awards, repression and rehabilitation, migration and emigration, photos and document scans. The script refuses to build if internal IDs, English statuses or unfilled placeholders remain in the visible text, then prints via headless Chrome, Chromium or Edge.
+- **Military database notes** (field lessons): award sheets have higher commanders' resolutions on the reverse side; 1944–1957 long-service awards are distinguished from combat awards by the decree title.
+
 ## Field lessons (new in 1.1.0)
 
 Version 1.1.0 adds `references/field-lessons.md`, distilled from a real multi-week research case. Personal data from that case is not included.
@@ -77,7 +90,7 @@ git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.codex/
 git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.claude/skills/ex-ussr-kinship-research
 ```
 
-For a single project, put the folder in `.claude/skills/` inside the repository. The scripts need only Python 3 and the standard library.
+For a single project, put the folder in `.claude/skills/` inside the repository. The scripts need only Python 3 and the standard library; `build_pdf.py` also needs a Chromium-based browser.
 
 ## Use
 
@@ -93,7 +106,12 @@ The agent will set up a case folder:
 python scripts/init_case.py --case-dir ./my-case --research-question "Who were Maria's parents?" --subject-label "Maria"
 python scripts/hash_artifact.py ./scans/marriage-1902.jpg     # SHA-256 for every saved artifact
 python scripts/audit_evidence.py --case-dir ./my-case          # check registers before the final report
+python scripts/build_pdf.py --html ./my-case/pdf-source/report.html --out ./my-case/report.pdf   # readable PDF for the family
 ```
+
+`build_pdf.py` needs Chrome, Chromium or Edge installed (or `CHROME_PATH`). With `--png-dir` it also renders pages to PNG for review if `pypdfium2` is available.
+
+Use static HTML with local or embedded images. Active HTML and network image sources are rejected; source links remain clickable. A failed render preserves any existing output PDF.
 
 ## Repository layout
 
@@ -107,9 +125,11 @@ references/
   privacy-and-safety.md          living people, minors, DNA, sensitive findings
   seed-sources.md                curated starting resources with reliability classes
   field-lessons.md               practical lessons from a real case (new in 1.1.0)
+  photo-search.md                finding, identifying, dating and storing photos (new in 1.3.0)
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after (new in 1.2.0)
-assets/                          case intake, CSV registers, final report template
-scripts/                         init_case.py, hash_artifact.py, audit_evidence.py
+assets/                          case intake, CSV registers, final report template,
+                                 photos README template, readable PDF template (report-pdf.template.html)
+scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 tests/                           unit tests for audit_evidence.py (python3 -m unittest discover -s tests)
 ```

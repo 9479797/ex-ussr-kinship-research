@@ -18,6 +18,7 @@ ASSET_FILES = {
     "search-log.csv": "search-log.csv",
     "final-report.template.md": "final-report.md",
 }
+PHOTOS_README = "photos-readme.template.md"
 
 
 def quote_yaml(value: str) -> str:
@@ -71,6 +72,12 @@ def main() -> int:
     for source_name, dest_name in ASSET_FILES.items():
         shutil.copyfile(assets_dir / source_name, case_dir / dest_name)
 
+    photos_dir = case_dir / "photos"
+    photos_dir.mkdir(exist_ok=True)
+    photos_readme = photos_dir / "README.md"
+    if not photos_readme.exists() and (assets_dir / PHOTOS_README).is_file():
+        shutil.copyfile(assets_dir / PHOTOS_README, photos_readme)
+
     intake_path = case_dir / "case-intake.yaml"
     text = intake_path.read_text(encoding="utf-8")
     created_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -92,6 +99,7 @@ def main() -> int:
     print(f"Дело создано: {case_dir}")
     for dest_name in ASSET_FILES.values():
         print(f"- {dest_name}")
+    print("- photos/README.md")
     return 0
 
 

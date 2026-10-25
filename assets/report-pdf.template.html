@@ -1,0 +1,260 @@
+<!doctype html>
+<!--
+  Шаблон читаемой PDF-версии отчёта (SKILL.md, шаг 12).
+
+  Как пользоваться:
+  1. Скопировать файл в <дело>/pdf-source/report.html, рядом положить подготовленные изображения
+     (обрезанные поля, длинная сторона не больше 1700 px). Оригиналы в photos/ не трогать.
+  2. Заменить все <…> на содержимое. Комментарии можно оставить: scripts/build_pdf.py проверяет только видимый текст.
+  3. Писать на языке пользователя. Метки надёжности перевести, если язык не русский.
+  4. В видимом тексте не должно быть artifact_id, claim_id, person_id, independence_group и английских
+     статусов (single-source, corroborated и т. д.). Архивные шифры, номера актов и приказов оставить.
+  5. Собрать: python scripts/build_pdf.py --html <дело>/pdf-source/report.html --out <дело>/<Фамилия_И_О>_семейная_история.pdf
+  6. Просмотреть каждую страницу. Частые правки вёрстки:
+     - большая пустота перед разделом — убрать class="pb" (принудительный разрыв) у заголовка;
+     - фотографии разъехались по страницам — держать их в одном ряду .photos, уменьшив ширины;
+     - инициалы переносятся на другую строку — ставить &nbsp; (И.&nbsp;И.&nbsp;Фамилия);
+     - последняя страница почти пустая — уменьшить @page margin или font-size на 0.2pt.
+
+  Структура:
+    ОБЯЗАТЕЛЬНО   шапка, главное, кто он/она и семья, хронология, документы о человеке, нестыковки,
+                  где искали и не нашли, что дальше, источники.
+    ОБЯЗАТЕЛЬНО, если исследовался вопрос родства — «Как мы связаны».
+    НЕОБЯЗАТЕЛЬНО места и юрисдикции, военная служба (с наградами и ключевым эпизодом), репрессия и
+                  реабилитация, переселение и эмиграция, тематические разделы, фотографии и сканы.
+                  Неподходящие блоки удалить целиком: build_pdf.py не соберёт PDF с незаполненными <…>.
+    Если фото нет — удалить <div> с портретом в шапке и блок «Фотографии».
+
+  Метки надёжности (класс → текст):
+    ok    «подтверждено»        — corroborated / strongly-corroborated
+    ok    «по документу»        — single-source по документу
+    fam   «по сведениям семьи»  — single-source по семейной памяти или странице семьи
+    maybe «вероятно»            — hypothesis, согласованная с документами
+    no    «не установлено»      — unresolved, гипотеза без опоры
+    no    «есть противоречия»   — contradicted; описать конфликтующие документы
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title><ФИО> — <подзаголовок, например «семейная история по документам»></title>
+<style>
+  @page { size: A4; margin: 15mm 17mm 16mm 17mm; }
+  :root { --ink:#1d1d1f; --muted:#5f6368; --line:#d9d6cf; --accent:#7a2e1f; --soft:#f6f3ee; --ok:#2e6b3a; --maybe:#8a6a12; --no:#8a2f2f; }
+  * { box-sizing: border-box; }
+  body { font-family: "PT Serif", Georgia, "Times New Roman", serif; color: var(--ink); font-size: 10.4pt; line-height: 1.45; margin: 0; background: #fff; }
+  h1 { font-size: 22pt; line-height: 1.15; margin: 0 0 4pt; font-weight: 700; }
+  h2 { font-size: 14pt; color: var(--accent); margin: 16pt 0 6pt; padding-bottom: 3pt; border-bottom: 1px solid var(--line); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 11pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 6pt; }
+  .sub { color: var(--muted); font-size: 10pt; margin-bottom: 2pt; }
+  header { display: flex; gap: 16pt; align-items: flex-start; margin-bottom: 6pt; }
+  header img { width: 38mm; border-radius: 2pt; }
+  header .cap { font-size: 8pt; color: var(--muted); margin-top: 3pt; width: 38mm; }
+  .lead { background: var(--soft); border-left: 3pt solid var(--accent); padding: 8pt 10pt; margin: 10pt 0; }
+  .lead ul { margin: 0; padding-left: 14pt; }
+  .lead li { margin-bottom: 4pt; }
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.5pt; }
+  th, td { text-align: left; vertical-align: top; padding: 4pt 6pt; border-bottom: 1px solid var(--line); }
+  th { font-family: Arial, Helvetica, sans-serif; font-size: 8.2pt; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+  tr { break-inside: avoid; }
+  td.d { white-space: nowrap; width: 21%; }
+  td.t { width: 15%; }
+  blockquote { margin: 6pt 0 8pt; padding: 6pt 10pt; border-left: 2pt solid var(--line); color: #333; font-style: italic; }
+  .tag { font-family: Arial, Helvetica, sans-serif; font-size: 7.6pt; font-weight: 700; padding: 1pt 5pt; border-radius: 8pt; white-space: nowrap; }
+  .ok { color: var(--ok); background: #e7f1e9; }
+  .maybe { color: var(--maybe); background: #f6efd9; }
+  .no { color: var(--no); background: #f5e3e3; }
+  .fam { color: #3d5a80; background: #e6edf5; }
+  .legend { font-size: 8.8pt; color: var(--muted); line-height: 1.6; }
+  .src li { margin-bottom: 3pt; font-size: 9.3pt; }
+  .small { font-size: 9pt; color: var(--muted); }
+  a { color: var(--accent); text-decoration: none; }
+  ol, ul { padding-left: 16pt; margin: 0 0 6pt; }
+  li { margin-bottom: 3pt; }
+  figure { margin: 8pt 0 10pt; break-inside: avoid; }
+  figure img { display: block; max-width: 100%; border-radius: 2pt; }
+  figcaption { font-size: 9pt; color: var(--muted); margin-top: 4pt; }
+  .photos { display: flex; gap: 12pt; align-items: flex-start; }
+  .photos figure { margin: 0; }
+  .pb { break-before: page; }
+  .docfig img { width: 100%; max-height: 225mm; object-fit: contain; border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<!-- ШАПКА: портрет (если есть фото — иначе удалить первый <div>), ФИО (для женщин — с девичьей фамилией),
+     годы жизни, занятие или положение (крестьянин, мещанка, учитель, рабочий, офицер), источники, легенда меток. -->
+<header>
+  <div>
+    <img src="<portrait.jpg>" alt="<Портрет>">
+    <div class="cap"><Подпись к портрету: кто, когда, откуда></div>
+  </div>
+  <div>
+    <h1><Фамилия Имя Отчество (урождённая …)></h1>
+    <p class="sub"><дата рождения> — <дата смерти или «после N»> · <занятие / положение></p>
+    <p class="sub"><Вид документа, например «Семейная история по документам»>. Составлено <дата> по <перечень основных источников обычными словами>.</p>
+    <p class="legend" style="margin-top:8pt">
+      <span class="tag ok">подтверждено</span> — есть в документах из разных источников<br>
+      <span class="tag ok">по документу</span> — есть в одном надёжном документе<br>
+      <span class="tag fam">по сведениям семьи</span> — из семейных воспоминаний, документа нет<br>
+      <span class="tag maybe">вероятно</span> — сходится с документами, но прямого подтверждения нет<br>
+      <span class="tag no">не установлено</span> — данных пока недостаточно<br>
+      <span class="tag no">есть противоречия</span> — источники расходятся; конфликт описан ниже
+    </p>
+  </div>
+</header>
+
+<!-- ГЛАВНОЕ: 5–8 пунктов. Сначала ответы на вопросы пользователя, затем главные находки, в конце — что не подтвердилось. -->
+<div class="lead">
+  <ul>
+    <li><b><Короткий вывод.></b> <Пояснение в 1–2 предложения.> <span class="tag ok">подтверждено</span></li>
+    <li><b><…></b> <…> <span class="tag maybe">вероятно</span></li>
+    <li><b><Что пока не установлено.></b> <…> <span class="tag no">не установлено</span></li>
+  </ul>
+</div>
+
+<!-- КТО ОН / ОНА: рождение (место по документу и его принадлежность на дату события), сословие или социальное
+     положение, конфессия (если важна для поиска), образование, занятия, брак, дата смерти, черты характера
+     из семейных воспоминаний. Живые родственники — только имя и степень родства. -->
+<h2>Кто <он / она></h2>
+<p><…> <span class="tag ok">подтверждено</span></p>
+
+<h3>Семья</h3>
+<table>
+  <thead><tr><th>Кем приходится</th><th>Имя</th><th>Годы</th><th>Откуда известно</th></tr></thead>
+  <tbody>
+    <tr><td><отец / мать / супруг(а) / ребёнок / восприемник></td><td><…></td><td><…></td><td><документ обычными словами> <span class="tag ok">по документу</span></td></tr>
+  </tbody>
+</table>
+<p class="small"><Оговорки: стиль календаря, варианты написания имени и фамилии, девичья и брачные фамилии.></p>
+
+<!-- КАК МЫ СВЯЗАНЫ (обязательно, если исследовался вопрос родства): цепочка от пользователя или известного
+     предка к исследуемому лицу, по одному звену родитель–ребёнок в строке, у каждого звена своя метка.
+     Ниже — почему документы относятся к одному и тому же человеку (даты, место, родители, номер двора). -->
+<h2>Как мы связаны</h2>
+<table>
+  <thead><tr><th>Звено</th><th>Чем подтверждается</th><th>Надёжность</th></tr></thead>
+  <tbody>
+    <tr><td><Имя — отец / мать — Имя></td><td><документы обычными словами></td><td class="t"><span class="tag ok">подтверждено</span></td></tr>
+  </tbody>
+</table>
+<p><Почему это один и тот же человек в разных документах; какие однофамильцы исключены и как.></p>
+
+<!-- ХРОНОЛОГИЯ: одна строка — один период или событие. Даты обычными словами («март – авг. 1919»). -->
+<h2>Хронология</h2>
+<table>
+  <thead><tr><th>Когда</th><th>Что и где</th><th>Надёжность</th></tr></thead>
+  <tbody>
+    <tr><td class="d"><период></td><td><событие, место></td><td class="t"><span class="tag ok">по документу</span></td></tr>
+  </tbody>
+</table>
+
+<!-- НЕОБЯЗАТЕЛЬНО — МЕСТА: если названия и административная принадлежность менялись. -->
+<h2>Места</h2>
+<table>
+  <thead><tr><th>Как в документе</th><th>Принадлежность на дату события</th><th>Сейчас</th></tr></thead>
+  <tbody>
+    <tr><td><…></td><td><губерния, уезд, волость, приход></td><td><…></td></tr>
+  </tbody>
+</table>
+
+<!-- ДОКУМЕНТЫ О ЧЕЛОВЕКЕ: главные найденные документы — метрики, акты ЗАГС, ревизии, справки, анкеты, дела. -->
+<h2>Документы о человеке</h2>
+<table>
+  <thead><tr><th>Документ</th><th>Когда и кем составлен</th><th>Что из него следует</th><th>Где хранится</th></tr></thead>
+  <tbody>
+    <tr><td><…></td><td><…></td><td><…></td><td><архив, шифр или «семейный архив»></td></tr>
+  </tbody>
+</table>
+
+<!-- НЕОБЯЗАТЕЛЬНО — ВОЕННАЯ СЛУЖБА: если человек служил. Ключевой эпизод с цитатой из первичного документа,
+     таблица решений по инстанциям (например, путь наградного листа), таблица наград с пометкой «за что». -->
+<h2>Военная служба</h2>
+<p><…></p>
+<blockquote>«<Цитата из документа>»</blockquote>
+<h3><Ключевой эпизод или подраздел></h3>
+<table>
+  <thead><tr><th><Кто></th><th>Дата</th><th><Решение></th></tr></thead>
+  <tbody>
+    <tr><td><…></td><td class="d"><…></td><td><…></td></tr>
+  </tbody>
+</table>
+<h3>Награды</h3>
+<table>
+  <thead><tr><th>Награда</th><th>Когда и каким документом</th><th>За что</th><th>В <семейном документе></th></tr></thead>
+  <tbody>
+    <tr><td><…></td><td><…></td><td><…></td><td><…></td></tr>
+  </tbody>
+</table>
+
+<!-- НЕОБЯЗАТЕЛЬНО — РЕПРЕССИЯ И РЕАБИЛИТАЦИЯ: нейтрально, только то, что нужно для ответа, со ссылкой на документ.
+     Обвинение пересказывать только по делу; списки и справки не доказывают конкретных деяний. -->
+<h2>Репрессия и реабилитация</h2>
+<p><…></p>
+
+<!-- НЕОБЯЗАТЕЛЬНО — ПЕРЕСЕЛЕНИЕ И ЭМИГРАЦИЯ: переезды, эвакуация, выезд за границу, возвращение. -->
+<h2>Переселение и эмиграция</h2>
+<p><…></p>
+
+<!-- НЕОБЯЗАТЕЛЬНО — ТЕМАТИЧЕСКИЕ РАЗДЕЛЫ: по одному на каждый вопрос пользователя, на который нужен развёрнутый
+     ответ (семейное предание, место жительства, судьба брата). В конце абзаца — метка надёжности. -->
+<h2><Тема вопроса пользователя></h2>
+<p><b><Подтема.></b> <…> <span class="tag maybe">вероятно</span></p>
+
+<!-- НЕОБЯЗАТЕЛЬНО — ФОТОГРАФИИ: все снимки в одном ряду .photos, ширины в сумме ≤ 96 %. Подпись: что на снимке,
+     датировка и её основание, расхождения подписи с документами. Скан документа — отдельной страницей (.docfig.pb). -->
+<h2>Фотографии</h2>
+<div class="photos">
+  <figure style="width:24%">
+    <img src="<portrait.jpg>" alt="">
+    <figcaption><…></figcaption>
+  </figure>
+  <figure style="width:54%">
+    <img src="<group.jpg>" alt="">
+    <figcaption><…></figcaption>
+  </figure>
+  <figure style="width:18%">
+    <img src="<document-photo.jpg>" alt="">
+    <figcaption><…></figcaption>
+  </figure>
+</div>
+<p class="small"><Общее происхождение снимков, например «Все фотографии — из семейного архива».></p>
+
+<figure class="docfig pb">
+  <img src="<document-scan.jpg>" alt="">
+  <figcaption><Название документа, дата, кем заверен, где хранится.></figcaption>
+</figure>
+
+<!-- НЕСТЫКОВКИ: каждая — жирный заголовок, обе версии, что могло бы различить. -->
+<h2>Нестыковки в документах</h2>
+<ul>
+  <li><b><Тема.></b> <Версия 1 — источник; версия 2 — источник. Что нужно, чтобы различить.></li>
+</ul>
+
+<!-- ГДЕ ИСКАЛИ И НЕ НАШЛИ: охват поиска и почему пустой результат не доказывает отсутствие. -->
+<h2>Где искали и не нашли</h2>
+<table>
+  <thead><tr><th>Где</th><th>Что искали</th><th>Почему это ещё не ответ</th></tr></thead>
+  <tbody>
+    <tr><td><база, архив, сайт></td><td><…></td><td><неполное покрытие, недоступно, другое написание></td></tr>
+  </tbody>
+</table>
+
+<!-- ЧТО ДАЛЬШЕ: три группы — в семье, самостоятельно, запросы в архивы (название архива, что запросить, шифр если известен). -->
+<h2>Что можно сделать дальше</h2>
+<h3>В семье</h3>
+<ul><li><…></li></ul>
+<h3>Посмотреть самостоятельно</h3>
+<ul><li><…></li></ul>
+<h3>Запросить в архивах</h3>
+<ul><li><b><Архив>:</b> <что запросить, шифр.></li></ul>
+
+<!-- ИСТОЧНИКИ: человекочитаемые библиографические ссылки с архивными шифрами и короткими ссылками на сайт. -->
+<h2>Источники</h2>
+<ol class="src">
+  <li><Документ, дата. Архив, фонд, опись, дело.> <a href="<URL>"><домен></a></li>
+</ol>
+<p class="small"><Какие выводы могут измениться и от каких находок. Что не собиралось о живых людях.></p>
+
+</body>
+</html>
