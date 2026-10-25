@@ -111,6 +111,10 @@ evals/discovery-and-logic.yaml   trigger and reasoning test cases
 
 New sources are welcome. Add them to `references/seed-sources.md` with these fields: owner, jurisdiction, collection type, originals or index, stable IDs, access, restrictions, typical errors, date last checked. Please keep personal data out of examples.
 
+## License
+
+[MIT](LICENSE) © 2026 Denis Shiryaev.
+
 ---
 
 Maintained by Denis Shiryaev ([@DenisSergeevitch](https://github.com/DenisSergeevitch)).
