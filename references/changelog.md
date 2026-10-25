@@ -1,10 +1,13 @@
 # Release history
 
-## Unreleased
+## 1.4.0 — 2026-10-25
 
-- Research continues while questions or access requests await a reply, with checkpoints for long runs.
-- Release notes moved out of the README.
-- Offer available skill updates without pausing research.
+- Autonomous, resumable research continues while questions, logins or access requests await a reply. Intake asks only what materials are already available and reuses supplied information.
+- Routine public historical searches, permitted evidence downloads and local processing need no repeated per-file approval. Sources and query variants are chosen for the question rather than an exhaustive checklist.
+- Reports and templates adapt to available evidence. Partial findings remain useful; PDF is optional, and ordinary English words and archive identifiers no longer block PDF generation.
+- Evidence audit normalizes independence-group labels, checks direct evidence and provenance on the same artifact, and flags contradictory evidence and invalid person references. Existing research cases are reused.
+- Private cases stay outside the skill checkout; source links and FamilySearch source categories are clarified. Release history lives here instead of expanding the README.
+- Available skill updates are offered to the user without pausing research; no custom updater is required.
 
 ## 1.3.0
 
