@@ -1,6 +1,6 @@
 # Release history
 
-## Unreleased
+## 1.5.0 — 2026-10-25
 
 - Incorporate PR #17's gravestone-to-military-family route and Soviet civilian employment, awards and evacuation research, with regional examples and separate identity and relationship conclusions.
 - Consolidate access and collection-coverage guidance in existing references; distinguish digitization from availability, contributor observations from verified policies, and dependent copies from independent evidence.
