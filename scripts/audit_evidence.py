@@ -85,10 +85,31 @@ def duplicate_ids(rows: Iterable[dict[str, str]], field: str) -> list[str]:
 
 def artifact_groups(artifact_ids: Iterable[str], artifact_by_id: dict[str, dict[str, str]]) -> set[str]:
     return {
-        artifact_by_id[artifact_id]["independence_group"]
+        artifact_by_id[artifact_id]["independence_group"].strip().casefold()
         for artifact_id in artifact_ids
-        if artifact_id in artifact_by_id and artifact_by_id[artifact_id].get("independence_group", "")
+        if artifact_id in artifact_by_id
+        and artifact_by_id[artifact_id].get("independence_group", "").strip()
     }
+
+
+def has_direct_record(artifact_ids: Iterable[str], artifact_by_id: dict[str, dict[str, str]]) -> bool:
+    """Одна и та же запись должна быть прямой и иметь описанное происхождение.
+
+    Непустое описание и локатор — проверка заполнения, не доказательство
+    подлинности документа или истинности заключения.
+    """
+    for artifact_id in artifact_ids:
+        row = artifact_by_id.get(artifact_id, {})
+        provenance = row.get("provenance_level", "").strip().casefold()
+        if (
+            row.get("directness", "").casefold() == "direct"
+            and row.get("originality", "").casefold()
+            in {"original", "image-of-original", "official-extract"}
+            and provenance not in {"", "unknown", "неизвестно", "не установлено"}
+            and (row.get("source_url_or_path", "").strip() or row.get("archival_reference", "").strip())
+        ):
+            return True
+    return False
 
 
 def id_prefix(value: str) -> str:
@@ -207,8 +228,11 @@ def main() -> int:
     person_ids = {row["person_id"] for row in persons if row.get("person_id")}
 
     for artifact_id, row in artifact_by_id.items():
-        if not row.get("independence_group"):
+        if not row.get("independence_group", "").strip():
             warnings.append(f"{artifact_id}: не указан independence_group")
+        for person_id in split_ids(row.get("person_ids", "")):
+            if person_id not in person_ids:
+                errors.append(f"{artifact_id}: неизвестный person_id {person_id}")
         for claim_id in split_ids(row.get("related_claim_ids", "")):
             if claim_id not in claim_by_id:
                 errors.append(f"{artifact_id}: неизвестный related claim_id {claim_id}")
@@ -217,6 +241,9 @@ def main() -> int:
         status = row.get("status", "")
         if status not in VALID_CLAIM_STATUSES:
             warnings.append(f"{claim_id}: неизвестный статус {status!r}")
+        for person_id in split_ids(row.get("subject_person_ids", "")):
+            if person_id not in person_ids:
+                errors.append(f"{claim_id}: неизвестный subject_person_id {person_id}")
         referenced = split_ids(row.get("artifact_ids", ""))
         contradictory = split_ids(row.get("contradicting_artifact_ids", ""))
         for artifact_id in referenced + contradictory:
@@ -224,10 +251,11 @@ def main() -> int:
                 errors.append(f"{claim_id}: неизвестный artifact_id {artifact_id}")
 
         groups = artifact_groups(referenced, artifact_by_id)
-        for group in sorted(set(split_ids(row.get("supporting_independence_groups", ""))) - groups):
-            errors.append(
-                f"{claim_id}: independence_group {group} заявлен, но ни один из artifact_ids к нему не относится"
-            )
+        for group in sorted(set(split_ids(row.get("supporting_independence_groups", "")))):
+            if group.casefold() not in groups:
+                errors.append(
+                    f"{claim_id}: independence_group {group} заявлен, но ни один из artifact_ids к нему не относится"
+                )
 
         if status in CORROBORATED and len(groups) < 2:
             warnings.append(
@@ -235,31 +263,26 @@ def main() -> int:
             )
         if status in CORROBORATED and not row.get("rationale"):
             warnings.append(f"{claim_id}: для {status} отсутствует rationale")
+        if status in CORROBORATED and contradictory:
+            warnings.append(
+                f"{claim_id}: статус {status}, но указаны противоречащие артефакты; "
+                "проверьте и объясните, разрешён ли существенный конфликт"
+            )
         if status == "single-source" and len(groups) > 1:
             warnings.append(
                 f"{claim_id}: несколько независимых групп, но статус всё ещё single-source; проверьте конфликт/полноту"
             )
-        if status == "strongly-corroborated":
-            direct = any(
-                artifact_by_id[artifact_id].get("directness", "").lower() == "direct"
-                for artifact_id in referenced
-                if artifact_id in artifact_by_id
+        if status == "strongly-corroborated" and not has_direct_record(referenced, artifact_by_id):
+            warnings.append(
+                f"{claim_id}: strongly-corroborated без единой прямой записи "
+                "с указанным происхождением и локатором оригинала, образа или официальной выписки"
             )
-            provenance = any(
-                artifact_by_id[artifact_id].get("originality", "").lower()
-                in {"original", "image-of-original", "official-extract"}
-                for artifact_id in referenced
-                if artifact_id in artifact_by_id
-            )
-            if not direct:
-                warnings.append(f"{claim_id}: strongly-corroborated без прямого артефакта")
-            if not provenance:
-                warnings.append(
-                    f"{claim_id}: strongly-corroborated без оригинала, образа оригинала или официальной выписки"
-                )
 
     for row in relationships:
         relation_id = row.get("relationship_id", "<без ID>")
+        status = row.get("status", "")
+        if status not in VALID_CLAIM_STATUSES:
+            warnings.append(f"{relation_id}: неизвестный статус {status!r}")
         for person_field in ("person_a_id", "person_b_id"):
             person_id = row.get(person_field, "")
             if person_id and person_id not in person_ids:
@@ -275,21 +298,34 @@ def main() -> int:
                 errors.append(f"{relation_id}: неизвестный artifact_id {artifact_id}")
         # Группа засчитывается, только если за ней стоит артефакт: прямой или через claim_ids.
         backing_ids = split_ids(row.get("supporting_artifact_ids", ""))
+        contradictory = set(split_ids(row.get("contradicting_artifact_ids", "")))
         for claim_id in split_ids(row.get("claim_ids", "")):
             if claim_id in claim_by_id:
                 backing_ids += split_ids(claim_by_id[claim_id].get("artifact_ids", ""))
+                contradictory.update(split_ids(claim_by_id[claim_id].get("contradicting_artifact_ids", "")))
         groups = artifact_groups(backing_ids, artifact_by_id)
-        for group in sorted(set(split_ids(row.get("independence_groups", ""))) - groups):
-            errors.append(
-                f"{relation_id}: independence_group {group} заявлен, но ни один из артефактов связи к нему не относится"
-            )
-        if row.get("status", "") in CORROBORATED:
+        for group in sorted(set(split_ids(row.get("independence_groups", "")))):
+            if group.casefold() not in groups:
+                errors.append(
+                    f"{relation_id}: independence_group {group} заявлен, но ни один из артефактов связи к нему не относится"
+                )
+        if status in CORROBORATED:
             if len(groups) < 2:
                 warnings.append(
                     f"{relation_id}: статус {row.get('status')}, но указано независимых групп: {len(groups)}"
                 )
             if not row.get("rationale"):
                 warnings.append(f"{relation_id}: отсутствует rationale")
+            if contradictory:
+                warnings.append(
+                    f"{relation_id}: статус {status}, но указаны противоречащие артефакты; "
+                    "проверьте и объясните, разрешён ли существенный конфликт"
+                )
+        if status == "strongly-corroborated" and not has_direct_record(backing_ids, artifact_by_id):
+            warnings.append(
+                f"{relation_id}: strongly-corroborated без единой прямой записи "
+                "с указанным происхождением и локатором оригинала, образа или официальной выписки"
+            )
 
     # Итоговый отчёт: ссылки и статусы должны совпадать с реестрами.
     markers: dict[str, int] = {}

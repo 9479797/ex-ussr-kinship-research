@@ -5,12 +5,15 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from scripts.audit_evidence import artifact_groups, has_direct_record
 
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
 
@@ -44,6 +47,19 @@ class AuditCase(unittest.TestCase):
             capture_output=True, text=True,
         )
         return json.loads(proc.stdout)
+
+    def update_row(self, name: str, record_id: str, **changes: str) -> None:
+        path = self.case / name
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fields, rows = reader.fieldnames, list(reader)
+        for row in rows:
+            if row[fields[0]] == record_id:
+                row.update(changes)
+        with path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
 
     def two_artifacts(self, second_group: str = "G2") -> None:
         self.append(
@@ -79,6 +95,104 @@ class AuditCase(unittest.TestCase):
                     CLAIM.format(id="C-0001", artifacts="A-0001;A-0002", groups="G1", status="corroborated"))
         result = self.audit()
         self.assertTrue(any("найдено независимых групп: 1" in w for w in result["warnings"]))
+
+    def test_group_case_and_whitespace_do_not_create_independence(self):
+        self.assertEqual(
+            artifact_groups(["A-0001", "A-0002"], {
+                "A-0001": {"independence_group": " G1 "},
+                "A-0002": {"independence_group": "   "},
+            }),
+            {"g1"},
+        )
+        self.two_artifacts(second_group="  g1  ")
+        self.append("artifact-register.csv", ARTIFACT.format(id="A-0003", group="   ", claims="C-0001"))
+        self.append("claims-register.csv",
+                    CLAIM.format(id="C-0001", artifacts="A-0001;A-0002;A-0003", groups="G1;g1", status="corroborated"))
+        self.append("relationship-register.csv",
+                    RELATION.format(id="R-0001", claims="C-0001", artifacts="", groups="g1",
+                                    status="corroborated"))
+        result = self.audit()
+        self.assertEqual(result["errors"], [])
+        self.assertIn("A-0003: не указан independence_group", result["warnings"])
+        self.assertTrue(any("C-0001: статус corroborated, но найдено независимых групп: 1" in w
+                            for w in result["warnings"]))
+        self.assertTrue(any("R-0001: статус corroborated, но указано независимых групп: 1" in w
+                            for w in result["warnings"]))
+
+    def test_strong_corroboration_needs_one_direct_original_record(self):
+        self.two_artifacts()
+        self.update_row("artifact-register.csv", "A-0001", originality="derivative", provenance_level="documented")
+        self.update_row("artifact-register.csv", "A-0002", directness="indirect", provenance_level="documented")
+        self.append("claims-register.csv",
+                    CLAIM.format(id="C-0001", artifacts="A-0001;A-0002", groups="", status="strongly-corroborated"))
+        self.append("relationship-register.csv",
+                    RELATION.format(id="R-0001", claims="C-0001", artifacts="", groups="",
+                                    status="strongly-corroborated"))
+        warnings = self.audit()["warnings"]
+        for record_id in ("C-0001", "R-0001"):
+            self.assertTrue(any(w.startswith(record_id + ": strongly-corroborated без единой прямой записи")
+                                for w in warnings))
+
+    def test_strong_corroboration_checks_provenance_and_locator(self):
+        self.assertFalse(has_direct_record(["A-0001"], {
+            "A-0001": {"directness": "direct", "originality": "original", "provenance_level": "documented",
+                       "source_url_or_path": "   ", "archival_reference": "   "},
+        }))
+        self.two_artifacts()
+        self.append("claims-register.csv",
+                    CLAIM.format(id="C-0001", artifacts="A-0001;A-0002", groups="", status="strongly-corroborated"))
+        self.append("relationship-register.csv",
+                    RELATION.format(id="R-0001", claims="C-0001", artifacts="", groups="",
+                                    status="strongly-corroborated"))
+        self.update_row("artifact-register.csv", "A-0002", directness="indirect")
+        for provenance, locator, qualifies in [
+            ("", "url", False),
+            ("unknown", "url", False),
+            ("documented", "", False),
+            ("documented", "   ", False),
+            ("documented", "url", True),
+        ]:
+            with self.subTest(provenance=provenance, locator=locator):
+                self.update_row("artifact-register.csv", "A-0001", provenance_level=provenance,
+                                source_url_or_path=locator)
+                result = self.audit()
+                self.assertEqual(result["errors"], [])
+                for record_id in ("C-0001", "R-0001"):
+                    missing_record = any(w.startswith(record_id + ": strongly-corroborated без единой прямой записи")
+                                         for w in result["warnings"])
+                    self.assertEqual(missing_record, not qualifies)
+
+    def test_corroborated_conflicts_warn_for_claims_and_relationships(self):
+        self.two_artifacts()
+        self.append("artifact-register.csv", ARTIFACT.format(id="A-0003", group="G3", claims=""))
+        self.append("claims-register.csv",
+                    CLAIM.format(id="C-0001", artifacts="A-0001;A-0002", groups="", status="corroborated"))
+        self.update_row("claims-register.csv", "C-0001", contradicting_artifact_ids="A-0003")
+        self.append("relationship-register.csv",
+                    RELATION.format(id="R-0001", claims="C-0001", artifacts="", groups="", status="corroborated"),
+                    RELATION.format(id="R-0002", claims="", artifacts="A-0001;A-0002", groups="", status="corroborated"))
+        self.update_row("relationship-register.csv", "R-0002", contradicting_artifact_ids="A-0003")
+        result = self.audit()
+        self.assertEqual(result["errors"], [])
+        for record_id in ("C-0001", "R-0001", "R-0002"):
+            self.assertTrue(any(w.startswith(record_id + ": статус corroborated, но указаны противоречащие артефакты")
+                                for w in result["warnings"]))
+
+    def test_person_references_and_relationship_status_are_checked(self):
+        self.two_artifacts()
+        self.update_row("artifact-register.csv", "A-0001", person_ids="P-9999")
+        self.append("claims-register.csv",
+                    CLAIM.format(id="C-0001", artifacts="A-0001", groups="", status="single-source"))
+        self.update_row("claims-register.csv", "C-0001", subject_person_ids="P-9998")
+        self.append("relationship-register.csv",
+                    RELATION.format(id="R-0001", claims="C-0001", artifacts="", groups="", status="invented"))
+        self.update_row("relationship-register.csv", "R-0001", person_b_id="P-9997")
+        result = self.audit()
+        for expected in ("A-0001: неизвестный person_id P-9999",
+                         "C-0001: неизвестный subject_person_id P-9998",
+                         "R-0001: неизвестный person_b_id P-9997"):
+            self.assertIn(expected, result["errors"])
+        self.assertIn("R-0001: неизвестный статус 'invented'", result["warnings"])
 
     def test_relationship_groups_come_from_claims(self):
         self.two_artifacts()
