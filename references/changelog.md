@@ -1,5 +1,11 @@
 # Release history
 
+## Unreleased
+
+- Incorporate PR #17's gravestone-to-military-family route and Soviet civilian employment, awards and evacuation research, with regional examples and separate identity and relationship conclusions.
+- Consolidate access and collection-coverage guidance in existing references; distinguish digitization from availability, contributor observations from verified policies, and dependent copies from independent evidence.
+- Add official archive starting points for the Caucasus and Central Asia, make coverage of all 15 former Soviet republics explicit, and use «страны Балтии» in Russian documentation.
+
 ## 1.4.0 — 2026-10-25
 
 - Autonomous, resumable research continues while questions, logins or access requests await a reply. Intake asks only what materials are already available and reuses supplied information.
