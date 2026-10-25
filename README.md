@@ -20,6 +20,16 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions.
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 
+## New in 1.2.0
+
+Lessons from a real WWII officer case, where a family memorial page with a certified service-record extract and photos was found only after the report was "done".
+
+- **Ask the family first.** Before searching, the agent asks once whether relatives have researched this person before, whether there are family pages (Immortal Regiment, Road of Memory, Geni, MyHeritage) and who holds documents, photos and award certificates. The answer goes to `prior_family_research` in the intake.
+- **Coverage checklists.** `references/source-strategy.md` section 12 has checklists by task type (WWII serviceman, church and civil records, repression). Every item must be closed in `search-log.csv` as `found`, `not-found`, `blocked` or `skipped` before the report. A rich first database no longer ends the search.
+- **Site-internal search for memorial pages.** Profiles on moypolk.ru, 1418museum.ru, Geni and MyHeritage are poorly indexed by web search engines; the agent uses each site's own search with every name variant (е/ё, -ев/-ов).
+- **Grade materials, not websites.** A scan of an original on a family page is an `image-of-original` artifact with its own provenance; the page's text is family testimony.
+- **Military database notes.** Award sheets have higher commanders' resolutions on the reverse side; 1944–1957 long-service awards are distinguished from combat awards by the decree title.
+
 ## Field lessons (new in 1.1.0)
 
 Version 1.1.0 adds `references/field-lessons.md`, distilled from a real multi-week research case. Personal data from that case is not included.

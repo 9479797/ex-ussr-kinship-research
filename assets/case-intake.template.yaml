@@ -32,6 +32,13 @@ subjects:
     confession_or_community_as_recorded: []
     notes: ""
 
+prior_family_research:
+  asked: false  # задан ли вопрос о прежних исследованиях семьи (SKILL.md, шаг 1, п. 6)
+  researchers: []  # кто из родственников уже искал и что нашёл
+  family_pages: []  # URL страниц, созданных семьёй («Бессмертный полк», «Дорога памяти», Geni, MyHeritage)
+  holders_of_materials: []  # у кого хранятся документы, фото, награды, письма
+  notes: ""
+
 input_materials: []
 
 privacy:
