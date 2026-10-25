@@ -26,7 +26,7 @@ SERVICE_PATTERNS = [
         re.compile(r"\b(artifact_id|claim_id|person_id|relationship_id|independence_group)\b"),
         "имя поля реестра",
     ),
-    (re.compile(r"<[^<>\n]{1,80}>"), "незаполненный плейсхолдер <…>"),
+    (re.compile(r"<[^<>\n]{1,300}>"), "незаполненный плейсхолдер <…>"),
 ]
 
 CHROME_NAMES = [
@@ -224,7 +224,7 @@ def main() -> int:
     print(f"PDF собран: {out_path} (страниц: {count_pages(out_path)}, {out_path.stat().st_size // 1024} КБ)")
     if args.png_dir:
         render_png(out_path, Path(args.png_dir).expanduser().resolve())
-    print("Просмотрите каждую страницу перед отправкой пользователю (SKILL.md, шаг 12, п. 7).")
+    print("Просмотрите каждую страницу перед отправкой пользователю (SKILL.md, шаг 12, п. 8).")
     return 0
 
 
