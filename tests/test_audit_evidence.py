@@ -103,6 +103,12 @@ class AuditCase(unittest.TestCase):
         self.assertTrue(any("C-0042" in e for e in errors))
         self.assertFalse(any("A-0001" in e for e in errors))
 
+    def test_report_unknown_ids_with_empty_registers(self):
+        self.append("final-report.md", "", "Вывод [A-0099], см. C-0042 и R-0003.")
+        errors = self.audit()["errors"]
+        for cited in ("A-0099", "C-0042", "R-0003"):
+            self.assertTrue(any(cited in error for error in errors), cited)
+
     def test_report_status_must_match_register(self):
         self.two_artifacts()
         self.append("claims-register.csv",

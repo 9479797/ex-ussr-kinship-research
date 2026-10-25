@@ -107,8 +107,8 @@ def audit_report(
 ) -> tuple[list[str], dict[str, int]]:
     """Сверить ID и статусы итогового отчёта с реестрами.
 
-    known_ids: префикс -> ID этого префикса из реестров. Проверяются только префиксы,
-    которые уже есть в реестрах, поэтому плейсхолдеры шаблона (`A-....`) не мешают.
+    known_ids: префикс -> ID этого префикса из реестров. Стандартные префиксы
+    проверяются и при пустых реестрах; плейсхолдеры (`A-....`) не содержат номера.
     statuses: ID утверждения или связи -> статус в реестре.
     """
     errors: list[str] = []
@@ -295,7 +295,9 @@ def main() -> int:
     markers: dict[str, int] = {}
     report = case_dir / "final-report.md"
     if report.is_file():
-        known_ids: dict[str, set[str]] = {}
+        known_ids: dict[str, set[str]] = {
+            prefix: set() for prefix in ("A-", "C-", "R-", "P-")
+        }
         for rows, field in [
             (artifacts, "artifact_id"),
             (claims, "claim_id"),
