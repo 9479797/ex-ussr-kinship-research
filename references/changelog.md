@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Assess information dependence for each material claim rather than equating a shared institution with shared evidence ([#29](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/29)).
+
 - Limit marginal-note conclusions to the administrative action and parties actually named, preserving uncertainty about life status and request dates ([#27](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/27)).
 
 - Check saved-search scope and proposed archive-locator corrections against actual coverage, dates and catalog context ([#24](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/24)).
