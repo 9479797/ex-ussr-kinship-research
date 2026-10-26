@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Support user-authorized institutional requests through existing mail integrations or official channels, with precise sending states and reply provenance ([#30](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/30)).
+
 - Assess information dependence for each material claim rather than equating a shared institution with shared evidence ([#29](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/29)).
 
 - Limit marginal-note conclusions to the administrative action and parties actually named, preserving uncertainty about life status and request dates ([#27](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/27)).
