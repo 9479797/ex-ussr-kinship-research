@@ -73,7 +73,7 @@ references/
   correspondence.md              recipients, mail integration, authorized sending and replies
   evidence-protocol.md           artifact assessment, statuses, identity resolution, conflicts
   ex-ussr-locale-guide.md        jurisdictions, name variants, calendars, record types by period
-  browser-and-captcha.md         browsing, sign-in, CAPTCHA hand-off, rate limits
+  browser-and-captcha.md         browsing, sign-in, one CAPTCHA attempt and hand-off, rate limits
   privacy-and-safety.md          living people, minors, DNA, sensitive findings
   seed-sources.md                curated starting resources with reliability classes
   field-lessons.md               practical lessons from a real case
@@ -90,7 +90,7 @@ tests/                           unit tests (python3 -m unittest discover -s tes
 ## Responsible use
 
 - **Family history, not surveillance.** The skill refuses to look up current addresses, phones or accounts of living people, and it minimizes their data in reports.
-- **No bypassing.** No CAPTCHA solving, no paywall, geo-block or rate-limit evasion, no leaked databases. Sign-ins are done by the user.
+- **Access checks.** The agent may try an actual CAPTCHA once through normal controls in its internal browser when supported and allowed. If user action is needed, it opens the relevant tab when possible and provides the URL and required action; sign-ins are done by the user. No external solvers, protection bypass, paywall, geo-block or rate-limit evasion, or leaked databases. See [browser guidance](references/browser-and-captcha.md).
 - **No uploads of your documents or DNA data** to third-party services without your explicit consent.
 - **Sensitive findings** (deportation, repression, adoption, DNA surprises) are reported neutrally and only as far as the question requires.
 - **Authorized correspondence.** The skill can send institutional requests through available tools when the user has authorized them; it does not ask again for an already authorized send. Connecting a mailbox alone does not authorize sending, attachments or paid services. Verify the current official contact and procedure, and keep credentials and private case correspondence outside the skill repository.
