@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Clarify manuscript reading, crop provenance and the distinction between repeated transcription and independent evidence ([#20](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/20)).
+
 ## 1.5.0 — 2026-10-25
 
 - Incorporate PR #17's gravestone-to-military-family route and Soviet civilian employment, awards and evacuation research, with regional examples and separate identity and relationship conclusions.
