@@ -1,5 +1,11 @@
 # Release history
 
+## Unreleased
+
+- Verify scan identity, extent and content, preserve distinct source photographs, and avoid treating faint pages or unusable text layers as negative evidence ([#22](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/22)).
+
+- Clarify manuscript reading, crop provenance and the distinction between repeated transcription and independent evidence ([#20](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/20)).
+
 ## 1.5.0 — 2026-10-25
 
 - Incorporate PR #17's gravestone-to-military-family route and Soviet civilian employment, awards and evacuation research, with regional examples and separate identity and relationship conclusions.
