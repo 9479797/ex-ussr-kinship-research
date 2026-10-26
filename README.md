@@ -20,6 +20,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Evidence protocol.** Claims get explainable statuses, not percentages: `hypothesis`, `single-source`, `corroborated`, `strongly-corroborated`, `contradicted`, `unresolved`. Copies and mirrors of one record share an `independence_group`, so they never count as independent proof.
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
+- **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 
 Release history: [changelog](references/changelog.md).
@@ -69,6 +70,7 @@ Use static HTML with local or embedded images. Active HTML and network image sou
 SKILL.md                         main instructions (workflow, hard rules, language policy)
 references/
   source-strategy.md             source hierarchy, query patterns, catalogs, archive requests
+  correspondence.md              recipients, mail integration, authorized sending and replies
   evidence-protocol.md           artifact assessment, statuses, identity resolution, conflicts
   ex-ussr-locale-guide.md        jurisdictions, name variants, calendars, record types by period
   browser-and-captcha.md         browsing, sign-in, CAPTCHA hand-off, rate limits
@@ -91,7 +93,7 @@ tests/                           unit tests (python3 -m unittest discover -s tes
 - **No bypassing.** No CAPTCHA solving, no paywall, geo-block or rate-limit evasion, no leaked databases. Sign-ins are done by the user.
 - **No uploads of your documents or DNA data** to third-party services without your explicit consent.
 - **Sensitive findings** (deportation, repression, adoption, DNA surprises) are reported neutrally and only as far as the question requires.
-- **Archive access rules change.** Always check the current official procedure before sending a request; the skill only drafts requests, it does not send them.
+- **Authorized correspondence.** The skill can send institutional requests through available tools when the user has authorized them; it does not ask again for an already authorized send. Connecting a mailbox alone does not authorize sending, attachments or paid services. Verify the current official contact and procedure, and keep credentials and private case correspondence outside the skill repository.
 
 ## Contributing
 
