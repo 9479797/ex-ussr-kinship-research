@@ -1,6 +1,6 @@
 # Release history
 
-## Unreleased
+## 1.6.0 — 2026-10-26
 
 - Coordinate parallel register changes and archive processing with existing tools, preserving current edits and distinguishing preparation, import and verification ([#31](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/31)).
 
