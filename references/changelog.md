@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Limit marginal-note conclusions to the administrative action and parties actually named, preserving uncertainty about life status and request dates ([#27](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/27)).
+
 - Check saved-search scope and proposed archive-locator corrections against actual coverage, dates and catalog context ([#24](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/24)).
 
 - Distinguish rows, acts, people and event dates when reconciling register numbering and totals ([#23](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/23)).
