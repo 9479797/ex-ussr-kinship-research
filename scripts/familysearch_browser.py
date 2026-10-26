@@ -79,7 +79,7 @@ def browser_import(files, patterns):
                    for i, p in enumerate(people, 1)}
         matches = []
         for layer, label, regex in patterns:
-            person_matches = [pid for pid, person in persons.items() if regex.search(person["name"])] if row.get("people") else []
+            person_matches = [pid for pid, person in persons.items() if regex.search(person["name"])]
             if regex.search(row["text"]) or person_matches:
                 for pid in person_matches or [None]:
                     match = {"rid": rid, "pid": pid, "name": persons[pid]["name"] if pid else row["name"],

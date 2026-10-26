@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add targeted FamilySearch discovery guidance and local name searches across saved evidence fragments, including relatives, witnesses and name variants.
+- Add targeted FamilySearch discovery guidance and local name searches across saved evidence fragments, including principal names without an optional participant list, relatives, witnesses and name variants.
 - Record observed index states and unresolved coverage, with source context and file checksums.
 - Add bounded GWAR WWI person/locality searches with checkpoints, source-image locators and evidence-preserving registration; distinguish the volost field from the settlement field.
 - Deduplicate unchanged source snapshots without creating persons, claims, relationships or independence assessments; keep the existing evidence protocol and case registers.

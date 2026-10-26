@@ -129,6 +129,21 @@ class LocalEvidenceTests(unittest.TestCase):
         self.assertFalse(result["hits"]["cyrillic"][0]["principal"])
         self.assertEqual(result["candidates"][0]["record"]["raw"]["browser_row"], snapshot["rows"][0])
 
+    def test_minimal_fragment_searches_name_and_keeps_text_only_hits_unassigned(self):
+        row = {"url": "https://www.familysearch.org/ark:/61903/1:1:TEST-ROW",
+               "name": "Иван Петров", "text": "Birth, 1900. Parent: Мария Сидорова."}
+        common.save_json(self.fragment, self.snapshot(rows=[row]))
+        result = fs.browser_import([self.fragment], compile_patterns(surnames=["Петров", "Сидорова"]))
+        self.assertEqual(len(result["candidates"]), 1)
+        principal = result["hits"]["Петров"][0]
+        self.assertEqual(principal["pid"], "principal")
+        self.assertEqual(principal["name"], row["name"])
+        self.assertTrue(principal["principal"])
+        text_only = result["hits"]["Сидорова"][0]
+        self.assertIsNone(text_only["pid"])
+        self.assertIsNone(text_only["principal"])
+        self.assertFalse(result["coverage"]["complete"])
+
     def test_source_hash_describes_original_file_bytes(self):
         common.save_json(self.fragment, sample_fragment())
         result = fs.browser_import([self.fragment], [])
