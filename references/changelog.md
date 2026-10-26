@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add targeted use of public funeral-agency burial catalogs to locate historical gravestones, with task-relevant private evidence, claim-based source dependence and a verified general catalog link ([#37](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/37)).
+
 ## 1.6.0 — 2026-10-26
 
 - Coordinate parallel register changes and archive processing with existing tools, preserving current edits and distinguishing preparation, import and verification ([#31](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/31)).
