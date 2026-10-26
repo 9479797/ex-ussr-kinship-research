@@ -3,6 +3,11 @@
 ## Unreleased
 
 - Add targeted use of public funeral-agency burial catalogs to locate historical gravestones, with task-relevant private evidence, claim-based source dependence and a verified general catalog link ([#37](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/37)).
+- Offer compact, prioritised next checks when useful for a progress report or hand-off, explaining their purpose, access, executor, known costs and dependencies; adapt the format to the task and use existing coordination guidance for parallel work ([#36](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/36)).
+- Add targeted FamilySearch discovery guidance and local name searches across saved evidence fragments, including principal names without an optional participant list, relatives, witnesses and name variants.
+- Record observed index states and unresolved coverage, with source context and file checksums.
+- Add bounded GWAR WWI person/locality searches with checkpoints, source-image locators and evidence-preserving registration; distinguish the volost field from the settlement field.
+- Deduplicate unchanged source snapshots without creating persons, claims, relationships or independence assessments; keep the existing evidence protocol and case registers.
 
 ## 1.6.0 — 2026-10-26
 
