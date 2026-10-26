@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Check saved-search scope and proposed archive-locator corrections against actual coverage, dates and catalog context ([#24](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/24)).
+
 - Distinguish rows, acts, people and event dates when reconciling register numbering and totals ([#23](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/23)).
 
 - Verify scan identity, extent and content, preserve distinct source photographs, and avoid treating faint pages or unusable text layers as negative evidence ([#22](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/22)).
