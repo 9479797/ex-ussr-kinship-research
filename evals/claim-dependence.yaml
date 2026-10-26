@@ -1,5 +1,5 @@
 skill: ex-ussr-kinship-research
-version: "1.6.0"
+version: "1.7.0"
 
 # Условные ситуации для содержательной проверки, не автоматические unit-тесты.
 logic_cases:
