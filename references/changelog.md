@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- End each stage of work with a ranked list of next research questions: what each would resolve, source and verified access, who acts and at what cost, and dependencies; for parallel runs, phrase them as self-contained tasks with non-overlapping sources and completion criteria.
+- End each stage of work with a ranked list of next research questions: what each would resolve, source and verified access, who acts and at what cost, and dependencies; for parallel runs, phrase them as self-contained tasks with non-overlapping sources and completion criteria ([#36](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/36)).
 
 ## 1.6.0 — 2026-10-26
 
