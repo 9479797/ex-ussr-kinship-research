@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+"""Find WWI source records and locality clusters without inferring kinship."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import ssl
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+from research_common import (SourceClient, SourceError, fingerprint, outside_skill, output_json,
+                             read_json, save_json, state_lock, timestamp)
+
+BASE = "https://gwar.mil.ru"
+KINDS = {"reports": "chelovek_donesenie", "hospitals": "chelovek_gospital", "awards": "chelovek_nagrazhdenie"}
+
+
+def source_client():
+    # Extra certificates apply only to this client, never to the system trust store.
+    context = ssl.create_default_context()
+    for name in ("russian_trusted_root_ca.pem", "russian_trusted_sub_ca.pem"):
+        path = Path(__file__).resolve().parent / "ca" / name
+        if not path.is_file():
+            raise SourceError("Отсутствует сертификат GWAR из scripts/ca; проверка TLS не отключается.")
+        context.load_verify_locations(cafile=str(path))
+    return SourceClient(BASE, context=context, referer=BASE + "/heroes/")
+
+
+def query_body(fields, offset, size, entities, builder="Heroes"):
+    return {"indices": ["gwar"], "entities": entities, "queryFields": fields,
+            "filterFields": {}, "facetField": None, "from": offset, "size": size, "builderType": builder}
+
+
+def fetch_page(client, fields, offset, size, entities, builder="Heroes"):
+    data = client.request("/gt_data/?builder=" + builder, query_body(fields, offset, size, entities, builder))
+    if isinstance(data, dict) and "response" in data:
+        data = data["response"]
+    box = data.get("hits") if isinstance(data, dict) else None
+    if not isinstance(box, dict) or not isinstance(box.get("hits"), list):
+        raise SourceError("GWAR: неожиданный формат выдачи.")
+    total = box.get("total")
+    if isinstance(total, dict):
+        if total.get("relation", "eq") != "eq":
+            raise SourceError("GWAR не сообщил точное число результатов; полнота неизвестна.")
+        total = total.get("value")
+    if type(total) is not int or total < 0:
+        raise SourceError("GWAR: отсутствует точный счётчик записей.")
+    for hit in box["hits"]:
+        if not isinstance(hit, dict) or not hit.get("_id") or not isinstance(hit.get("_source"), dict):
+            raise SourceError("GWAR: карточка без ID или исходных полей.")
+    return box["hits"], total
+
+
+def hit_key(hit):
+    return "|".join(str(hit.get(field, "")) for field in ("_index", "_type", "_id"))
+
+
+def collect(client, fields, entities, limit, checkpoint=None):
+    identity = {"source": "gwar", "query": fields, "entities": entities}
+    state = {**identity, "fingerprint": fingerprint(identity), "total": None, "hits": [],
+             "next_offset": 0, "started_at": timestamp(), "captured_at": timestamp(), "coverage": {"complete": False}}
+    if checkpoint and Path(checkpoint).exists():
+        state = read_json(checkpoint)
+        if state.get("fingerprint") != fingerprint(identity):
+            raise SourceError("Сохранённая выдача GWAR относится к другому запросу.")
+        if not isinstance(state.get("hits"), list) or type(state.get("next_offset")) is not int:
+            raise SourceError("Некорректное состояние выдачи GWAR.")
+        if limit < len(state["hits"]):
+            raise SourceError("Лимит меньше уже сохранённой выдачи; выберите другой файл или прежний лимит.")
+    hits = {hit_key(hit): hit for hit in state["hits"]}
+    if len(hits) != len(state["hits"]):
+        raise SourceError("В контрольной точке GWAR есть повторные ID.")
+    blocked, incomplete_reason = None, ""
+    try:
+        if state["total"] is None or state["next_offset"] < state["total"]:
+            client.request("/heroes/", as_json=False)
+        while len(hits) < limit and (state["total"] is None or state["next_offset"] < state["total"]):
+            requested_size = min(1000, limit - len(hits))
+            page, total = fetch_page(client, fields, state["next_offset"], requested_size, entities)
+            if len(page) > requested_size:
+                raise SourceError("GWAR вернул больше запрошенного объёма; проверьте формат API.")
+            if state["total"] is not None and state["total"] != total:
+                raise SourceError("Число результатов GWAR изменилось; проверьте выдачу новым запросом.")
+            state["total"] = total
+            state["captured_at"] = timestamp()
+            previous_count = len(hits)
+            for hit in page:
+                key = hit_key(hit)
+                if key in hits and hits[key] != hit:
+                    raise SourceError("Содержимое карточки GWAR изменилось во время получения выдачи.")
+                hits[key] = hit
+            state["next_offset"] += len(page)
+            state["hits"] = list(hits.values())
+            if not page or len(hits) == previous_count:
+                if len(hits) < total:
+                    incomplete_reason = "empty-or-repeated-page-before-total"
+                break
+            if checkpoint:
+                save_json(checkpoint, state)
+    except SourceError as exc:
+        blocked = {"status": exc.status, "message": str(exc)}
+    finally:
+        complete = state["total"] is not None and len(hits) == state["total"] and not blocked and not incomplete_reason
+        state.update({"hits": list(hits.values()), "updated_at": timestamp(), "blocked": blocked,
+                      "coverage": {"complete": complete, "retrieved_records": len(hits), "reported_total": state["total"],
+                                   "limit": limit, "reason": incomplete_reason or (("limit-reached" if len(hits) >= limit else "source-window-incomplete") if not complete and not blocked else ""),
+                                   "scope": "returned-source-records-not-population-census"}})
+        if checkpoint:
+            save_json(checkpoint, state)
+    return state
+
+
+def parse_scan(xml):
+    xml = str(xml or "")
+    image = re.search(r"[A-Za-z0-9_\-/]+\.(?:jpe?g|png|tiff?)", xml, flags=re.IGNORECASE)
+    path = image.group(0) if image else None
+    zones = []
+    try:
+        root = ET.fromstring(xml)
+        for element in root.iter():
+            if element.tag.rsplit("}", 1)[-1] == "s":
+                zones.append(dict(element.attrib))
+    except ET.ParseError:
+        # Some source payloads are XML fragments rather than a full document.
+        for match in re.finditer(r"<s\s+([^>]+?)/?>", xml):
+            zones.append(dict(re.findall(r'([\w:]+)\s*=\s*"([^"]*)"', match.group(1))))
+    return {"image_path": path, "image_url": BASE + "/cdn/imagesfww/" + path.lstrip("/") if path else None,
+            "zones": zones, "raw": xml}
+
+
+def pages(client, page_ids):
+    client.request("/heroes/", as_json=False)
+    result = []
+    for page_id in dict.fromkeys(page_ids):
+        hits, total = fetch_page(client, {"linkedPages": [int(page_id)]}, 0, 100, ["stranitsa"], "HeroesStranitsa")
+        result.append({"pages_id": page_id, "total": total, "complete": len(hits) == total,
+                       "records": [{"id": hit["_id"], "source": hit["_source"],
+                                    **parse_scan(hit["_source"].get("obraz_s_oblastyami", ""))} for hit in hits]})
+    return {"source": "gwar-pages", "captured_at": timestamp(), "pages": result,
+            "coverage": {"complete": all(item["complete"] for item in result), "scope": "selected-pages"}}
+
+
+def positive(value):
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("Нужно положительное число.")
+    return number
+
+
+def parser():
+    root = argparse.ArgumentParser(description="Документы Первой мировой: поиск человека и сбор по местности.")
+    commands = root.add_subparsers(dest="command", required=True)
+    search = commands.add_parser("search", help="Поиск по имени, месту или части")
+    for flag in ("surname", "given", "patronymic", "event-place", "regiment", "birth-place", "gubernia"):
+        help_text = ("Населённый пункт в поле birth_place сайта (место жительства / призыва; не доказанное место рождения)"
+                     if flag == "birth-place" else None)
+        search.add_argument("--" + flag, help=help_text)
+    volost = commands.add_parser("volost", help="Собрать найденные записи по волости и губернии")
+    volost.add_argument("--volost", required=True, help="Волость в поле birth_place_volost сайта")
+    volost.add_argument("--gubernia", required=True)
+    for command in (search, volost):
+        command.add_argument("--kind", nargs="+", choices=("all", *KINDS), default=["all"])
+        command.add_argument("--max-records", type=positive, default=1000)
+        command.add_argument("--out", required=True, help="JSON вне папки навыка; также контрольная точка")
+    page = commands.add_parser("page", help="Найти скан и координаты строк по pages_id")
+    page.add_argument("--pages", nargs="+", type=positive, required=True)
+    page.add_argument("--out", required=True)
+    return root
+
+
+def main(argv=None):
+    args = parser().parse_args(argv)
+    try:
+        path = outside_skill(args.out)
+        if args.command == "page":
+            result = pages(source_client(), args.pages)
+            output_json(result, path)
+        else:
+            if args.command == "volost":
+                fields = {"birth_place_volost": args.volost, "birth_place_gubernia": args.gubernia}
+            else:
+                mapping = {"surname": "last_name", "given": "first_name", "patronymic": "middle_name",
+                           "event_place": "event_place", "regiment": "military_unit_name",
+                           "birth_place": "birth_place", "gubernia": "birth_place_gubernia"}
+                fields = {field: getattr(args, key) for key, field in mapping.items() if getattr(args, key)}
+                if not fields:
+                    raise SourceError("Укажите имя, местность или воинскую часть.")
+            kinds = list(KINDS) if "all" in args.kind else list(dict.fromkeys(args.kind))
+            with state_lock(str(path) + ".lock"):
+                result = collect(source_client(), fields, [KINDS[kind] for kind in kinds], args.max_records, path)
+        return 0 if result["coverage"]["complete"] else 1
+    except (SourceError, OSError, ValueError, TypeError, KeyError) as exc:
+        print("Ошибка: " + (str(exc) if isinstance(exc, SourceError) else "Некорректный файл или ошибка локального ввода/вывода."), file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

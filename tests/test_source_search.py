@@ -1,0 +1,318 @@
+"""Synthetic source-search tests; no live accounts, network or private case data."""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+import urllib.error
+import urllib.request
+from pathlib import Path
+from unittest.mock import patch
+
+SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+sys.path.insert(0, str(SCRIPTS))
+
+import familysearch as fs
+import gwar
+import register_search
+import research_common as common
+from familysearch import compile_patterns
+
+
+def sample_fragment():
+    return {
+        "url": "https://www.familysearch.org/en/search/record/results",
+        "captured_at": "2026-10-26T12:00:00Z",
+        "scope": {"dgs": "000000001", "description": "one relevant result"},
+        "rows": [{"url": "https://www.familysearch.org/ark:/61903/1:1:TEST-ROW",
+                  "name": "Иван Иванов",
+                  "text": "Иван Иванов. Parent: Мария Петрова. Witness: Пётр Сидоров / Petr Sidorov.",
+                  "people": [{"name": "Иван Иванов", "label": "Primary"},
+                             {"name": "Мария Петрова", "label": "Parent"},
+                             {"name": "Пётр Сидоров / Petr Sidorov", "label": "Witness"}]}]
+    }
+
+
+class FakeClient:
+    def __init__(self, handler):
+        self.handler = handler
+        self.calls = []
+
+    def request(self, path, body=None, as_json=True):
+        self.calls.append((path, body, as_json))
+        return self.handler(path, body, as_json)
+
+
+def hit(number):
+    return {"_index": "gwar", "_type": "chelovek_donesenie", "_id": str(number),
+            "_source": {"last_name": "Иванов", "first_name": "Пётр", "birth_place": "Условное село",
+                        "documents_pages": {"pages_id": [1000 + number]}}}
+
+
+class GwarTests(unittest.TestCase):
+    def test_completed_cache_keeps_capture_time_without_new_requests(self):
+        def handler(path, body, as_json):
+            return "public page" if not as_json else {"hits": {"total": 1, "hits": [hit(1)]}}
+        with tempfile.TemporaryDirectory() as tmp:
+            checkpoint = Path(tmp) / "gwar.json"
+            first = gwar.collect(FakeClient(handler), {"last_name": "Иванов"}, list(gwar.KINDS.values()), 1, checkpoint)
+            first["captured_at"] = "2000-01-01T00:00:00+00:00"
+            common.save_json(checkpoint, first)
+            def unexpected(*args):
+                self.fail("A completed cache must not make a new source request")
+            cached = gwar.collect(FakeClient(unexpected), {"last_name": "Иванов"}, list(gwar.KINDS.values()), 1, checkpoint)
+            self.assertEqual(cached["captured_at"], first["captured_at"])
+            self.assertEqual(cached["hits"], first["hits"])
+
+    def test_limit_and_resume_preserve_all_entity_kinds_and_offsets(self):
+        def handler(path, body, as_json):
+            if not as_json:
+                return "public page"
+            start, size = body["from"], body["size"]
+            return {"hits": {"total": {"value": 3, "relation": "eq"}, "hits": [hit(i) for i in range(start, min(3, start + size))]}}
+        client = FakeClient(handler)
+        entities = list(gwar.KINDS.values())
+        with tempfile.TemporaryDirectory() as tmp:
+            checkpoint = Path(tmp) / "gwar.json"
+            first = gwar.collect(client, {"birth_place": "Условное село"}, entities, 2, checkpoint)
+            self.assertFalse(first["coverage"]["complete"])
+            self.assertEqual(first["coverage"]["reason"], "limit-reached")
+            second = gwar.collect(client, {"birth_place": "Условное село"}, entities, 3, checkpoint)
+            self.assertTrue(second["coverage"]["complete"])
+            self.assertEqual(len(second["hits"]), 3)
+            self.assertEqual(client.calls[-1][1]["from"], 2)
+            self.assertEqual(client.calls[-1][1]["entities"], entities)
+            with self.assertRaises(common.SourceError):
+                gwar.collect(client, {"birth_place": "Другая волость"}, entities, 3, checkpoint)
+
+    def test_repeated_pages_and_access_failures_are_not_complete(self):
+        client = FakeClient(lambda path, body, as_json: "page" if not as_json else {"hits": {"total": 3, "hits": [hit(0)]}})
+        self.assertFalse(gwar.collect(client, {"last_name": "Иванов"}, list(gwar.KINDS.values()), 3)["coverage"]["complete"])
+        def denied(*args):
+            raise common.SourceError("limit", 429)
+        blocked = gwar.collect(FakeClient(denied), {}, [], 3)
+        self.assertEqual(blocked["blocked"]["status"], 429)
+
+    def test_scan_locator_and_scoped_certificates(self):
+        parsed = gwar.parse_scan('<page image="folder/test.jpg"><s id="row" c="1,2,3,4"/></page>')
+        self.assertEqual(parsed["zones"][0]["c"], "1,2,3,4")
+        self.assertEqual(parsed["image_url"], "https://gwar.mil.ru/cdn/imagesfww/folder/test.jpg")
+        self.assertEqual(gwar.source_client().base, gwar.BASE)
+
+
+class RegistrationTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.directory = Path(self.tmp.name)
+        self.case = self.directory / "case"
+        subprocess.run([sys.executable, str(SCRIPTS / "init_case.py"), "--case-dir", str(self.case),
+                        "--research-question", "Кто родители условного человека?"], check=True, capture_output=True)
+
+    def rows(self, name):
+        with (self.case / name).open(encoding="utf-8", newline="") as handle:
+            return list(csv.DictReader(handle))
+
+    def result(self):
+        source = self.directory / "fragment.json"
+        common.save_json(source, sample_fragment())
+        return fs.browser_import([source], compile_patterns(surnames=["Петрова"]))
+
+    def test_end_to_end_preserves_evidence_boundary_and_is_idempotent(self):
+        path = self.directory / "analysis.json"
+        common.save_json(path, self.result())
+        untouched = {name: (self.case / name).read_bytes() for name in ("claims-register.csv", "person-register.csv", "relationship-register.csv")}
+        first = register_search.register(self.case, path, "Найти родителей")
+        second = register_search.register(self.case, path, "Найти родителей")
+        self.assertEqual(first["added_artifacts"], 1)
+        self.assertEqual(second["added_artifacts"], 0)
+        self.assertFalse(second["added_search_log"])
+        artifact = self.rows("artifact-register.csv")[0]
+        self.assertEqual(artifact["originality"], "index")
+        self.assertEqual(artifact["directness"], "lead-only")
+        self.assertEqual(artifact["independence_group"], "")
+        self.assertEqual(artifact["person_ids"], "")
+        self.assertIn("DGS", artifact["archival_reference"].upper())
+        snapshot = next((self.case / "sources" / "familysearch").glob("*.json"))
+        self.assertEqual(hashlib.sha256(snapshot.read_bytes()).hexdigest(), artifact["sha256"])
+        for name, content in untouched.items():
+            self.assertEqual((self.case / name).read_bytes(), content)
+        audit = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"], capture_output=True, text=True)
+        self.assertEqual(audit.returncode, 0, audit.stdout + audit.stderr)
+        self.assertIn("independence_group", audit.stdout)
+
+    def test_preserves_manual_evaluation_and_source_revisions(self):
+        path = self.directory / "analysis.json"
+        result = self.result()
+        common.save_json(path, result)
+        register_search.register(self.case, path, "goal")
+        fields, rows = register_search.read_register(self.case / "artifact-register.csv", "artifact_id")
+        rows[0]["independence_group"] = "ORIGINAL-ACT-1"
+        register_search.save_register(self.case / "artifact-register.csv", fields, rows)
+        register_search.register(self.case, path, "goal")
+        self.assertEqual(self.rows("artifact-register.csv")[0]["independence_group"], "ORIGINAL-ACT-1")
+        result["candidates"][0]["record"]["persons"]["observed-1"]["name"] = "Исправленное имя"
+        common.save_json(path, result)
+        self.assertEqual(register_search.register(self.case, path, "goal")["added_artifacts"], 1)
+        self.assertEqual(len(self.rows("artifact-register.csv")), 2)
+
+    def test_partial_empty_result_is_not_negative_evidence(self):
+        result = self.result()
+        result["candidates"] = []
+        result["coverage"]["complete"] = False
+        path = self.directory / "partial.json"
+        common.save_json(path, result)
+        report = register_search.register(self.case, path, "goal")
+        self.assertEqual(report["result_status"], "partial")
+        self.assertEqual(self.rows("artifact-register.csv"), [])
+        self.assertEqual(self.rows("search-log.csv")[0]["result_status"], "partial")
+
+    def test_gwar_import_and_restart_between_register_writes(self):
+        path = self.directory / "gwar.json"
+        common.save_json(path, {"source": "gwar", "hits": [hit(1), hit(2)], "query": {"birth_place": "Условное село"},
+                                "coverage": {"complete": True}, "captured_at": common.timestamp()})
+        original_save = register_search.save_register
+        def fail_log(path, fields, rows):
+            if path.name == "search-log.csv":
+                raise OSError("simulated interruption")
+            original_save(path, fields, rows)
+        with patch.object(register_search, "save_register", side_effect=fail_log):
+            with self.assertRaises(OSError):
+                register_search.register(self.case, path, "goal")
+        report = register_search.register(self.case, path, "goal")
+        self.assertEqual(report["added_artifacts"], 0)
+        self.assertEqual(len(self.rows("artifact-register.csv")), 2)
+        self.assertEqual(len(self.rows("search-log.csv")), 1)
+
+    def test_gwar_search_score_changes_do_not_duplicate_source_cards(self):
+        path = self.directory / "gwar.json"
+        record = {**hit(1), "_score": 150.0}
+        data = {"source": "gwar", "hits": [record], "coverage": {"complete": True}, "query": {"birth_place": "Условное село"}}
+        common.save_json(path, data)
+        register_search.register(self.case, path, "goal")
+        fields, rows = register_search.read_register(self.case / "artifact-register.csv", "artifact_id")
+        rows[0]["independence_group"] = "REVIEWED-DOCUMENT"
+        register_search.save_register(self.case / "artifact-register.csv", fields, rows)
+        record["_score"] = 95.0
+        data["query"] = {"last_name": "Иванов"}
+        common.save_json(path, data)
+        second = register_search.register(self.case, path, "goal")
+        self.assertEqual(second["added_artifacts"], 0)
+        self.assertTrue(second["added_search_log"])
+        self.assertEqual(len(self.rows("artifact-register.csv")), 1)
+        self.assertEqual(self.rows("artifact-register.csv")[0]["independence_group"], "REVIEWED-DOCUMENT")
+        record["_source"]["first_name"] = "Исправленное имя"
+        common.save_json(path, data)
+        self.assertEqual(register_search.register(self.case, path, "goal")["added_artifacts"], 1)
+
+    def test_browser_index_text_uses_same_registers_without_inventing_parent_role(self):
+        page = self.directory / "browser.json"
+        snapshot = {"url": "https://www.familysearch.org/en/search/record/results?q.surname=test",
+                    "scope": {"description": "one observed result", "page": 1},
+                    "rows": [{"name": "Иван Иванов", "url": "https://www.familysearch.org/ark:/61903/1:1:TEST-ROW",
+                              "text": "Иван Иванов. Parents: Мария Петрова, Пётр Иванов"}]}
+        common.save_json(page, snapshot)
+        result = fs.browser_import([page, page], compile_patterns(surnames=["Петрова"]))
+        self.assertEqual(len(result["candidates"]), 1)
+        self.assertIsNone(result["hits"]["Петрова"][0]["pid"])
+        self.assertIsNone(result["hits"]["Петрова"][0]["principal"])
+        self.assertFalse(result["coverage"]["complete"])
+        record = result["candidates"][0]["record"]
+        self.assertNotIn("rels", record)
+        self.assertIn("Мария Петрова", record["browser_text"])
+        self.assertNotIn("facts", record["persons"]["principal"])
+        output = self.directory / "browser-analysis.json"
+        common.save_json(output, result)
+        report = register_search.register(self.case, output, "Найти родителей")
+        self.assertEqual(report["added_artifacts"], 1)
+        self.assertEqual(report["result_status"], "partial")
+        self.assertEqual(self.rows("claims-register.csv"), [])
+
+    def test_browser_import_rejects_foreign_urls_and_conflicting_rows(self):
+        page = self.directory / "browser.json"
+        snapshot = {"url": "https://www.familysearch.org/en/search/record/results", "scope": {},
+                    "rows": [{"name": "Иван Иванов", "url": "https://other.invalid/ark:/61903/1:1:TEST", "text": "Иван Иванов"}]}
+        common.save_json(page, snapshot)
+        with self.assertRaises(common.SourceError):
+            fs.browser_import([page], [])
+        snapshot["rows"][0]["url"] = "https://www.familysearch.org/ark:/61903/1:1:TEST"
+        snapshot["rows"].append({**snapshot["rows"][0], "text": "Исправленная строка"})
+        common.save_json(page, snapshot)
+        with self.assertRaises(common.SourceError):
+            fs.browser_import([page], [])
+
+class HttpAndCliTests(unittest.TestCase):
+    def test_cyrillic_search_and_page_context_reach_source_unchanged(self):
+        # Live GWAR returned a false empty result until the source's UTF-8 JSON
+        # representation and /heroes/ page context were preserved in the port.
+        client = common.SourceClient(gwar.BASE, interval=0, referer=gwar.BASE + "/heroes/")
+        class Response:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def read(self):
+                return b'{"hits":{"total":0,"hits":[]}}'
+        with patch.object(client.opener, "open", return_value=Response()) as opened:
+            client.request("/gt_data/?builder=Heroes", {"queryFields": {"last_name": "Иванов"}})
+            request = opened.call_args.args[0]
+            self.assertIn("Иванов".encode("utf-8"), request.data)
+            self.assertEqual(request.get_header("Referer"), gwar.BASE + "/heroes/")
+
+    def test_html_challenge_is_access_failure_even_with_http_200(self):
+        client = common.SourceClient(gwar.BASE, interval=0)
+        class Response:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def read(self):
+                return b'<html><div class="smartcaptcha">human verification</div></html>'
+        with patch.object(client.opener, "open", return_value=Response()) as opened:
+            with self.assertRaises(common.SourceError) as caught:
+                client.request("/test")
+            self.assertEqual(caught.exception.status, 403)
+            self.assertEqual(opened.call_count, 1)
+
+    def test_rate_limit_and_access_denials_are_not_retried_or_echoed(self):
+        client = common.SourceClient(gwar.BASE, interval=0)
+        for status in (401, 403, 429):
+            error = urllib.error.HTTPError(gwar.BASE, status, "synthetic-secret", {}, None)
+            with patch.object(client.opener, "open", side_effect=error) as opened:
+                with self.assertRaises(common.SourceError) as caught:
+                    client.request("/test")
+                self.assertEqual(opened.call_count, 1)
+                self.assertNotIn("synthetic-secret", str(caught.exception))
+
+    def test_cross_origin_redirect_never_forwards_session(self):
+        request = urllib.request.Request(gwar.BASE + "/test", headers={"Cookie": "public-session=synthetic"})
+        with self.assertRaises(common.SourceError):
+            common.SameOriginRedirect().redirect_request(request, None, 302, "redirect", {}, "https://other.invalid/test")
+
+    def test_command_help_is_available(self):
+        for script in ("familysearch.py", "gwar.py", "register_search.py"):
+            result = subprocess.run([sys.executable, str(SCRIPTS / script), "--help"], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_outputs_cannot_be_inside_skill(self):
+        for path in (SCRIPTS / "private.json", SCRIPTS.parent):
+            with self.assertRaises(common.SourceError):
+                common.outside_skill(path)
+
+    def test_state_lock_excludes_another_writer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "lock"
+            with common.state_lock(path):
+                with self.assertRaises(common.SourceError):
+                    with common.state_lock(path):
+                        self.fail("concurrent writer")
+            self.assertFalse(path.exists())
+
+
+if __name__ == "__main__":
+    unittest.main()
