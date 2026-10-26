@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Coordinate parallel register changes and archive processing with existing tools, preserving current edits and distinguishing preparation, import and verification ([#31](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/31)).
+
 - Support user-authorized institutional requests through existing mail integrations or official channels, with precise sending states and reply provenance ([#30](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/30)).
 
 - Assess information dependence for each material claim rather than equating a shared institution with shared evidence ([#29](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/29)).
