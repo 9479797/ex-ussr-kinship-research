@@ -1,6 +1,6 @@
 # Release history
 
-## Unreleased
+## 1.6.0 — 2026-10-26
 
 - Coordinate parallel register changes and archive processing with existing tools, preserving current edits and distinguishing preparation, import and verification ([#31](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/31)).
 
@@ -17,6 +17,9 @@
 - Verify scan identity, extent and content, preserve distinct source photographs, and avoid treating faint pages or unusable text layers as negative evidence ([#22](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/22)).
 
 - Clarify manuscript reading, crop provenance and the distinction between repeated transcription and independent evidence ([#20](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/20)).
+- Explain how to import existing GEDCOM/JSON trees into the current research workflow as traceable leads, preserving original files, external IDs, separate candidates and living-person privacy without requiring a dedicated converter ([#25](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/25)).
+- Continue searches beyond an expected parish using explicit coverage, evidence-led locality choices and qualified indirect time bounds; distinguish absence from death and preserve chronology conflicts ([#26](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/26)).
+- Allow one CAPTCHA attempt through normal controls in the agent’s internal browser when supported and permitted; open the affected tabs when user verification or login is needed, while other research continues.
 
 ## 1.5.0 — 2026-10-25
 
