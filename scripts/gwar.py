@@ -154,9 +154,11 @@ def parser():
     commands = root.add_subparsers(dest="command", required=True)
     search = commands.add_parser("search", help="Поиск по имени, месту или части")
     for flag in ("surname", "given", "patronymic", "event-place", "regiment", "birth-place", "gubernia"):
-        search.add_argument("--" + flag)
+        help_text = ("Населённый пункт в поле birth_place сайта (место жительства / призыва; не доказанное место рождения)"
+                     if flag == "birth-place" else None)
+        search.add_argument("--" + flag, help=help_text)
     volost = commands.add_parser("volost", help="Собрать найденные записи по волости и губернии")
-    volost.add_argument("--volost", required=True)
+    volost.add_argument("--volost", required=True, help="Волость в поле birth_place_volost сайта")
     volost.add_argument("--gubernia", required=True)
     for command in (search, volost):
         command.add_argument("--kind", nargs="+", choices=("all", *KINDS), default=["all"])
@@ -177,7 +179,7 @@ def main(argv=None):
             output_json(result, path)
         else:
             if args.command == "volost":
-                fields = {"birth_place": args.volost, "birth_place_gubernia": args.gubernia}
+                fields = {"birth_place_volost": args.volost, "birth_place_gubernia": args.gubernia}
             else:
                 mapping = {"surname": "last_name", "given": "first_name", "patronymic": "middle_name",
                            "event_place": "event_place", "regiment": "military_unit_name",

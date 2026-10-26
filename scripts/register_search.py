@@ -13,9 +13,8 @@ import sys
 import urllib.parse
 from pathlib import Path
 
-from familysearch_records import classify
 from research_common import (SourceError, atomic_bytes, fingerprint, outside_skill,
-                             output_json, read_json, state_lock, timestamp)
+                             output_json, state_lock, timestamp)
 
 
 def read_register(path, id_field):
@@ -51,14 +50,9 @@ def encode(value):
 
 
 def fs_items(data):
-    if "candidates" in data:
-        candidates = data["candidates"]
-    elif isinstance(data.get("records"), list):
-        candidates = [{"rid": record.get("rid"), "record": record,
-                       "locations": [{"apid": data["apid"]}] if data.get("apid") else []}
-                      for record in data["records"]]
-    else:
-        raise SourceError("Для FamilySearch передайте результат filter или search.")
+    candidates = data.get("candidates")
+    if not isinstance(candidates, list):
+        raise SourceError("Передайте результат локального анализа фрагментов FamilySearch.")
     for candidate in candidates:
         record, rid = candidate.get("record"), candidate.get("rid")
         if not rid or not isinstance(record, dict) or not isinstance(record.get("persons"), dict) or not record["persons"]:
@@ -73,20 +67,18 @@ def fs_items(data):
         elif ark and not urllib.parse.urlsplit(ark).scheme:
             url = "https://www.familysearch.org/ark:/61903/1:1:" + urllib.parse.quote(ark, safe="")
         else:
-            url = "https://www.familysearch.org/platform/records/records/" + urllib.parse.quote(str(rid), safe="")
-        event = classify(record, principal)
+            url = ""  # No public locator observed; retain the local source snapshot.
         locations = candidate.get("locations", [])
         reference = {"RID": rid if record.get("identifier_kind") != "local-browser-observation" else "",
                      "local_observation_id": rid if record.get("identifier_kind") == "local-browser-observation" else "",
-                     "RecordId": record.get("recid", ""), "image": record.get("img", ""), "locations": locations}
+                     "locations": locations}
         names = list(dict.fromkeys(name for person in people.values() for name in (person.get("names") or [person.get("name", "")]) if name))
         yield {"id": str(rid), "snapshot": record, "locations": locations,
                "captured_at": record.get("captured_at", ""), "source_title": "FamilySearch — индекс записи " + str(rid),
                "source_url_or_path": url, "repository_or_archive": "FamilySearch; архив оригинала уточнить",
-               "archival_reference": encode(reference), "record_date": event["date"], "place_as_written": event["place"],
+               "archival_reference": encode(reference),
                "names_as_written": "; ".join(names),
-               "summary": ("Кандидат из видимой текстовой строки индекса; поля и родство не интерпретированы."
-                           if record.get("browser_text") else "Кандидат из индекса; " + event["ev"] + ". Родство и личность не проверены.")}
+               "summary": "Кандидат из текстового фрагмента индекса; личность и родство требуют проверки."}
 
 
 def gwar_items(data):
@@ -124,40 +116,21 @@ def snapshot_key(source, identity, snapshot):
     return fingerprint({"source": source, "id": identity, "snapshot": snapshot})
 
 
-def existing_snapshot_keys(case, artifacts):
-    """Reuse earlier snapshots without rewriting manual assessments or old keys."""
-    keys = {}
-    for row in artifacts:
-        notes = row.get("access_notes", "")
-        if "snapshot=" not in notes:
-            continue
-        relative = Path(notes.split("snapshot=", 1)[1])
-        if relative.parts[:2] != ("sources", "gwar"):
-            continue
-        path = (case / relative).resolve()
-        if case not in path.parents or not path.is_file():
-            continue
-        try:
-            saved = read_json(path)
-            if saved.get("source") == "gwar" and saved.get("source_record_id") and isinstance(saved.get("record"), dict):
-                keys.setdefault(snapshot_key("gwar", saved["source_record_id"], saved["record"]), row)
-        except (OSError, ValueError, AttributeError):
-            continue
-    return keys
-
-
 def register(case, input_path, goal):
     case = outside_skill(case)
     input_bytes = Path(input_path).expanduser().read_bytes()
     data = json.loads(input_bytes.decode("utf-8-sig"))
     if not isinstance(data, dict) or data.get("source") not in ("familysearch", "gwar"):
-        raise SourceError("Нужен JSON поискового результата FamilySearch или GWAR.")
+        raise SourceError("Нужен JSON локального анализа FamilySearch или поиска GWAR.")
     source = data["source"]
     # Validate the complete input before changing any register.
     items = list(fs_items(data) if source == "familysearch" else gwar_items(data))
     coverage = data.get("coverage")
     if not isinstance(coverage, dict) or type(coverage.get("complete")) is not bool:
         raise SourceError("В результате отсутствует отчёт о покрытии.")
+    if source == "familysearch":
+        if any(coverage.get(key) for key in ("unresolved_pages", "blocked_pages")):
+            coverage = {**coverage, "complete": False}
     for name in ("person-register.csv", "claims-register.csv", "relationship-register.csv", "case-intake.yaml"):
         if not (case / name).is_file():
             raise SourceError("Сначала создайте дело через init_case.py.")
@@ -169,7 +142,7 @@ def register(case, input_path, goal):
         required_log = {"search_id", "filters", "artifact_ids", "result_status"}
         if not required_artifact.issubset(artifact_fields) or not required_log.issubset(log_fields):
             raise SourceError("Формат реестров не соответствует шаблонам навыка.")
-        existing_keys = existing_snapshot_keys(case, artifacts) if source == "gwar" else {}
+        existing_keys = {}
         artifact_ids, added = [], 0
         for item in items:
             key = snapshot_key(source, item["id"], item["snapshot"])
@@ -197,6 +170,7 @@ def register(case, input_path, goal):
             row = {field: "" for field in artifact_fields}
             row.update({key: value for key, value in item.items() if key in row})
             row.update({"artifact_id": artifact_id, "captured_at": item["captured_at"] or timestamp(),
+                        "source_url_or_path": item["source_url_or_path"] or str(snapshot),
                         "source_type": "index", "originality": "index", "directness": "lead-only", "status": "lead-only",
                         "provenance_level": "источник индекса установлен; оригинал не проверен",
                         "access_notes": f"{marker}; snapshot={snapshot.relative_to(case)}",
@@ -237,7 +211,7 @@ def register(case, input_path, goal):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Записать поисковые находки в существующие реестры как непроверенные артефакты.")
     parser.add_argument("--case-dir", required=True)
-    parser.add_argument("--input", required=True, help="Результат FamilySearch filter/search или GWAR search/volost")
+    parser.add_argument("--input", required=True, help="Результат FamilySearch browser-import или GWAR search/volost")
     parser.add_argument("--research-goal", required=True)
     args = parser.parse_args(argv)
     try:

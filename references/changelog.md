@@ -2,15 +2,31 @@
 
 ## Unreleased
 
-- Add optional full-record API harvest (raw GEDCOM X by default), book/place discovery and bounded record search through a separately supplied session; reuse the same local analysis and evidence registers.
-- Document user-managed session setup through Inspect → Application → Cookies; add `check-session` without profile output and accept either the cookie Value or one `fssessionid=VALUE` pair.
-- Collect selected FamilySearch indexes through the existing browser session, with agent-driven frame navigation and local Python checkpoints. Search observed names and retain offline compatibility with earlier caches; do not infer event dates or identities.
-- Preserve the upstream browser workflow throughout FamilySearch research; keep the browser as the default and provide a separately invoked, optional authenticated script for full indexed-record retrieval. Distinguish observed frame-index coverage from full record details and transcription accuracy.
-- Validate whole-book browser captures by frame, retain index rows without individual ARKs using explicitly local observation IDs, and merge checkpoints without hiding missing or unindexed frames. Preserve all observed names and captions; match relatives without converting their indexed labels into proven kinship.
-- Add GWAR WWI searches across reports, hospital and award records, bounded locality retrieval with checkpoints, and source-image locators.
-- Deduplicate the same GWAR source card across name and locality searches despite different ranking scores; preserve the original capture date when reusing a completed cache.
-- Feed source snapshots and search coverage into the existing case registers without creating persons, claims, relationships or independence assessments. Preserve evidence rules and keep private material outside the skill.
-- Keep source-search helpers read-only, use Python’s standard library, and preserve the existing evidence protocol and case schemas.
+- Add targeted FamilySearch discovery guidance and local name searches across saved evidence fragments, including relatives, witnesses and name variants.
+- Record observed index states and unresolved coverage, with source context and file checksums.
+- Add bounded GWAR WWI person/locality searches with checkpoints, source-image locators and evidence-preserving registration; distinguish the volost field from the settlement field.
+- Deduplicate unchanged source snapshots without creating persons, claims, relationships or independence assessments; keep the existing evidence protocol and case registers.
+
+## 1.6.0 — 2026-10-26
+
+- Coordinate parallel register changes and archive processing with existing tools, preserving current edits and distinguishing preparation, import and verification ([#31](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/31)).
+
+- Support user-authorized institutional requests through existing mail integrations or official channels, with precise sending states and reply provenance ([#30](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/30)).
+
+- Assess information dependence for each material claim rather than equating a shared institution with shared evidence ([#29](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/29)).
+
+- Limit marginal-note conclusions to the administrative action and parties actually named, preserving uncertainty about life status and request dates ([#27](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/27)).
+
+- Check saved-search scope and proposed archive-locator corrections against actual coverage, dates and catalog context ([#24](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/24)).
+
+- Distinguish rows, acts, people and event dates when reconciling register numbering and totals ([#23](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/23)).
+
+- Verify scan identity, extent and content, preserve distinct source photographs, and avoid treating faint pages or unusable text layers as negative evidence ([#22](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/22)).
+
+- Clarify manuscript reading, crop provenance and the distinction between repeated transcription and independent evidence ([#20](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/20)).
+- Explain how to import existing GEDCOM/JSON trees into the current research workflow as traceable leads, preserving original files, external IDs, separate candidates and living-person privacy without requiring a dedicated converter ([#25](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/25)).
+- Continue searches beyond an expected parish using explicit coverage, evidence-led locality choices and qualified indirect time bounds; distinguish absence from death and preserve chronology conflicts ([#26](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/26)).
+- Allow one CAPTCHA attempt through normal controls in the agent’s internal browser when supported and permitted; open the affected tabs when user verification or login is needed, while other research continues.
 
 ## 1.5.0 — 2026-10-25
 

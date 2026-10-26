@@ -105,9 +105,8 @@ class SameOriginRedirect(urllib.request.HTTPRedirectHandler):
 class SourceClient:
     """Requests stay on one source. No retries for access denial or rate limits."""
 
-    def __init__(self, base, token=None, context=None, interval=0.4, referer=None):
+    def __init__(self, base, context=None, interval=0.4, referer=None):
         self.base = base.rstrip("/")
-        self.token = token
         self.referer = referer or self.base + "/"
         self.interval = interval
         self.last_request = 0.0
@@ -117,22 +116,16 @@ class SourceClient:
             urllib.request.HTTPSHandler(context=context or ssl.create_default_context()),
         )
 
-    def redact(self, text):
-        text = str(text)
-        return text.replace(self.token, "[session]") if self.token else text
-
     def request(self, path, body=None, as_json=True):
         url = self.base + path
         # The only POSTs in these helpers are source searches, never tree mutations.
         data = None if body is None else json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
         headers = {
-            "User-Agent": "ex-ussr-kinship-research/1.5 (source research)",
+            "User-Agent": "ex-ussr-kinship-research/1.6 (source research)",
             "Accept": "application/json" if as_json else "text/html",
         }
         if body is not None:
             headers.update({"Content-Type": "application/json", "Referer": self.referer, "Origin": self.base})
-        if self.token:
-            headers.update({"Authorization": "Bearer " + self.token, "Cookie": "fssessionid=" + self.token})
         for attempt in range(3):
             time.sleep(max(0, self.interval - (time.monotonic() - self.last_request)))
             self.last_request = time.monotonic()

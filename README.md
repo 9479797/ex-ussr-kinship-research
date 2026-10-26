@@ -20,8 +20,9 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Evidence protocol.** Claims get explainable statuses, not percentages: `hypothesis`, `single-source`, `corroborated`, `strongly-corroborated`, `contradicted`, `unresolved`. Copies and mirrors of one record share an `independence_group`, so they never count as independent proof.
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
+- **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
-- **Indexed-record search.** Use an existing FamilySearch browser session and analyze observed index rows locally without exporting its cookie. The agent discovers books by place or DGS and collects selected indexes through that same browser session; Python helpers persist resumable checkpoints and search all observed names locally. [Workflow and coverage limits](references/familysearch-indexes.md). An [optional full-record harvest script](references/familysearch-api-harvest.md) supports separately supplied credentials without changing the browser workflow; its guide explains cookie setup through Inspect → Application → Cookies and validation with `check-session`.
+- **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
 - **WWI source search.** Search GWAR reports, hospital and award records by person or locality, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
 
 Release history: [changelog](references/changelog.md).
@@ -71,21 +72,22 @@ Use static HTML with local or embedded images. Active HTML and network image sou
 SKILL.md                         main instructions (workflow, hard rules, language policy)
 references/
   source-strategy.md             source hierarchy, query patterns, catalogs, archive requests
+  correspondence.md              recipients, mail integration, authorized sending and replies
   evidence-protocol.md           artifact assessment, statuses, identity resolution, conflicts
   ex-ussr-locale-guide.md        jurisdictions, name variants, calendars, record types by period
-  browser-and-captcha.md         browsing, sign-in, CAPTCHA hand-off, rate limits
+  browser-and-captcha.md         browsing, sign-in, one CAPTCHA attempt and hand-off, rate limits
   privacy-and-safety.md          living people, minors, DNA, sensitive findings
   seed-sources.md                curated starting resources with reliability classes
   field-lessons.md               practical lessons from a real case
   changelog.md                   release history
   photo-search.md                finding, identifying, dating and storing photos
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after
-  familysearch-indexes.md       indexed-record search, existing browser sessions, checkpoints and coverage
+  familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
 assets/                          case intake, CSV registers, final report template,
                                  photos README template, readable PDF template (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
-                                 familysearch.py, familysearch_api.py, gwar.py, register_search.py and shared search modules
+                                 familysearch.py, gwar.py, register_search.py and shared local analysis modules
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 tests/                           unit tests (python3 -m unittest discover -s tests)
 ```
@@ -93,16 +95,16 @@ tests/                           unit tests (python3 -m unittest discover -s tes
 ## Responsible use
 
 - **Family history, not surveillance.** The skill refuses to look up current addresses, phones or accounts of living people, and it minimizes their data in reports.
-- **No bypassing.** No CAPTCHA solving, no paywall, geo-block or rate-limit evasion, no leaked databases. Sign-ins are done by the user.
+- **Access checks.** The agent may try an actual CAPTCHA once through normal controls in its internal browser when supported and allowed. If user action is needed, it opens the relevant tab when possible and provides the URL and required action; sign-ins are done by the user. No external solvers, protection bypass, paywall, geo-block or rate-limit evasion, or leaked databases. See [browser guidance](references/browser-and-captcha.md).
 - **No uploads of your documents or DNA data** to third-party services without your explicit consent.
 - **Sensitive findings** (deportation, repression, adoption, DNA surprises) are reported neutrally and only as far as the question requires.
-- **Archive access rules change.** Always check the current official procedure before sending a request; the skill only drafts requests, it does not send them.
+- **Authorized correspondence.** The skill can send institutional requests through available tools when the user has authorized them; it does not ask again for an already authorized send. Connecting a mailbox alone does not authorize sending, attachments or paid services. Verify the current official contact and procedure, and keep credentials and private case correspondence outside the skill repository.
 
 ## Contributing
 
 New sources are welcome in `references/seed-sources.md`. Record verified owner, jurisdiction, collection, provenance, IDs, access, restrictions and check date where known; mark gaps instead of guessing. Keep personal data out of examples.
 
-Source-search helpers use Python's standard library and the existing case registers; they do not operate on FamilySearch Tree. Run `python3 -m unittest discover -s tests` to check parsing, checkpoints, access failures, coverage and registration against synthetic data. Synthetic tests do not establish live website compatibility. The default FamilySearch workflow uses the existing browser session. Offline analysis requires no credentials; the separately invoked API helper needs its own supplied session. Keep private harvests outside this checkout.
+Source-search helpers use Python's standard library and the existing case registers. Run `python3 -m unittest discover -s tests` to check local parsing, GWAR checkpoints, access failures, unresolved coverage and evidence registration against synthetic data. FamilySearch discovery and targeted viewing use the existing lawful browser session; its Python helpers analyze saved fragments. Keep private research files outside this checkout.
 
 ## License
 
