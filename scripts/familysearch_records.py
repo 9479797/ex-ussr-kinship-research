@@ -65,6 +65,36 @@ def valid_record(record):
             and isinstance(record.get("persons"), dict) and bool(record["persons"]))
 
 
+def frame_list_coverage(groups):
+    """Compare supplied frame IDs with source metadata, without inventing missing IDs."""
+    details = {}
+    for group in groups:
+        reported = group.get("frames")
+        apids = group["apids"]
+        if type(reported) is not int or reported < 0:
+            reason = "frame-count-unknown"
+        elif len(apids) != reported:
+            reason = "frame-count-mismatch"
+        elif len(set(apids)) != len(apids):
+            reason = "duplicate-frame-ids"
+        else:
+            reason = ""
+        details[group["id"]] = {"reported_frames": reported, "listed_frames": len(apids),
+                                "unique_frame_ids": len(set(apids)),
+                                "complete": not reason, "reason": reason}
+    return details
+
+
+def include_book_coverage(report, groups):
+    """Keep retrieval completeness separate from completeness of the selected books."""
+    books = frame_list_coverage(groups)
+    report["retrieval_complete"] = report["complete"]
+    report["frame_list_coverage"] = books
+    report["frame_lists_complete"] = bool(books) and all(book["complete"] for book in books.values())
+    report["complete"] = report["retrieval_complete"] and report["frame_lists_complete"]
+    return report
+
+
 def coverage(frames, records, expected=None):
     expected = list(frames) if expected is None else list(expected)
     report = {"expected_frames": len(expected), "successful_frames": 0,
@@ -77,6 +107,8 @@ def coverage(frames, records, expected=None):
             report["missing_frames"].append(key)
         elif frame.get("err") or not isinstance(frame.get("rids"), list):
             report["failed_frames"][key] = frame.get("err") or "Некорректный кадр"
+        elif frame.get("empty_response") and not frame.get("session_checked_at"):
+            report["failed_frames"][key] = "Неоднозначный пустой ответ требует свежей проверки сессии."
         else:
             report["successful_frames"] += 1
             record_ids.update(frame["rids"])

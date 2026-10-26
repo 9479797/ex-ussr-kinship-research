@@ -47,6 +47,7 @@ def raw_record():
 
 def group(apids=("A",)):
     return {"id": "G", "title": "Условная книга", "dgs": "000000001", "apids": list(apids),
+            "frames": len(apids),
             "years": [1880, 1890], "places": ["Условное село"]}
 
 

@@ -61,15 +61,34 @@ class DiscoveryTests(unittest.TestCase):
             with self.assertRaises(common.SourceError):
                 api.discover_books(FakeClient(handler), {"pageSize": 1})
 
-    def test_empty_frame_requires_verified_session_once(self):
+    def test_every_ambiguous_empty_frame_requires_a_fresh_session_check(self):
         client = FakeClient(lambda *args: {})
         session = FakeClient(lambda *args: {"users": [{"id": "synthetic-user"}]})
         reader = api.FrameReader(client, session)
-        self.assertTrue(reader.read("A")["empty_response"])
+        first = reader.read("A")
+        self.assertTrue(first["empty_response"])
+        self.assertTrue(first["session_checked_at"])
         reader.read("B")
-        self.assertEqual(len(session.calls), 1)
+        self.assertEqual(len(session.calls), 2)
         with self.assertRaises(common.SourceError):
             api.FrameReader(client, FakeClient(lambda *args: {"users": []})).read("C")
+
+    def test_discovery_reports_frame_list_gaps_without_losing_available_ids(self):
+        client = self.client()
+        original = client.handler
+
+        def handler(path, body, as_json):
+            response = original(path, body, as_json)
+            if body["query"] != api.FIELDS_QUERY:
+                for book in response["data"]["search"]["groups"]:
+                    book["childCount"] = 3
+            return response
+
+        result = api.discover_books(FakeClient(handler), {"pageSize": 1})
+        self.assertTrue(result["complete"])  # All groups, not all frames.
+        self.assertFalse(result["frame_lists_complete"])
+        self.assertEqual(result["groups"][0]["apids"], ["G1"])
+        self.assertEqual(result["frame_list_coverage"]["G1"]["reason"], "frame-count-mismatch")
 
 
 class HarvestTests(unittest.TestCase):
@@ -122,6 +141,74 @@ class HarvestTests(unittest.TestCase):
             self.assertTrue((self.directory / f"fsk_{status}_frames.json").exists())
             self.assertFalse((self.directory / f"fsk_{status}.lock").exists())
 
+    def test_session_expiry_stops_at_ambiguous_frame_and_resume_keeps_progress(self):
+        client = FakeClient(lambda *args: {})
+        session = FakeClient(lambda *args: {"users": [{"id": "synthetic"}]} if len(session.calls) == 1 else {"users": []})
+        groups = [group(("A", "B", "C"))]
+        result = api.harvest(groups, self.directory, "expiry", client, api.FrameReader(client, session))
+        self.assertFalse(result["complete"])
+        self.assertEqual(result["blocked"]["status"], 401)
+        self.assertEqual(len(client.calls), 2)  # C must not be requested.
+        self.assertEqual(result["successful_frames"], 1)
+        self.assertIn("G|2", result["failed_frames"])
+        self.assertEqual(result["missing_frames"], ["G|3"])
+        saved = common.read_json(self.directory / "fsk_expiry_frames.json")
+        self.assertTrue(saved["G|1"]["session_checked_at"])
+        restored = FakeClient(lambda *args: {"users": [{"id": "synthetic"}]})
+        result = api.harvest(groups, self.directory, "expiry", client, api.FrameReader(client, restored))
+        self.assertTrue(result["complete"])
+        self.assertEqual(len(client.calls), 4)  # Only B and C are retried.
+        self.assertEqual(len(restored.calls), 2)
+
+    def test_legacy_ambiguous_empty_cache_needs_revalidation(self):
+        client = FakeClient(lambda *args: {})
+        session = FakeClient(lambda *args: {"users": [{"id": "synthetic"}]})
+        path = self.directory / "fsk_legacy_frames.json"
+        common.save_json(path, {"G|1": {"apid": "A", "rids": [], "err": None, "empty_response": True}})
+        reader = api.FrameReader(client, session)
+        phase_b = api.harvest([group()], self.directory, "legacy", client, reader, phase="b")
+        self.assertFalse(phase_b["complete"])
+        self.assertIn("G|1", phase_b["failed_frames"])
+        self.assertEqual(client.calls, [])
+        result = api.harvest([group()], self.directory, "legacy", client, reader)
+        self.assertTrue(result["complete"])
+        self.assertEqual(len(client.calls), 1)
+        no_requests = FakeClient(lambda *args: self.fail("verified cache made source requests"))
+        again = api.harvest([group()], self.directory, "legacy", no_requests, api.FrameReader(no_requests, no_requests))
+        self.assertTrue(again["complete"])
+
+    def test_frame_count_mismatch_stays_partial_in_harvest_and_offline_filter(self):
+        selected = {**group(("A", "B")), "frames": 3}
+        client = FakeClient(lambda *args: {"sourceDescriptions": []})
+        for phase in ("a", "ab"):
+            result = api.harvest([selected], self.directory, "gap", client, api.FrameReader(client, client), phase=phase)
+            self.assertFalse(result["complete"])
+            self.assertFalse(result["phase_complete"])
+            self.assertTrue(result["retrieval_complete"])
+            self.assertEqual(result["frame_list_coverage"]["G"]["listed_frames"], 2)
+            self.assertEqual(result["frame_list_coverage"]["G"]["reported_frames"], 3)
+        groups_file = self.directory / "groups.json"
+        common.save_json(groups_file, {"groups": [selected]})
+        result = browser.filter_harvests(["gap"], self.directory, [groups_file], [])
+        self.assertFalse(result["coverage"]["complete"])
+        self.assertTrue(result["coverage"]["retrieval_complete"])
+
+    def test_unknown_invalid_and_duplicate_frame_counts_cannot_be_complete(self):
+        cases = [(None, ["A"], "frame-count-unknown"),
+                 (True, ["A"], "frame-count-unknown"),
+                 (-1, ["A"], "frame-count-unknown"),
+                 (0, ["A"], "frame-count-mismatch"),
+                 (1, ["A", "B"], "frame-count-mismatch"),
+                 (2, ["A", "A"], "duplicate-frame-ids")]
+        for index, (count, apids, reason) in enumerate(cases):
+            with self.subTest(count=count, apids=apids):
+                selected = {**group(apids), "frames": count}
+                client = FakeClient(lambda *args: {"sourceDescriptions": []})
+                result = api.harvest([selected], self.directory, f"unknown-{index}", client, api.FrameReader(client, client))
+                self.assertFalse(result["complete"])
+                self.assertTrue(result["retrieval_complete"])
+                self.assertEqual(result["frame_list_coverage"]["G"]["reason"], reason)
+
     def test_record_failure_resumes_phase_b_and_preserves_all_frames(self):
         def denied_record(path, *args):
             if "/images/" in path:
@@ -173,6 +260,28 @@ class HarvestTests(unittest.TestCase):
 
 
 class InterfaceTests(unittest.TestCase):
+    def test_cli_partial_book_and_registration_never_report_not_found(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            groups = directory / "groups.json"
+            selected = {**group(("A", "B")), "frames": 3}
+            common.save_json(groups, {"groups": [selected]})
+            client = FakeClient(lambda *args: {"sourceDescriptions": []})
+            output = directory / "coverage.json"
+            args = api.parser().parse_args(["harvest", str(groups), "--dir", str(directory), "--tag", "gap", "--out", str(output)])
+            with patch.object(api, "load_token", return_value="synthetic"), patch.object(api, "SourceClient", return_value=client):
+                self.assertEqual(api.run(args), 1)
+            self.assertFalse(common.read_json(output)["complete"])
+            analysis = directory / "analysis.json"
+            args = browser.parser().parse_args(["filter", "gap", "--dir", str(directory), "--groups", str(groups), "--out", str(analysis)])
+            self.assertEqual(browser.run(args), 1)
+            case = directory / "case"
+            initialized = subprocess.run([sys.executable, str(SCRIPTS / "init_case.py"), "--case-dir", str(case), "--research-question", "Проверить всю книгу"], capture_output=True, text=True)
+            self.assertEqual(initialized.returncode, 0, initialized.stderr)
+            imported = register_search.register(case, analysis, "Проверить всю книгу")
+            self.assertEqual(imported["result_status"], "partial")
+            self.assertEqual(imported["added_artifacts"], 0)
+
     def test_session_check_outputs_no_profile_or_credentials(self):
         profile = {"users": [{"id": "private-account", "email": "private@example.invalid"}]}
         client = FakeClient(lambda *args: profile)

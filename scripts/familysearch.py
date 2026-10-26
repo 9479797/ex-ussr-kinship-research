@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from familysearch_browser import browser_import, browser_harvest
-from familysearch_records import analyze, compile_patterns, normalize_record
+from familysearch_records import analyze, compile_patterns, include_book_coverage, normalize_record
 from research_common import SourceError, fingerprint, outside_skill, output_json, read_json, timestamp
 
 WWW = "https://www.familysearch.org"
@@ -43,7 +43,7 @@ def merge_entries(destination, source, label):
 
 
 def filter_harvests(tags, directory, group_files, patterns):
-    frames, records, metadata, expected = {}, {}, {}, {}
+    frames, records, metadata, expected, selected_groups = {}, {}, {}, {}, {}
     inputs = []
     for tag in tags:
         if not re.fullmatch(r"[\w-]+", tag):
@@ -61,6 +61,9 @@ def filter_harvests(tags, directory, group_files, patterns):
             if group["id"] in metadata and metadata[group["id"]] != info:
                 raise SourceError("Конфликт метаданных книги.")
             metadata[group["id"]] = info
+            if group["id"] in selected_groups and selected_groups[group["id"]]["apids"] != group["apids"]:
+                raise SourceError("Конфликт списка кадров одной книги.")
+            selected_groups[group["id"]] = group
             for index, apid in enumerate(group["apids"], 1):
                 key = f"{group['id']}|{index}"
                 if key in expected and expected[key] != apid:
@@ -70,6 +73,7 @@ def filter_harvests(tags, directory, group_files, patterns):
         if key not in expected or frame.get("apid") != expected[key]:
             raise SourceError("Кадры не соответствуют --groups; передайте списки всех объединяемых книг.")
     result = analyze(frames, records, metadata, expected, patterns)
+    include_book_coverage(result["coverage"], selected_groups.values())
     result.update({"analyzed_at": timestamp(), "inputs": inputs,
                    "query": [{"layer": layer, "label": label, "pattern": regex.pattern} for layer, label, regex in patterns]})
     return result

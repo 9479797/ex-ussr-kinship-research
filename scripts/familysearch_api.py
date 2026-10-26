@@ -11,7 +11,8 @@ import urllib.parse
 from pathlib import Path
 
 from familysearch import validate_groups
-from familysearch_records import coverage, normalize_record, parse_record, valid_record
+from familysearch_records import (coverage, frame_list_coverage, include_book_coverage,
+                                  normalize_record, parse_record, valid_record)
 from research_common import (SourceClient, SourceError, fingerprint, outside_skill,
                              output_json, read_json, save_json, state_lock, timestamp)
 
@@ -108,7 +109,10 @@ def discover_books(client, query):
                            "indexed": group.get("indexedChildCount"),
                            "years": [years.get("fromYear"), years.get("toYear")],
                            "places": sorted(places), "apids": group["imageApids"]})
+    frame_lists = frame_list_coverage(normalized)
     return {"source": "familysearch", "transport": "api", "total": total, "complete": True,
+            "frame_list_coverage": frame_lists,
+            "frame_lists_complete": all(book["complete"] for book in frame_lists.values()),
             "query": query, "captured_at": timestamp(), "groups": normalized}
 
 
@@ -116,15 +120,14 @@ class FrameReader:
     def __init__(self, client, session_client):
         self.client = client
         self.session_client = session_client
-        self.session_verified = False
 
     def read(self, apid):
         data = self.client.request(f"/platform/records/images/{quoted(apid)}/records")
         if data == {}:
-            if not self.session_verified:
-                check_session(self.session_client)
-                self.session_verified = True
-            return {"apid": apid, "rids": [], "err": None, "empty_response": True, "captured_at": timestamp()}
+            # A previous successful check says nothing about the session at this frame.
+            checked = check_session(self.session_client)
+            return {"apid": apid, "rids": [], "err": None, "empty_response": True,
+                    "session_checked_at": checked["checked_at"], "captured_at": timestamp()}
         descriptions = data.get("sourceDescriptions") if isinstance(data, dict) else None
         if not isinstance(descriptions, list) or any(not isinstance(d, dict) or not isinstance(d.get("id"), str) or not d["id"] for d in descriptions):
             raise SourceError("Некорректный ответ кадра; не учитывать его как пустой.")
@@ -143,6 +146,7 @@ def fetch_record(client, rid, retain_raw=True):
 def harvest(groups, directory, tag, client, frame_reader, phase="ab", retain_raw=True, refresh_empty=False):
     if phase not in ("a", "b", "ab") or not re.fullmatch(r"[\w-]+", tag):
         raise SourceError("Проверьте фазу и метку загрузки.")
+    groups = validate_groups({"groups": groups})
     directory = outside_skill(directory)
     prefix = directory / ("fsk_" + tag)
     paths = {kind: Path(str(prefix) + "_" + kind + ".json") for kind in ("frames", "records", "manifest")}
@@ -164,6 +168,7 @@ def harvest(groups, directory, tag, client, frame_reader, phase="ab", retain_raw
         records = {rid: normalize_record(record) for rid, record in records.items()}
         save_json(paths["manifest"], {"version": 1, "groupsHash": fingerprint(identity),
                                     "expectedFrames": len(expected), "groups": identity,
+                                    "frame_list_coverage": frame_list_coverage(groups),
                                     "source": "familysearch", "transport": "api", "updated_at": timestamp()})
 
         def checkpoint():
@@ -176,7 +181,8 @@ def harvest(groups, directory, tag, client, frame_reader, phase="ab", retain_raw
                 completed = 0
                 for key, apid in expected.items():
                     previous = frames.get(key)
-                    if previous and not previous.get("err") and isinstance(previous.get("rids"), list) and not (refresh_empty and not previous["rids"]):
+                    ambiguous_cache = previous and previous.get("empty_response") and not previous.get("session_checked_at")
+                    if previous and not previous.get("err") and isinstance(previous.get("rids"), list) and not ambiguous_cache and not (refresh_empty and not previous["rids"]):
                         continue
                     try:
                         frames[key] = frame_reader.read(apid)
@@ -208,9 +214,9 @@ def harvest(groups, directory, tag, client, frame_reader, phase="ab", retain_raw
             blocked = {"status": exc.status, "message": client.redact(exc)}
         finally:
             checkpoint()
-        report = coverage(frames, records, expected)
+        report = include_book_coverage(coverage(frames, records, expected), groups)
         report.update({"source": "familysearch", "transport": "api", "tag": tag, "phase": phase,
-                       "phase_complete": not report["failed_frames"] and not report["missing_frames"] if phase == "a" else report["complete"],
+                       "phase_complete": (report["frame_lists_complete"] and not report["failed_frames"] and not report["missing_frames"]) if phase == "a" else report["complete"],
                        "raw_retained": retain_raw, "captured_at": timestamp(), "blocked": blocked})
         return report
 
