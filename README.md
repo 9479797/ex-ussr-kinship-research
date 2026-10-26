@@ -21,6 +21,8 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
+- **Indexed-record search.** Use an existing FamilySearch browser session and analyze observed index rows locally without exporting its cookie. The agent discovers books by place or DGS and collects selected indexes through that same browser session; Python helpers persist resumable checkpoints and search all observed names locally. [Workflow and coverage limits](references/familysearch-indexes.md). An [optional full-record harvest script](references/familysearch-api-harvest.md) supports separately supplied credentials without changing the browser workflow; its guide explains cookie setup through Inspect → Application → Cookies and validation with `check-session`.
+- **WWI source search.** Search GWAR reports, hospital and award records by person or locality, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
 
 Release history: [changelog](references/changelog.md).
 
@@ -78,9 +80,12 @@ references/
   changelog.md                   release history
   photo-search.md                finding, identifying, dating and storing photos
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after
+  familysearch-indexes.md       indexed-record search, existing browser sessions, checkpoints and coverage
+  ww1-search.md                 GWAR WWI person/locality search and source-image locators
 assets/                          case intake, CSV registers, final report template,
                                  photos README template, readable PDF template (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
+                                 familysearch.py, familysearch_api.py, gwar.py, register_search.py and shared search modules
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 tests/                           unit tests (python3 -m unittest discover -s tests)
 ```
@@ -96,6 +101,8 @@ tests/                           unit tests (python3 -m unittest discover -s tes
 ## Contributing
 
 New sources are welcome in `references/seed-sources.md`. Record verified owner, jurisdiction, collection, provenance, IDs, access, restrictions and check date where known; mark gaps instead of guessing. Keep personal data out of examples.
+
+Source-search helpers use Python's standard library and the existing case registers; they do not operate on FamilySearch Tree. Run `python3 -m unittest discover -s tests` to check parsing, checkpoints, access failures, coverage and registration against synthetic data. Synthetic tests do not establish live website compatibility. The default FamilySearch workflow uses the existing browser session. Offline analysis requires no credentials; the separately invoked API helper needs its own supplied session. Keep private harvests outside this checkout.
 
 ## License
 

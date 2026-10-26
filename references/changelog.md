@@ -1,5 +1,17 @@
 # Release history
 
+## Unreleased
+
+- Add optional full-record API harvest (raw GEDCOM X by default), book/place discovery and bounded record search through a separately supplied session; reuse the same local analysis and evidence registers.
+- Document user-managed session setup through Inspect → Application → Cookies; add `check-session` without profile output and accept either the cookie Value or one `fssessionid=VALUE` pair.
+- Collect selected FamilySearch indexes through the existing browser session, with agent-driven frame navigation and local Python checkpoints. Search observed names and retain offline compatibility with earlier caches; do not infer event dates or identities.
+- Preserve the upstream browser workflow throughout FamilySearch research; keep the browser as the default and provide a separately invoked, optional authenticated script for full indexed-record retrieval. Distinguish observed frame-index coverage from full record details and transcription accuracy.
+- Validate whole-book browser captures by frame, retain index rows without individual ARKs using explicitly local observation IDs, and merge checkpoints without hiding missing or unindexed frames. Preserve all observed names and captions; match relatives without converting their indexed labels into proven kinship.
+- Add GWAR WWI searches across reports, hospital and award records, bounded locality retrieval with checkpoints, and source-image locators.
+- Deduplicate the same GWAR source card across name and locality searches despite different ranking scores; preserve the original capture date when reusing a completed cache.
+- Feed source snapshots and search coverage into the existing case registers without creating persons, claims, relationships or independence assessments. Preserve evidence rules and keep private material outside the skill.
+- Keep source-search helpers read-only, use Python’s standard library, and preserve the existing evidence protocol and case schemas.
+
 ## 1.5.0 — 2026-10-25
 
 - Incorporate PR #17's gravestone-to-military-family route and Soviet civilian employment, awards and evacuation research, with regional examples and separate identity and relationship conclusions.
