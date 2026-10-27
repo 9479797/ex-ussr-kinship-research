@@ -83,19 +83,10 @@ class AuditCase(unittest.TestCase):
         text = (self.case / "research-state.md").read_text(encoding="utf-8")
         self.assertIn("## Очередь проверок", text)
 
-    def test_prose_report_without_claims_warns(self):
-        self.append("final-report.md", *[f"Вывод номер {n} без ссылки на утверждение." for n in range(12)])
+    def test_partial_report_without_claims_has_no_length_gate(self):
+        self.append("final-report.md", *[f"Ограничение поиска {n}: источник недоступен." for n in range(15)])
         result = self.audit()
-        self.assertTrue(any("реестр утверждений пуст" in w for w in result["warnings"]), result["warnings"])
-        self.two_artifacts()
-        self.append("claims-register.csv",
-                    CLAIM.format(id="C-0001", artifacts="A-0001;A-0002", groups="G1;G2", status="corroborated"))
-        result = self.audit()
-        self.assertFalse(any("реестр утверждений пуст" in w for w in result["warnings"]), result["warnings"])
-
-    def test_short_report_additions_do_not_warn(self):
-        self.append("final-report.md", "Строка один.", "Строка два.", "Строка три.")
-        result = self.audit()
+        self.assertEqual(result["errors"], [])
         self.assertFalse(any("реестр утверждений пуст" in w for w in result["warnings"]), result["warnings"])
 
     def test_found_search_without_artifact_warns(self):
@@ -106,6 +97,11 @@ class AuditCase(unittest.TestCase):
         self.assertTrue(
             any("S-0001" in w and "artifact_ids пуст" in w for w in result["warnings"]), result["warnings"]
         )
+
+    def test_partial_search_unknown_artifact_warns(self):
+        self.append("search-log.csv", "S-0001,,,,q,,,,partial,A-9999,,,")
+        result = self.audit()
+        self.assertTrue(any("S-0001" in w and "A-9999" in w for w in result["warnings"]), result["warnings"])
 
     def test_found_search_with_artifact_or_not_found_is_clean(self):
         row = "S-0001,,,,q,,,,{status},{artifacts},,,"

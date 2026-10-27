@@ -73,10 +73,10 @@ def read_csv(path: Path, required: set[str]) -> tuple[list[dict[str, str]], list
             if missing:
                 errors.append(f"{path.name}: отсутствуют колонки: {', '.join(missing)}")
             rows = []
-            for number, row in enumerate(reader, start=2):
+            for row in reader:
                 if None in row:
                     # csv.DictReader складывает лишние поля в ключ None: обычно незакавыченная запятая.
-                    errors.append(f"{path.name}: строка {number} содержит больше полей, чем заголовок (незакавыченная запятая?)")
+                    errors.append(f"{path.name}: строка {reader.line_num} содержит больше полей, чем заголовок (незакавыченная запятая?)")
                     row.pop(None)
                 rows.append({k: (v or "").strip() for k, v in row.items()})
             return rows, errors
@@ -123,8 +123,6 @@ def id_prefix(value: str) -> str:
     return value.rstrip("0123456789")
 
 
-MIN_PROSE_LINES = 12
-ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 REPORT_MARKERS = ("[неразборчиво]", "[предположительно")
 HEADING_RE = re.compile(r"^#{2,6}\s")
 
@@ -176,18 +174,6 @@ def audit_report(
 
     markers = {marker.strip("[]"): text.count(marker) for marker in REPORT_MARKERS}
     return errors, markers
-
-
-def prose_lines_outside_template(text: str) -> int | None:
-    """Число непустых строк отчёта, которых нет в шаблоне; None, если шаблона нет."""
-    template = ASSETS_DIR / "final-report.template.md"
-    try:
-        template_lines = {
-            line.strip() for line in template.read_text(encoding="utf-8-sig").splitlines() if line.strip()
-        }
-    except OSError:
-        return None
-    return sum(1 for line in text.splitlines() if line.strip() and line.strip() not in template_lines)
 
 
 def parse_args() -> argparse.Namespace:
@@ -372,12 +358,6 @@ def main() -> int:
         report_text = report.read_text(encoding="utf-8-sig")
         report_errors, markers = audit_report(report_text, known_ids, statuses)
         errors.extend(report_errors)
-        extra_lines = prose_lines_outside_template(report_text)
-        if extra_lines is not None and extra_lines >= MIN_PROSE_LINES and not claims:
-            warnings.append(
-                f"final-report.md: содержательный текст ({extra_lines} строк вне шаблона), "
-                "но реестр утверждений пуст — выводы не прослеживаются до claim_id"
-            )
 
     # Журнал поисков необязателен; находка без артефакта — предупреждение.
     search_rows: list[dict[str, str]] = []
@@ -386,6 +366,11 @@ def main() -> int:
         search_rows, search_errors = read_csv(search_log, {"search_id", "result_status", "artifact_ids"})
         warnings.extend(search_errors)
         for row in search_rows:
+            for artifact_id in split_ids(row.get("artifact_ids", "")):
+                if artifact_id not in artifact_by_id:
+                    warnings.append(
+                        f"{row.get('search_id') or '<без ID>'}: неизвестный artifact_id {artifact_id} в журнале поиска"
+                    )
             if row.get("result_status", "").strip().casefold() == "found" and not row.get(
                 "artifact_ids", ""
             ).strip():

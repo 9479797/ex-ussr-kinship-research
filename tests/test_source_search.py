@@ -288,6 +288,28 @@ class RegistrationTests(unittest.TestCase):
         for name, content in untouched.items():
             self.assertEqual((self.case / name).read_bytes(), content)
 
+    def test_manual_sources_with_same_local_record_id_stay_separate(self):
+        item = {"id": "page-1", "source_title": "Локальная заметка", "snapshot": {"line": "Условный текст"}}
+        self.register_manual(self.manual_input(source_or_domain="Источник A", items=[item]))
+        second = self.register_manual(self.manual_input(source_or_domain="Источник B", items=[item]), "other.json")
+        self.assertEqual(second["added_artifacts"], 1)
+        self.assertEqual(len(self.rows("artifact-register.csv")), 2)
+        snapshots = [json.loads(path.read_text(encoding="utf-8")) for path in (self.case / "sources" / "manual").glob("*.json")]
+        self.assertEqual({item["record"]["source_or_domain"] for item in snapshots}, {"Источник A", "Источник B"})
+
+    def test_manual_unknown_coverage_stays_partial_and_originality_unknown(self):
+        data = self.manual_input()
+        del data["coverage"]
+        result = self.register_manual(data)
+        self.assertEqual(result["result_status"], "partial")
+        for artifact in self.rows("artifact-register.csv"):
+            self.assertEqual(artifact["originality"], "unknown")
+            self.assertEqual(artifact["source_type"], "unknown")
+            self.assertNotIn("установлен", artifact["provenance_level"])
+            self.assertEqual(artifact["independence_group"], "")
+        empty = self.register_manual({**data, "items": []}, "unknown-empty.json")
+        self.assertEqual(empty["result_status"], "partial")
+
     def test_manual_source_empty_items_is_not_found(self):
         report = self.register_manual(self.manual_input(items=[]))
         self.assertEqual(report["result_status"], "not-found")

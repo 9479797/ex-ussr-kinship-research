@@ -130,7 +130,7 @@ def manual_items(data):
                 raise SourceError(f"manual: поле {field} элемента {number} должно быть строкой.")
         if "snapshot" in item and not isinstance(item["snapshot"], dict):
             raise SourceError(f"manual: поле snapshot элемента {number} должно быть объектом.")
-        yield {"id": item["id"], "snapshot": item, "captured_at": data.get("captured_at", ""),
+        yield {"id": item["id"], "snapshot": {"source_or_domain": domain.strip(), **item}, "captured_at": data.get("captured_at", ""),
                "source_title": item["source_title"],
                **{field: item.get(field, "") for field in MANUAL_TEXT_FIELDS if field not in ("repository_or_archive", "summary")},
                "repository_or_archive": item.get("repository_or_archive") or "уточнить по источнику",
@@ -163,6 +163,9 @@ def register(case, input_path, goal):
     # Validate the complete input before changing any register.
     items = list({"familysearch": fs_items, "gwar": gwar_items, "manual": manual_items}[source](data))
     coverage = data.get("coverage")
+    if source == "manual" and coverage is None:
+        # Unknown coverage stays partial; do not force the researcher to invent completeness.
+        coverage = {"complete": False}
     if not isinstance(coverage, dict) or type(coverage.get("complete")) is not bool:
         raise SourceError("В результате отсутствует отчёт о покрытии.")
     if source == "familysearch":
@@ -208,8 +211,11 @@ def register(case, input_path, goal):
             row.update({key: value for key, value in item.items() if key in row})
             row.update({"artifact_id": artifact_id, "captured_at": item["captured_at"] or timestamp(),
                         "source_url_or_path": item["source_url_or_path"] or str(snapshot),
-                        "source_type": "index", "originality": "index", "directness": "lead-only", "status": "lead-only",
-                        "provenance_level": "источник индекса установлен; оригинал не проверен",
+                        "source_type": "unknown" if source == "manual" else "index",
+                        "originality": "unknown" if source == "manual" else "index",
+                        "directness": "lead-only", "status": "lead-only",
+                        "provenance_level": ("Ручная заметка; происхождение первоисточника не проверено"
+                                             if source == "manual" else "источник индекса установлен; оригинал не проверен"),
                         "access_notes": f"{marker}; snapshot={snapshot.relative_to(case)}",
                         "sha256": hashlib.sha256(content).hexdigest(),
                         "reliability_notes": "Совпадение — кандидат. Независимость не установлена; назначьте группу исходного документа после проверки."
