@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # `python -I` omits the script folder
 
-from research_common import (SourceError, atomic_bytes, fingerprint, outside_skill,
+from research_common import (configure_utf8_stdio, SourceError, atomic_bytes, fingerprint, outside_skill,
                              output_json, state_lock, timestamp)
 
 
@@ -275,4 +275,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    configure_utf8_stdio()
     raise SystemExit(main())
