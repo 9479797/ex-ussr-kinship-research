@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add the official Altai State Archive index for the 1917 agricultural and urban census, distinguish index entries from household forms and document their dependence, incomplete coverage and dated service conditions; select forms by the research question ([#46](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/46)).
+
 ## 1.8.0 — 2026-10-27
 
 - Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
