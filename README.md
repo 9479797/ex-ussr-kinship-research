@@ -82,6 +82,7 @@ references/
   changelog.md                   release history
   photo-search.md                finding, identifying, dating and storing photos
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after
+  chechnya-deportation.md        Chechen families: 1944 deportation, special settlement, names and renamed villages
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
 assets/                          case intake, CSV registers, final report template,
