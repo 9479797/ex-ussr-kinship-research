@@ -1,5 +1,11 @@
 # Release history
 
+## 1.8.0 — 2026-10-27
+
+- Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
+- Refine Geneteka territory, parish, parent and pair searches, event-year and recent-index filters, and record-type coverage checks.
+- Add six reasoning scenarios for Belarusian and Ukrainian source selection, participant roles, OCR context and unavailable originals.
+
 ## 1.7.0 — 2026-10-26
 
 - Add targeted use of public funeral-agency burial catalogs to locate historical gravestones, with task-relevant private evidence, claim-based source dependence and a verified general catalog link ([#37](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/37)).
