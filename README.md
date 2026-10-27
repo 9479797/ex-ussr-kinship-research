@@ -29,7 +29,15 @@ Release history: [changelog](references/changelog.md).
 
 ## Install
 
-Clone the repository into your agent's skills folder:
+With Node.js installed, you can use the optional [Skills CLI](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills add https://github.com/DenisSergeevitch/ex-ussr-kinship-research
+```
+
+The CLI lets you choose your agent and installs into the current project by default; add `-g` for a personal installation across projects. See its documentation for current Node.js requirements.
+
+Alternatively, clone the repository directly into your agent's skills folder:
 
 ```bash
 # Codex
@@ -82,6 +90,7 @@ references/
   changelog.md                   release history
   photo-search.md                finding, identifying, dating and storing photos
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after
+  bessarabia-moldova.md          Bessarabia, Moldova, MASSR and the Dniester borderland
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
 assets/                          case intake, CSV registers, final report template,
