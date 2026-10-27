@@ -72,7 +72,13 @@ def read_csv(path: Path, required: set[str]) -> tuple[list[dict[str, str]], list
             missing = sorted(required - set(reader.fieldnames))
             if missing:
                 errors.append(f"{path.name}: отсутствуют колонки: {', '.join(missing)}")
-            rows = [{k: (v or "").strip() for k, v in row.items()} for row in reader]
+            rows = []
+            for row in reader:
+                if None in row:
+                    # csv.DictReader складывает лишние поля в ключ None: обычно незакавыченная запятая.
+                    errors.append(f"{path.name}: строка {reader.line_num} содержит больше полей, чем заголовок (незакавыченная запятая?)")
+                    row.pop(None)
+                rows.append({k: (v or "").strip() for k, v in row.items()})
             return rows, errors
     except OSError as exc:
         return [], [f"{path.name}: ошибка чтения: {exc}"]
@@ -349,10 +355,29 @@ def main() -> int:
             for row in relationships
             if row.get("relationship_id")
         )
-        report_errors, markers = audit_report(
-            report.read_text(encoding="utf-8-sig"), known_ids, statuses
-        )
+        report_text = report.read_text(encoding="utf-8-sig")
+        report_errors, markers = audit_report(report_text, known_ids, statuses)
         errors.extend(report_errors)
+
+    # Журнал поисков необязателен; находка без артефакта — предупреждение.
+    search_rows: list[dict[str, str]] = []
+    search_log = case_dir / "search-log.csv"
+    if search_log.is_file():
+        search_rows, search_errors = read_csv(search_log, {"search_id", "result_status", "artifact_ids"})
+        warnings.extend(search_errors)
+        for row in search_rows:
+            for artifact_id in split_ids(row.get("artifact_ids", "")):
+                if artifact_id not in artifact_by_id:
+                    warnings.append(
+                        f"{row.get('search_id') or '<без ID>'}: неизвестный artifact_id {artifact_id} в журнале поиска"
+                    )
+            if row.get("result_status", "").strip().casefold() == "found" and not row.get(
+                "artifact_ids", ""
+            ).strip():
+                warnings.append(
+                    f"{row.get('search_id') or '<без ID>'}: result_status=found, но artifact_ids пуст — "
+                    "находка не зарегистрирована как артефакт"
+                )
 
     # Сводка готовности: что ещё не снято. Не ошибки — для решения, выдавать ли отчёт.
     summary = {
@@ -370,6 +395,7 @@ def main() -> int:
             "artifacts": len(artifacts),
             "claims": len(claims),
             "relationships": len(relationships),
+            "searches": len(search_rows),
         },
         "summary": summary,
         "errors": errors,
@@ -383,7 +409,7 @@ def main() -> int:
         print(
             "Записей: "
             f"лица={len(persons)}, артефакты={len(artifacts)}, "
-            f"утверждения={len(claims)}, связи={len(relationships)}"
+            f"утверждения={len(claims)}, связи={len(relationships)}, поиски={len(search_rows)}"
         )
         open_statuses = ("hypothesis", "single-source", "unresolved", "contradicted", "пусто")
         print("\nСВОДКА:")

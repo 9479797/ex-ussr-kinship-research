@@ -17,6 +17,7 @@ ASSET_FILES = {
     "relationship-register.csv": "relationship-register.csv",
     "search-log.csv": "search-log.csv",
     "final-report.template.md": "final-report.md",
+    "research-state.template.md": "research-state.md",
 }
 PHOTOS_README = "photos-readme.template.md"
 
