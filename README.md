@@ -29,11 +29,13 @@ Release history: [changelog](references/changelog.md).
 
 ## Install
 
-You can install the skill using the Skills CLI:
+With Node.js installed, you can use the optional [Skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
 npx skills add https://github.com/DenisSergeevitch/ex-ussr-kinship-research
 ```
+
+The CLI lets you choose your agent and installs into the current project by default; add `-g` for a personal installation across projects. See its documentation for current Node.js requirements.
 
 Alternatively, clone the repository directly into your agent's skills folder:
 
