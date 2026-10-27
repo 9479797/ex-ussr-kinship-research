@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Add the optional Skills CLI installation route, explaining project and personal scope while retaining direct installation ([#41](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/41)).
+- Add a Bessarabia/Moldova research route with historical jurisdictions, Romanian name variants and ANA fond 211 inventory navigation; verify parish, volume structure, calendar and coverage for each document ([#43](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/43)).
+- Add verified ANA certificate-request guidance and FamilySearch Moldova collection descriptions, distinguishing public catalog access from image access and contributor observations from confirmed coverage.
 
 ## 1.8.0 — 2026-10-27
 
