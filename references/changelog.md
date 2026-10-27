@@ -11,6 +11,7 @@
 - Choose evidence-led name and patronymic combinations when a search mode requires exact matches; keep variants as hypotheses without requiring exhaustive permutations.
 - Add targeted Chechnya deportation and special-settlement research routes, name and locality clues, and current archive-request starting points; keep field observations qualified, assess copies per record, and check surviving collections before concluding that a file was lost ([#45](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/45)).
 - Add the official Altai State Archive index for the 1917 agricultural and urban census, distinguish index entries from household forms and document their dependence, incomplete coverage and dated service conditions; select forms by the research question ([#46](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/46)).
+- Register manually described source leads through the existing local helper with resource-scoped snapshots, unknown provenance and optional coverage; add an optional resumable-plan template, a malformed-CSV diagnostic and a warning for found searches lacking artifact links ([#47](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/47)).
 
 ## 1.8.0 — 2026-10-27
 
