@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Add `references/bessarabia-moldova.md`: jurisdictions by period, the Dniester borderland and the split of Tiraspol uezd between dioceses, Romanian letters and name forms, and how ANA fond 211 metric files are organised (inventories by uezd, one volume per deanery and year, finding a parish section by sheet, annexed villages, coverage gaps on FamilySearch).
-- Update the Moldovan archive row in `seed-sources.md` (ANA, fond 211 inventories) and add the parish-register certificate service and the FamilySearch Moldova collections.
+- Add a Bessarabia/Moldova research route with historical jurisdictions, Romanian name variants and ANA fond 211 inventory navigation; verify parish, volume structure, calendar and coverage for each document ([#43](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/43)).
+- Add verified ANA certificate-request guidance and FamilySearch Moldova collection descriptions, distinguishing public catalog access from image access and contributor observations from confirmed coverage.
 
 ## 1.8.0 — 2026-10-27
 
