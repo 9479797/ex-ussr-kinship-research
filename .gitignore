@@ -8,3 +8,14 @@ __pycache__/
 /cases/
 /kinship-cases/
 /scans/
+
+# материалы дел и большие файлы хранятся только в cases/ (OneDrive)
+cases/
+*.jpg
+*.jpeg
+*.png
+*.tif
+*.tiff
+*.heic
+*.pdf
+*.zip
