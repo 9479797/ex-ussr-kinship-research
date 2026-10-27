@@ -1,5 +1,10 @@
 # Release history
 
+## Unreleased
+
+- Keep long scan reading resumable with small batches, compact delegated results where available and progress within the user's existing budget ([#40](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/40)).
+- Correct overgeneralizations about house numbers, name/kinship formulas, surname clusters and OBD personnel coverage; quarantine the reported unsafe former memorial domain and qualify unavailable-source observations ([#42](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/42)).
+
 ## 1.8.0 — 2026-10-27
 
 - Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
