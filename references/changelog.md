@@ -8,6 +8,7 @@
 - Compare distorted place names against selected records of the same historical jurisdiction and contemporary settlement lists; preserve candidates and assess independence through the existing evidence protocol ([#44](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/44)).
 - Add offline `gwar.py places` to group saved settlement spellings and rank possible readings without identifying places automatically. Preserve record namespaces, conflicting snapshots and input evidence; keep settlement names containing administrative-unit letter sequences.
 - Choose evidence-led name and patronymic combinations when a search mode requires exact matches; keep variants as hypotheses without requiring exhaustive permutations.
+- Add targeted Chechnya deportation and special-settlement research routes, name and locality clues, and current archive-request starting points; keep field observations qualified, assess copies per record, and check surviving collections before concluding that a file was lost ([#45](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/45)).
 
 ## 1.8.0 — 2026-10-27
 
