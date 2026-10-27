@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add the optional Skills CLI installation route, explaining project and personal scope while retaining direct installation ([#41](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/41)).
+
 ## 1.8.0 — 2026-10-27
 
 - Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
