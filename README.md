@@ -29,7 +29,13 @@ Release history: [changelog](references/changelog.md).
 
 ## Install
 
-Clone the repository into your agent's skills folder:
+You can install the skill using the Skills CLI:
+
+```bash
+npx skills add https://github.com/DenisSergeevitch/ex-ussr-kinship-research
+```
+
+Alternatively, clone the repository directly into your agent's skills folder:
 
 ```bash
 # Codex
