@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add the official DAKhMO metric-book catalog and the Ukrainian Wikisource archive directory; distinguish catalog holdings, volunteer navigation and individual scan provenance, rights and access ([#52](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/52)).
+
 ## 1.9.0 — 2026-10-27
 
 - Add targeted urban-directory and education-list research, qualified OCR and name-frequency clues, and flexible record routes for a child/parent name mismatch; keep private case details out of examples and record actual source-access limits ([#48](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/48)).
