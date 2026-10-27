@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add targeted Chechnya deportation and special-settlement research routes, name and locality clues, and current archive-request starting points; keep field observations qualified, assess copies per record, and check surviving collections before concluding that a file was lost ([#45](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/45)).
+
 ## 1.8.0 — 2026-10-27
 
 - Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
