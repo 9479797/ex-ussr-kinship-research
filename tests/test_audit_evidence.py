@@ -94,6 +94,15 @@ class AuditCase(unittest.TestCase):
                               capture_output=True, encoding="utf-8", env=env)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("Проверено дело", proc.stdout)
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "hash_artifact.py"), str(self.case / "missing")],
+                              capture_output=True, encoding="utf-8", env=env)
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("Ошибка: файл не найден", proc.stderr)
+        for script in ("audit_evidence.py", "build_pdf.py", "hash_artifact.py", "init_case.py"):
+            with self.subTest(script=script, isolated=True):
+                proc = subprocess.run([sys.executable, "-I", str(SCRIPTS / script), "--help"],
+                                      capture_output=True, encoding="utf-8")
+                self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def test_init_creates_research_state(self):
         text = (self.case / "research-state.md").read_text(encoding="utf-8")

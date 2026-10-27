@@ -8,7 +8,7 @@ import re
 import sys
 
 from familysearch_browser import browser_import
-from research_common import SourceError, outside_skill, output_json, read_json
+from research_common import configure_utf8_stdio, SourceError, outside_skill, output_json, read_json
 
 
 def compile_patterns(config=None, surnames=(), beacons=()):
@@ -67,7 +67,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    # Windows: вывод в pipe по умолчанию идёт в cp1252 и падает на кириллице.
-    sys.stdout.reconfigure(encoding="utf-8")
-    sys.stderr.reconfigure(encoding="utf-8")
+    configure_utf8_stdio()
     raise SystemExit(main())

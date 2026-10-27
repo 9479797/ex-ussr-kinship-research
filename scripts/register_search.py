@@ -13,7 +13,7 @@ import sys
 import urllib.parse
 from pathlib import Path
 
-from research_common import (SourceError, atomic_bytes, fingerprint, outside_skill,
+from research_common import (configure_utf8_stdio, SourceError, atomic_bytes, fingerprint, outside_skill,
                              output_json, state_lock, timestamp)
 
 
@@ -266,7 +266,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    # Windows: вывод в pipe по умолчанию идёт в cp1252 и падает на кириллице.
-    sys.stdout.reconfigure(encoding="utf-8")
-    sys.stderr.reconfigure(encoding="utf-8")
+    configure_utf8_stdio()
     raise SystemExit(main())

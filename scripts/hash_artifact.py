@@ -55,7 +55,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    # Windows: вывод в pipe по умолчанию идёт в cp1252 и падает на кириллице.
-    sys.stdout.reconfigure(encoding="utf-8")
-    sys.stderr.reconfigure(encoding="utf-8")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from research_common import configure_utf8_stdio
+
+    configure_utf8_stdio()
     raise SystemExit(main())
