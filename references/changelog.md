@@ -1,5 +1,11 @@
 # Release history
 
+## Unreleased
+
+- Decode distorted or unidentified place names across several records of the same gubernia, uezd and volost instead of by a single sound-alike: keep the written form, list the spellings, check candidates against parish inventories and settlement lists, name each scribal change, count independent people rather than cards, and confirm the candidate in its own records (`ex-ussr-locale-guide.md`, section 1).
+- Add the offline `gwar.py places` command: group settlement spellings of saved GWAR cards by gubernia, uezd and volost, with card counts and IDs, optionally ranked by similarity to an unidentified name.
+- For databases that match fields exactly (`ex-ussr-locale-guide.md`, section 4): search combinations of given-name, patronymic and surname forms rather than each part alone, build the patronymic from every form of the father’s name, keep commonly confused names as a separate flagged hypothesis, and search by given name and patronymic without the surname when the surname may be distorted.
+
 ## 1.8.0 — 2026-10-27
 
 - Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).

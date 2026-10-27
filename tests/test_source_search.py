@@ -104,6 +104,35 @@ class GwarTests(unittest.TestCase):
         self.assertEqual(parsed["image_url"], "https://gwar.mil.ru/cdn/imagesfww/folder/test.jpg")
         self.assertEqual(gwar.source_client().base, gwar.BASE)
 
+    def test_places_group_spellings_by_volost_and_rank_by_target(self):
+        def card(number, place, **fields):
+            return {"_index": "gwar", "_type": "chelovek_donesenie", "_id": str(number),
+                    "_source": {"birth_place": place, **fields}}
+        state = {"query": {"last_name": "Иванов"}, "coverage": {"complete": True}, "hits": [
+            card(1, "Условная губ., Северный уезд, селение Новоберезицы"),
+            card(2, "Условная губ., Северный уезд, Заречная вол., д. Новобережка"),
+            card(3, "Условная губ., Северный уезд, Заречная вол., с. Новобережка"),
+            card(4, "с. Каменка", birth_place_gubernia="Условная губ.", birth_place_uezd="Северный уезд",
+                 birth_place_volost="Заречная вол.")]}
+        result = gwar.places([("first.json", state), ("copy.json", state)], "Новоберезицы")
+        self.assertEqual(result["cards"], 4)
+        self.assertTrue(result["coverage"]["complete"])
+        volost = next(group for group in result["groups"] if group["volost"] == "Заречная вол.")
+        self.assertEqual(volost["uezd"], "Северный уезд")
+        first, last = volost["settlements"][0], volost["settlements"][-1]
+        self.assertEqual(first["as_written"], "д. Новобережка")
+        self.assertGreater(first["similarity"], last["similarity"])
+        self.assertEqual(last["as_written"], "с. Каменка")
+        self.assertEqual(gwar.place_key("с. Новобережка"), gwar.place_key("д. Новобережка"))
+
+    def test_places_keep_incomplete_input_visible(self):
+        state = {"query": {}, "coverage": {"complete": False}, "hits": [hit(1)]}
+        result = gwar.places([("partial.json", state)])
+        self.assertFalse(result["coverage"]["complete"])
+        self.assertEqual(result["groups"][0]["settlements"][0]["as_written"], "Условное село")
+        with self.assertRaises(common.SourceError):
+            gwar.places([("other.json", {"rows": []})])
+
 
 class RegistrationTests(unittest.TestCase):
     def setUp(self):

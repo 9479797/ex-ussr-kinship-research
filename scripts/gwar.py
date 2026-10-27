@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import re
 import ssl
 import sys
@@ -142,6 +143,74 @@ def pages(client, page_ids):
             "coverage": {"complete": all(item["complete"] for item in result), "scope": "selected-pages"}}
 
 
+PLACE_UNITS = (("gubernia", re.compile(r"губ|обл")), ("uezd", re.compile(r"уезд|\sу\.?$")),
+               ("volost", re.compile(r"вол")))
+SETTLEMENT_TYPE = re.compile(r"^(?:селение|село|деревня|дер|хутор|местечко|колония|слобода|н\.\s?п|с|д|х|м|к|сл)\.?\s+")
+
+
+def place_parts(source):
+    """Split the card's place into units and the settlement, keeping each string as written."""
+    parts = {unit: str(source.get("birth_place_" + unit) or "").strip() for unit, _ in PLACE_UNITS}
+    rest = []
+    for token in (item.strip() for item in str(source.get("birth_place") or "").split(",")):
+        if not token:
+            continue
+        unit = next((name for name, pattern in PLACE_UNITS if pattern.search(token.lower())), None)
+        if unit and not parts[unit]:
+            parts[unit] = token
+        elif not unit:
+            rest.append(token)
+    parts["settlement"] = ", ".join(rest)
+    return parts
+
+
+def place_key(name):
+    name = SETTLEMENT_TYPE.sub("", name.lower().replace("ё", "е").strip())
+    return re.sub(r"[^a-zа-яіїєґăâîșțş]", "", name)
+
+
+def similarity(left, right):
+    left, right = place_key(left), place_key(right)
+    if not left or not right:
+        return 0.0
+    skeleton = [re.sub(r"[аеиоуыэюяіїєйăâîьъ]", "", value) for value in (left, right)]
+    return round(max(difflib.SequenceMatcher(None, left, right).ratio(),
+                     difflib.SequenceMatcher(None, *skeleton).ratio()), 2)
+
+
+def places(states, target=None):
+    """Group settlement spellings of saved cards by gubernia, uezd and volost; no network access."""
+    cards, inputs = {}, []
+    for name, state in states:
+        if not isinstance(state, dict) or not isinstance(state.get("hits"), list):
+            raise SourceError(f"{name}: это не выдача gwar.py search/volost.")
+        inputs.append({"file": name, "query": state.get("query"),
+                       "complete": bool((state.get("coverage") or {}).get("complete"))})
+        for hit in state["hits"]:
+            cards.setdefault(hit_key(hit), hit)
+    groups = {}
+    for hit in cards.values():
+        parts = place_parts(hit.get("_source") or {})
+        group = groups.setdefault((parts["gubernia"], parts["uezd"], parts["volost"]), {})
+        entry = group.setdefault(parts["settlement"], {"as_written": parts["settlement"], "cards": 0, "card_ids": []})
+        entry["cards"] += 1
+        entry["card_ids"].append(hit["_id"])
+    result = []
+    for (gubernia, uezd, volost), settlements in groups.items():
+        items = list(settlements.values())
+        for item in items:
+            if target:
+                item["similarity"] = similarity(target, item["as_written"])
+        items.sort(key=lambda item: (-item.get("similarity", 0), -item["cards"], item["as_written"]))
+        result.append({"gubernia": gubernia, "uezd": uezd, "volost": volost, "settlements": items})
+    result.sort(key=lambda group: (-max((item.get("similarity", 0) for item in group["settlements"]), default=0),
+                                   group["gubernia"], group["uezd"], group["volost"]))
+    return {"source": "gwar-places", "captured_at": timestamp(), "target": target, "inputs": inputs,
+            "cards": len(cards), "groups": result,
+            "coverage": {"complete": all(item["complete"] for item in inputs),
+                         "scope": "spellings-in-saved-cards-not-settlement-list"}}
+
+
 def positive(value):
     number = int(value)
     if number < 1:
@@ -164,6 +233,10 @@ def parser():
         command.add_argument("--kind", nargs="+", choices=("all", *KINDS), default=["all"])
         command.add_argument("--max-records", type=positive, default=1000)
         command.add_argument("--out", required=True, help="JSON вне папки навыка; также контрольная точка")
+    spellings = commands.add_parser("places", help="Сравнить написания местностей в сохранённых выдачах (без сети)")
+    spellings.add_argument("--input", nargs="+", required=True, help="JSON-выдачи search/volost")
+    spellings.add_argument("--target", help="Неопознанное название, с которым сравнить написания")
+    spellings.add_argument("--out", help="JSON вне папки навыка; без него вывод в консоль")
     page = commands.add_parser("page", help="Найти скан и координаты строк по pages_id")
     page.add_argument("--pages", nargs="+", type=positive, required=True)
     page.add_argument("--out", required=True)
@@ -173,6 +246,10 @@ def parser():
 def main(argv=None):
     args = parser().parse_args(argv)
     try:
+        if args.command == "places":
+            result = places([(name, read_json(name)) for name in args.input], args.target)
+            output_json(result, outside_skill(args.out) if args.out else None)
+            return 0 if result["coverage"]["complete"] else 1
         path = outside_skill(args.out)
         if args.command == "page":
             result = pages(source_client(), args.pages)
