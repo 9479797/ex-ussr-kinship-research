@@ -4,6 +4,9 @@
 
 - Add the official DAKhMO metric-book catalog and the Ukrainian Wikisource archive directory; distinguish catalog holdings, volunteer navigation and individual scan provenance, rights and access ([#52](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/52)).
 
+- Refine targeted WWI locality/name searches, historical place and parish checks, OBD filter diagnostics, timed archive access and request-channel guidance. Keep contributor access observations qualified, use canonical locale guidance and avoid mandatory bulk searches. Preserve GWAR report/hospital card locators and allow the three source CLIs to run in isolated Python mode ([#50](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/50)).
+- Keep Cyrillic CLI output and error messages readable when Windows agents capture legacy-encoded pipes; share UTF-8 stream setup through the existing common helper and decode captured test output explicitly ([#51](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/51)).
+
 ## 1.9.0 — 2026-10-27
 
 - Add targeted urban-directory and education-list research, qualified OCR and name-frequency clues, and flexible record routes for a child/parent name mismatch; keep private case details out of examples and record actual source-access limits ([#48](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/48)).

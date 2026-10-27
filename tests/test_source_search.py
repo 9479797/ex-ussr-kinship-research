@@ -211,7 +211,7 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(snapshot.read_bytes()).hexdigest(), artifact["sha256"])
         for name, content in untouched.items():
             self.assertEqual((self.case / name).read_bytes(), content)
-        audit = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"], capture_output=True, text=True)
+        audit = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"], capture_output=True, encoding="utf-8")
         self.assertEqual(audit.returncode, 0, audit.stdout + audit.stderr)
         self.assertIn("independence_group", audit.stdout)
 
@@ -367,6 +367,22 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(report["added_artifacts"], 0)
         self.assertEqual(len(self.rows("artifact-register.csv")), 2)
         self.assertEqual(len(self.rows("search-log.csv")), 1)
+        self.assertEqual(self.rows("artifact-register.csv")[0]["source_url_or_path"],
+                         "https://gwar.mil.ru/heroes/chelovek_donesenie1/")
+
+    def test_gwar_card_locators_keep_unknown_routes_in_snapshot(self):
+        for kind, identifier, suffix in (
+            ("chelovek_donesenie", "12", "chelovek_donesenie12/"),
+            ("chelovek_gospital", "34", "chelovek_gospital34/"),
+            ("unknown", "56", ""),
+            ("chelovek_donesenie", "1/../../elsewhere", ""),
+            ("chelovek_gospital", "１２", ""),
+        ):
+            with self.subTest(kind=kind, identifier=identifier):
+                record = {**hit(1), "_type": kind, "_id": identifier}
+                item, = register_search.gwar_items({"hits": [record]})
+                self.assertEqual(item["source_url_or_path"], "https://gwar.mil.ru/heroes/" + suffix)
+                self.assertEqual(item["snapshot"], record)
 
     def test_gwar_search_score_changes_do_not_duplicate_source_cards(self):
         path = self.directory / "gwar.json"
@@ -475,8 +491,9 @@ class HttpAndCliTests(unittest.TestCase):
 
     def test_command_help_is_available(self):
         for script in ("familysearch.py", "gwar.py", "register_search.py"):
-            result = subprocess.run([sys.executable, str(SCRIPTS / script), "--help"], capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0, result.stderr)
+            for flags in ([], ["-I"]):
+                result = subprocess.run([sys.executable, *flags, str(SCRIPTS / script), "--help"], capture_output=True, encoding="utf-8")
+                self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_outputs_cannot_be_inside_skill(self):
         for path in (SCRIPTS / "private.json", SCRIPTS.parent):

@@ -11,7 +11,9 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from research_common import (SourceClient, SourceError, fingerprint, outside_skill, output_json,
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # `python -I` omits the script folder
+
+from research_common import (configure_utf8_stdio, SourceClient, SourceError, fingerprint, outside_skill, output_json,
                              read_json, save_json, state_lock, timestamp)
 
 BASE = "https://gwar.mil.ru"
@@ -292,4 +294,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    configure_utf8_stdio()
     raise SystemExit(main())
