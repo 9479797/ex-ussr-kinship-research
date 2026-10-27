@@ -13,6 +13,8 @@ import sys
 import urllib.parse
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # `python -I` omits the script folder
+
 from research_common import (SourceError, atomic_bytes, fingerprint, outside_skill,
                              output_json, state_lock, timestamp)
 
@@ -81,6 +83,10 @@ def fs_items(data):
                "summary": "Кандидат из текстового фрагмента индекса; личность и родство требуют проверки."}
 
 
+# Card page addresses checked on the public site on 27.10.2026.
+GWAR_CARD_PAGES = ("chelovek_donesenie", "chelovek_gospital")
+
+
 def gwar_items(data):
     if not isinstance(data.get("hits"), list):
         raise SourceError("Для GWAR передайте результат search или volost.")
@@ -90,9 +96,12 @@ def gwar_items(data):
         source = hit["_source"]
         identity = "|".join(str(hit.get(field, "")) for field in ("_index", "_type", "_id"))
         name = " ".join(str(source.get(field) or "") for field in ("last_name", "first_name", "middle_name")).strip()
+        url = "https://gwar.mil.ru/heroes/"
+        if hit.get("_type") in GWAR_CARD_PAGES and str(hit["_id"]).isdigit():
+            url += f"{hit['_type']}{hit['_id']}/"
         yield {"id": identity, "snapshot": hit, "captured_at": data.get("captured_at", ""),
                "source_title": "GWAR — " + (name or str(hit["_id"])),
-               "source_url_or_path": "https://gwar.mil.ru/heroes/", "repository_or_archive": "GWAR; архив оригинала уточнить",
+               "source_url_or_path": url, "repository_or_archive": "GWAR; архив оригинала уточнить",
                "archival_reference": encode({"card": identity, "documents_pages": source.get("documents_pages", {}),
                                               "military_unit_name": source.get("military_unit_name", "")}),
                "record_date": str(source.get("event_date_from") or ""),

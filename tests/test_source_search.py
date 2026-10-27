@@ -367,6 +367,8 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(report["added_artifacts"], 0)
         self.assertEqual(len(self.rows("artifact-register.csv")), 2)
         self.assertEqual(len(self.rows("search-log.csv")), 1)
+        self.assertEqual(self.rows("artifact-register.csv")[0]["source_url_or_path"],
+                         "https://gwar.mil.ru/heroes/chelovek_donesenie1/")
 
     def test_gwar_search_score_changes_do_not_duplicate_source_cards(self):
         path = self.directory / "gwar.json"
@@ -475,8 +477,9 @@ class HttpAndCliTests(unittest.TestCase):
 
     def test_command_help_is_available(self):
         for script in ("familysearch.py", "gwar.py", "register_search.py"):
-            result = subprocess.run([sys.executable, str(SCRIPTS / script), "--help"], capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0, result.stderr)
+            for flags in ([], ["-I"]):
+                result = subprocess.run([sys.executable, *flags, str(SCRIPTS / script), "--help"], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_outputs_cannot_be_inside_skill(self):
         for path in (SCRIPTS / "private.json", SCRIPTS.parent):
