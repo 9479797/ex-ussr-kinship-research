@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,8 @@ from pathlib import Path
 from scripts.audit_evidence import artifact_groups, has_direct_record
 
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+CLI_SCRIPTS = ("audit_evidence.py", "build_pdf.py", "familysearch.py", "gwar.py",
+               "hash_artifact.py", "init_case.py", "register_search.py")
 
 ARTIFACT = "{id},,title,url,,,,,,,P-0001,,,,direct,image-of-original,{group},clear,,,{claims},,"
 CLAIM = "{id},text,P-0001,birth,{artifacts},{groups},,{status},moderate,rationale,"
@@ -44,7 +47,7 @@ class AuditCase(unittest.TestCase):
     def audit(self) -> dict:
         proc = subprocess.run(
             [sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"],
-            capture_output=True, text=True,
+            capture_output=True, encoding="utf-8",
         )
         return json.loads(proc.stdout)
 
@@ -78,6 +81,19 @@ class AuditCase(unittest.TestCase):
         # Плейсхолдеры шаблона отчёта (A-...., R-0001 при пустых реестрах) не дают ошибок.
         result = self.audit()
         self.assertEqual(result["errors"], [])
+
+    def test_cyrillic_output_survives_legacy_pipe_encoding(self):
+        # На Windows вывод в pipe идёт в cp1252; PYTHONIOENCODING воспроизводит это на любой ОС.
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252"}
+        for script in CLI_SCRIPTS:
+            with self.subTest(script=script):
+                proc = subprocess.run([sys.executable, str(SCRIPTS / script), "--help"],
+                                      capture_output=True, encoding="utf-8", env=env)
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case)],
+                              capture_output=True, encoding="utf-8", env=env)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("Проверено дело", proc.stdout)
 
     def test_init_creates_research_state(self):
         text = (self.case / "research-state.md").read_text(encoding="utf-8")
