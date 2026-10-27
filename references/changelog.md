@@ -1,5 +1,10 @@
 # Release history
 
+## Unreleased
+
+- Add `references/bessarabia-moldova.md`: jurisdictions by period, the Dniester borderland and the split of Tiraspol uezd between dioceses, Romanian letters and name forms, and how ANA fond 211 metric files are organised (inventories by uezd, one volume per deanery and year, finding a parish section by sheet, annexed villages, coverage gaps on FamilySearch).
+- Update the Moldovan archive row in `seed-sources.md` (ANA, fond 211 inventories) and add the parish-register certificate service and the FamilySearch Moldova collections.
+
 ## 1.8.0 — 2026-10-27
 
 - Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
