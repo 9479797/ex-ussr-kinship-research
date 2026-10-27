@@ -83,7 +83,7 @@ def fs_items(data):
                "summary": "Кандидат из текстового фрагмента индекса; личность и родство требуют проверки."}
 
 
-# Card page addresses checked on the public site on 27.10.2026.
+# Report/hospital card routes reported by the contributor in PR #50 (2026-10-27).
 GWAR_CARD_PAGES = ("chelovek_donesenie", "chelovek_gospital")
 
 
@@ -97,7 +97,7 @@ def gwar_items(data):
         identity = "|".join(str(hit.get(field, "")) for field in ("_index", "_type", "_id"))
         name = " ".join(str(source.get(field) or "") for field in ("last_name", "first_name", "middle_name")).strip()
         url = "https://gwar.mil.ru/heroes/"
-        if hit.get("_type") in GWAR_CARD_PAGES and str(hit["_id"]).isdigit():
+        if hit.get("_type") in GWAR_CARD_PAGES and re.fullmatch(r"[0-9]+", str(hit["_id"])):
             url += f"{hit['_type']}{hit['_id']}/"
         yield {"id": identity, "snapshot": hit, "captured_at": data.get("captured_at", ""),
                "source_title": "GWAR — " + (name or str(hit["_id"])),

@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Refine targeted WWI locality/name searches, historical place and parish checks, OBD filter diagnostics, timed archive access and request-channel guidance. Keep contributor access observations qualified, use canonical locale guidance and avoid mandatory bulk searches. Preserve GWAR report/hospital card locators and allow the three source CLIs to run in isolated Python mode ([#50](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/50)).
+
 ## 1.9.0 — 2026-10-27
 
 - Add targeted urban-directory and education-list research, qualified OCR and name-frequency clues, and flexible record routes for a child/parent name mismatch; keep private case details out of examples and record actual source-access limits ([#48](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/48)).

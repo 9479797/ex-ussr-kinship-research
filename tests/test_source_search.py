@@ -370,6 +370,20 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(self.rows("artifact-register.csv")[0]["source_url_or_path"],
                          "https://gwar.mil.ru/heroes/chelovek_donesenie1/")
 
+    def test_gwar_card_locators_keep_unknown_routes_in_snapshot(self):
+        for kind, identifier, suffix in (
+            ("chelovek_donesenie", "12", "chelovek_donesenie12/"),
+            ("chelovek_gospital", "34", "chelovek_gospital34/"),
+            ("unknown", "56", ""),
+            ("chelovek_donesenie", "1/../../elsewhere", ""),
+            ("chelovek_gospital", "１２", ""),
+        ):
+            with self.subTest(kind=kind, identifier=identifier):
+                record = {**hit(1), "_type": kind, "_id": identifier}
+                item, = register_search.gwar_items({"hits": [record]})
+                self.assertEqual(item["source_url_or_path"], "https://gwar.mil.ru/heroes/" + suffix)
+                self.assertEqual(item["snapshot"], record)
+
     def test_gwar_search_score_changes_do_not_duplicate_source_cards(self):
         path = self.directory / "gwar.json"
         record = {**hit(1), "_score": 150.0}
