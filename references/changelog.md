@@ -5,6 +5,9 @@
 - Add the optional Skills CLI installation route, explaining project and personal scope while retaining direct installation ([#41](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/41)).
 - Add a Bessarabia/Moldova research route with historical jurisdictions, Romanian name variants and ANA fond 211 inventory navigation; verify parish, volume structure, calendar and coverage for each document ([#43](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/43)).
 - Add verified ANA certificate-request guidance and FamilySearch Moldova collection descriptions, distinguishing public catalog access from image access and contributor observations from confirmed coverage.
+- Compare distorted place names against selected records of the same historical jurisdiction and contemporary settlement lists; preserve candidates and assess independence through the existing evidence protocol ([#44](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/44)).
+- Add offline `gwar.py places` to group saved settlement spellings and rank possible readings without identifying places automatically. Preserve record namespaces, conflicting snapshots and input evidence; keep settlement names containing administrative-unit letter sequences.
+- Choose evidence-led name and patronymic combinations when a search mode requires exact matches; keep variants as hypotheses without requiring exhaustive permutations.
 
 ## 1.8.0 — 2026-10-27
 
