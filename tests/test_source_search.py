@@ -134,6 +134,46 @@ class GwarTests(unittest.TestCase):
             gwar.places([("other.json", {"rows": []})])
 
 
+    def test_places_preserve_settlements_named_like_administrative_units(self):
+        for name in ("Волково", "Губино", "с. Волково"):
+            parts = gwar.place_parts({"birth_place": "Тестовая губ., Северный уезд, Заречная вол., " + name})
+            self.assertEqual(parts["settlement"], name)
+            self.assertEqual(parts["volost"], "Заречная вол.")
+        self.assertEqual(gwar.similarity("Ая", "Уя"), 0.5)
+
+    def test_places_keep_namespaces_and_reject_conflicting_snapshots(self):
+        first, second = hit(1), hit(1)
+        second["_type"] = "chelovek_gospital"
+        state = {"hits": [first, second], "coverage": {"complete": True}}
+        result = gwar.places([("a.json", state)])
+        entry = result["groups"][0]["settlements"][0]
+        self.assertEqual(result["cards"], 2)
+        self.assertEqual(len(set(entry["card_keys"])), 2)
+        changed = hit(1)
+        changed["_source"]["birth_place"] = "Иное село"
+        with self.assertRaises(common.SourceError):
+            gwar.places([("a.json", state), ("b.json", {"hits": [changed], "coverage": {"complete": True}})])
+
+    def test_places_reject_malformed_cards_and_nonboolean_coverage(self):
+        for bad in (None, {}, {"_id": "1", "_source": []}):
+            with self.assertRaises(common.SourceError):
+                gwar.places([("bad.json", {"hits": [bad], "coverage": {"complete": True}})])
+        result = gwar.places([("bad-coverage.json", {"hits": [], "coverage": {"complete": "false"}})])
+        self.assertFalse(result["coverage"]["complete"])
+        with self.assertRaises(common.SourceError):
+            gwar.places([])
+
+    def test_places_never_overwrite_an_input_or_contact_the_site(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source.json"
+            common.save_json(source, {"source": "gwar", "hits": [hit(1)], "coverage": {"complete": True}})
+            original = source.read_bytes()
+            with patch.object(gwar, "source_client", side_effect=AssertionError("offline command")):
+                self.assertEqual(gwar.main(["places", "--input", str(source), "--out", str(source)]), 1)
+                self.assertEqual(source.read_bytes(), original)
+                self.assertEqual(gwar.main(["places", "--input", str(source), "--out", str(Path(tmp) / "places.json")]), 0)
+
+
 class RegistrationTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

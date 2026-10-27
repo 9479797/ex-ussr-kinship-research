@@ -143,8 +143,9 @@ def pages(client, page_ids):
             "coverage": {"complete": all(item["complete"] for item in result), "scope": "selected-pages"}}
 
 
-PLACE_UNITS = (("gubernia", re.compile(r"губ|обл")), ("uezd", re.compile(r"уезд|\sу\.?$")),
-               ("volost", re.compile(r"вол")))
+PLACE_UNITS = (("gubernia", re.compile(r"\b(?:губ(?:ерния)?|обл(?:асть)?)\.?$")),
+               ("uezd", re.compile(r"\b(?:уезд|у)\.?$")),
+               ("volost", re.compile(r"\bвол(?:ость)?\.?$")))
 SETTLEMENT_TYPE = re.compile(r"^(?:селение|село|деревня|дер|хутор|местечко|колония|слобода|н\.\s?п|с|д|х|м|к|сл)\.?\s+")
 
 
@@ -174,27 +175,42 @@ def similarity(left, right):
     if not left or not right:
         return 0.0
     skeleton = [re.sub(r"[аеиоуыэюяіїєйăâîьъ]", "", value) for value in (left, right)]
-    return round(max(difflib.SequenceMatcher(None, left, right).ratio(),
-                     difflib.SequenceMatcher(None, *skeleton).ratio()), 2)
+    scores = [difflib.SequenceMatcher(None, left, right).ratio()]
+    if all(skeleton):
+        scores.append(difflib.SequenceMatcher(None, *skeleton).ratio())
+    return round(max(scores), 2)
 
 
 def places(states, target=None):
     """Group settlement spellings of saved cards by gubernia, uezd and volost; no network access."""
     cards, inputs = {}, []
     for name, state in states:
-        if not isinstance(state, dict) or not isinstance(state.get("hits"), list):
+        if (not isinstance(state, dict) or state.get("source", "gwar") != "gwar"
+                or not isinstance(state.get("hits"), list)):
             raise SourceError(f"{name}: это не выдача gwar.py search/volost.")
+        coverage = state.get("coverage")
+        if not isinstance(coverage, dict):
+            raise SourceError(f"{name}: отсутствуют сведения о полноте выдачи GWAR.")
         inputs.append({"file": name, "query": state.get("query"),
-                       "complete": bool((state.get("coverage") or {}).get("complete"))})
+                       "complete": coverage.get("complete") is True})
         for hit in state["hits"]:
-            cards.setdefault(hit_key(hit), hit)
+            if (not isinstance(hit, dict) or not hit.get("_id")
+                    or not isinstance(hit.get("_source"), dict)):
+                raise SourceError(f"{name}: карточка GWAR без ID или исходных полей.")
+            key = hit_key(hit)
+            if key in cards and cards[key] != hit:
+                raise SourceError(f"{name}: версии одной карточки GWAR различаются; сравните исходные файлы.")
+            cards[key] = hit
+    if not inputs:
+        raise SourceError("Укажите хотя бы одну сохранённую выдачу GWAR.")
     groups = {}
     for hit in cards.values():
         parts = place_parts(hit.get("_source") or {})
         group = groups.setdefault((parts["gubernia"], parts["uezd"], parts["volost"]), {})
-        entry = group.setdefault(parts["settlement"], {"as_written": parts["settlement"], "cards": 0, "card_ids": []})
+        entry = group.setdefault(parts["settlement"], {"as_written": parts["settlement"], "cards": 0, "card_ids": [], "card_keys": []})
         entry["cards"] += 1
         entry["card_ids"].append(hit["_id"])
+        entry["card_keys"].append(hit_key(hit))
     result = []
     for (gubernia, uezd, volost), settlements in groups.items():
         items = list(settlements.values())
@@ -247,6 +263,8 @@ def main(argv=None):
     args = parser().parse_args(argv)
     try:
         if args.command == "places":
+            if args.out and Path(args.out).expanduser().resolve() in {Path(name).expanduser().resolve() for name in args.input}:
+                raise SourceError("Выходной файл не должен заменять исходную выдачу GWAR.")
             result = places([(name, read_json(name)) for name in args.input], args.target)
             output_json(result, outside_skill(args.out) if args.out else None)
             return 0 if result["coverage"]["complete"] else 1
