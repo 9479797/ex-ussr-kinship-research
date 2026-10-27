@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Register source-search leads in an existing case without asserting identities."""
+"""Register source-search leads (FamilySearch, GWAR, or any site via a manual JSON) in an existing case without asserting identities."""
 
 from __future__ import annotations
 
@@ -100,6 +100,43 @@ def gwar_items(data):
                "summary": "Карточка Первой мировой; место и одноимённые лица требуют проверки по документу."}
 
 
+MANUAL_TEXT_FIELDS = ("source_url_or_path", "repository_or_archive", "archival_reference", "record_date",
+                      "place_as_written", "names_as_written", "language_script", "summary")
+MANUAL_ITEM_KEYS = {"id", "source_title", "snapshot", *MANUAL_TEXT_FIELDS}
+
+
+def manual_items(data):
+    """Validate a hand-described search in any source and yield items shaped like fs_items/gwar_items."""
+    domain, query = data.get("source_or_domain"), data.get("query")
+    if not isinstance(domain, str) or not domain.strip():
+        raise SourceError("Для manual укажите непустой source_or_domain.")
+    if not (isinstance(query, dict) and query) and not (isinstance(query, str) and query.strip()):
+        raise SourceError("Для manual укажите query: непустой объект или строку.")
+    if "captured_at" in data and not isinstance(data["captured_at"], str):
+        raise SourceError("captured_at должен быть строкой.")
+    if not isinstance(data.get("items"), list):
+        raise SourceError("Для manual items должен быть списком (пустым, если находок нет).")
+    for number, item in enumerate(data["items"], 1):
+        if not isinstance(item, dict):
+            raise SourceError(f"manual: элемент {number} должен быть объектом.")
+        unknown = sorted(set(item) - MANUAL_ITEM_KEYS)
+        if unknown:
+            raise SourceError(f"manual: элемент {number} содержит неизвестные поля: {', '.join(unknown)}.")
+        for field in ("id", "source_title"):
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                raise SourceError(f"manual: у элемента {number} нужно непустое поле {field}.")
+        for field in MANUAL_TEXT_FIELDS:
+            if field in item and not isinstance(item[field], str):
+                raise SourceError(f"manual: поле {field} элемента {number} должно быть строкой.")
+        if "snapshot" in item and not isinstance(item["snapshot"], dict):
+            raise SourceError(f"manual: поле snapshot элемента {number} должно быть объектом.")
+        yield {"id": item["id"], "snapshot": item, "captured_at": data.get("captured_at", ""),
+               "source_title": item["source_title"],
+               **{field: item.get(field, "") for field in MANUAL_TEXT_FIELDS if field not in ("repository_or_archive", "summary")},
+               "repository_or_archive": item.get("repository_or_archive") or "уточнить по источнику",
+               "summary": item.get("summary") or "Наводка из ручного поиска; личность и родство требуют проверки."}
+
+
 def without_capture(value):
     if isinstance(value, dict):
         return {key: without_capture(item) for key, item in value.items() if key != "captured_at"}
@@ -120,11 +157,11 @@ def register(case, input_path, goal):
     case = outside_skill(case)
     input_bytes = Path(input_path).expanduser().read_bytes()
     data = json.loads(input_bytes.decode("utf-8-sig"))
-    if not isinstance(data, dict) or data.get("source") not in ("familysearch", "gwar"):
-        raise SourceError("Нужен JSON локального анализа FamilySearch или поиска GWAR.")
+    if not isinstance(data, dict) or data.get("source") not in ("familysearch", "gwar", "manual"):
+        raise SourceError("Нужен JSON локального анализа FamilySearch, поиска GWAR или ручного поиска (source: manual).")
     source = data["source"]
     # Validate the complete input before changing any register.
-    items = list(fs_items(data) if source == "familysearch" else gwar_items(data))
+    items = list({"familysearch": fs_items, "gwar": gwar_items, "manual": manual_items}[source](data))
     coverage = data.get("coverage")
     if not isinstance(coverage, dict) or type(coverage.get("complete")) is not bool:
         raise SourceError("В результате отсутствует отчёт о покрытии.")
@@ -194,7 +231,7 @@ def register(case, input_path, goal):
             row = {field: "" for field in log_fields}
             row.update({"search_id": next_id(logs, "search_id", "S-"), "timestamp": timestamp(), "research_goal": goal,
                         "query": encode(data.get("query", {"apid": data.get("apid")})),
-                        "source_or_domain": "familysearch.org" if source == "familysearch" else "gwar.mil.ru",
+                        "source_or_domain": {"familysearch": "familysearch.org", "gwar": "gwar.mil.ru"}.get(source) or data["source_or_domain"],
                         "filters": encode({"key": log_marker, "coverage": coverage, "entities": data.get("entities"),
                                            "input": str(Path(input_path).expanduser().resolve()), "sha256": hashlib.sha256(input_bytes).hexdigest()}),
                         "result_status": status, "artifact_ids": ";".join(artifact_ids),
@@ -211,7 +248,7 @@ def register(case, input_path, goal):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Записать поисковые находки в существующие реестры как непроверенные артефакты.")
     parser.add_argument("--case-dir", required=True)
-    parser.add_argument("--input", required=True, help="Результат FamilySearch browser-import или GWAR search/volost")
+    parser.add_argument("--input", required=True, help="Результат FamilySearch browser-import, GWAR search/volost или JSON ручного поиска (source: manual)")
     parser.add_argument("--research-goal", required=True)
     args = parser.parse_args(argv)
     try:

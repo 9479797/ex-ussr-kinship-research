@@ -72,7 +72,13 @@ def read_csv(path: Path, required: set[str]) -> tuple[list[dict[str, str]], list
             missing = sorted(required - set(reader.fieldnames))
             if missing:
                 errors.append(f"{path.name}: отсутствуют колонки: {', '.join(missing)}")
-            rows = [{k: (v or "").strip() for k, v in row.items()} for row in reader]
+            rows = []
+            for number, row in enumerate(reader, start=2):
+                if None in row:
+                    # csv.DictReader складывает лишние поля в ключ None: обычно незакавыченная запятая.
+                    errors.append(f"{path.name}: строка {number} содержит больше полей, чем заголовок (незакавыченная запятая?)")
+                    row.pop(None)
+                rows.append({k: (v or "").strip() for k, v in row.items()})
             return rows, errors
     except OSError as exc:
         return [], [f"{path.name}: ошибка чтения: {exc}"]
@@ -117,6 +123,8 @@ def id_prefix(value: str) -> str:
     return value.rstrip("0123456789")
 
 
+MIN_PROSE_LINES = 12
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 REPORT_MARKERS = ("[неразборчиво]", "[предположительно")
 HEADING_RE = re.compile(r"^#{2,6}\s")
 
@@ -168,6 +176,18 @@ def audit_report(
 
     markers = {marker.strip("[]"): text.count(marker) for marker in REPORT_MARKERS}
     return errors, markers
+
+
+def prose_lines_outside_template(text: str) -> int | None:
+    """Число непустых строк отчёта, которых нет в шаблоне; None, если шаблона нет."""
+    template = ASSETS_DIR / "final-report.template.md"
+    try:
+        template_lines = {
+            line.strip() for line in template.read_text(encoding="utf-8-sig").splitlines() if line.strip()
+        }
+    except OSError:
+        return None
+    return sum(1 for line in text.splitlines() if line.strip() and line.strip() not in template_lines)
 
 
 def parse_args() -> argparse.Namespace:
@@ -349,10 +369,30 @@ def main() -> int:
             for row in relationships
             if row.get("relationship_id")
         )
-        report_errors, markers = audit_report(
-            report.read_text(encoding="utf-8-sig"), known_ids, statuses
-        )
+        report_text = report.read_text(encoding="utf-8-sig")
+        report_errors, markers = audit_report(report_text, known_ids, statuses)
         errors.extend(report_errors)
+        extra_lines = prose_lines_outside_template(report_text)
+        if extra_lines is not None and extra_lines >= MIN_PROSE_LINES and not claims:
+            warnings.append(
+                f"final-report.md: содержательный текст ({extra_lines} строк вне шаблона), "
+                "но реестр утверждений пуст — выводы не прослеживаются до claim_id"
+            )
+
+    # Журнал поисков необязателен; находка без артефакта — предупреждение.
+    search_rows: list[dict[str, str]] = []
+    search_log = case_dir / "search-log.csv"
+    if search_log.is_file():
+        search_rows, search_errors = read_csv(search_log, {"search_id", "result_status", "artifact_ids"})
+        warnings.extend(search_errors)
+        for row in search_rows:
+            if row.get("result_status", "").strip().casefold() == "found" and not row.get(
+                "artifact_ids", ""
+            ).strip():
+                warnings.append(
+                    f"{row.get('search_id') or '<без ID>'}: result_status=found, но artifact_ids пуст — "
+                    "находка не зарегистрирована как артефакт"
+                )
 
     # Сводка готовности: что ещё не снято. Не ошибки — для решения, выдавать ли отчёт.
     summary = {
@@ -370,6 +410,7 @@ def main() -> int:
             "artifacts": len(artifacts),
             "claims": len(claims),
             "relationships": len(relationships),
+            "searches": len(search_rows),
         },
         "summary": summary,
         "errors": errors,
@@ -383,7 +424,7 @@ def main() -> int:
         print(
             "Записей: "
             f"лица={len(persons)}, артефакты={len(artifacts)}, "
-            f"утверждения={len(claims)}, связи={len(relationships)}"
+            f"утверждения={len(claims)}, связи={len(relationships)}, поиски={len(search_rows)}"
         )
         open_statuses = ("hypothesis", "single-source", "unresolved", "contradicted", "пусто")
         print("\nСВОДКА:")

@@ -85,7 +85,7 @@ references/
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
 assets/                          case intake, CSV registers, final report template,
-                                 photos README template, readable PDF template (report-pdf.template.html)
+                                 photos README template, research-state template, readable PDF template (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
                                  familysearch.py, gwar.py, register_search.py and shared local analysis modules
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
