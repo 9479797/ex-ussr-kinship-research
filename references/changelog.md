@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Expand source navigation for libraries, historic maps, repression records, Finland, Baltic and Polish collections and emigrant records; update moved addresses. Qualify contributor access observations, preserve record provenance and source dependence, and consolidate Commons discovery into the existing archival-copy guidance ([#61](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/61)).
+
 ## 1.11.0 — 2026-10-28
 
 - Preserve the original settlement, volost, uyezd and gubernia when registering new GWAR leads, retaining source snapshots and deduplication; correct the official CDIAK domain ([#55](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/55)).
