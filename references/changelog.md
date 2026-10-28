@@ -1,6 +1,6 @@
 # Release history
 
-## Unreleased
+## 1.11.0 — 2026-10-28
 
 - Preserve the original settlement, volost, uyezd and gubernia when registering new GWAR leads, retaining source snapshots and deduplication; correct the official CDIAK domain ([#55](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/55)).
 - Add the third-party RGADA Search index with metadata/PDF search modes, inventory provenance and bounded negative-result guidance ([#56](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/56), [#54](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/54)).
