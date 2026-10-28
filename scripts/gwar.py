@@ -17,7 +17,7 @@ from research_common import (configure_utf8_stdio, SourceClient, SourceError, fi
                              read_json, save_json, state_lock, timestamp)
 
 BASE = "https://gwar.mil.ru"
-KINDS = {"reports": "chelovek_donesenie", "hospitals": "chelovek_gospital", "awards": "chelovek_nagrazhdenie"}
+KINDS = {"reports": "chelovek_donesenie", "hospitals": "chelovek_gospital", "awards": "chelovek_nagrazhdenie", "pows": "chelovek_plen"}
 
 
 def source_client():

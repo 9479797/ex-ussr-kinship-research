@@ -1,8 +1,11 @@
 # Release history
 
-## Unreleased
+## 1.14.0 — 2026-10-28
 
 - Use a suitable connected FamilySearch MCP for structured reads and task-authorized tree changes; preserve the selected destination, actual filters and scope, evidence provenance, privacy and read-back after ambiguous writes. Keep browser research available and avoid requiring a particular server or browser-session extraction ([#63](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/63)).
+
+- Add GWAR prisoner-of-war cards through `--kind pows`, include them in the default selection, preserve direct card locators and document how to resume older checkpoints. Add a synthetic CLI regression for explicit POW selection and the expanded default query ([#64](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/64)).
+- Add qualified source routes for Moscow archive requests, Volga German personal books, Voronezh digital access, Moscow Oblast burial records, Odesa archival collections and German consular registers. Consolidate existing Voronezh navigation, distinguish official descriptions from contributor observations, and omit private-case details and unsupported negative coverage claims.
 
 ## 1.13.0 — 2026-10-28
 
