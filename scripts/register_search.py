@@ -105,7 +105,10 @@ def gwar_items(data):
                "archival_reference": encode({"card": identity, "documents_pages": source.get("documents_pages", {}),
                                               "military_unit_name": source.get("military_unit_name", "")}),
                "record_date": str(source.get("event_date_from") or ""),
-               "place_as_written": str(source.get("birth_place") or ""), "names_as_written": name,
+               # Report cards usually leave birth_place empty and fill volost/uezd/gubernia.
+               "place_as_written": ", ".join(str(source[field]) for field in (
+                   "birth_place", "birth_place_volost", "birth_place_uezd", "birth_place_gubernia") if source.get(field)),
+               "names_as_written": name,
                "summary": "Карточка Первой мировой; место и одноимённые лица требуют проверки по документу."}
 
 
