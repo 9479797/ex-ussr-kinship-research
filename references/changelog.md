@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Work in the user's Arca family tree when its MCP tools are connected, without a separate opt-in or confirmations of ordinary operations: read the existing tree as the user's materials, and write what the research establishes within the task and the connection's access, cited to its sources, each fact marked with how well it is proven to its register status and kept current as conclusions change; never overwrite the user's records. Registers, intermediate materials, the queue and the search log stay in the case folder; without Arca the workflow is unchanged.
+
 ## 1.11.0 — 2026-10-28
 
 - Preserve the original settlement, volost, uyezd and gubernia when registering new GWAR leads, retaining source snapshots and deduplication; correct the official CDIAK domain ([#55](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/55)).
