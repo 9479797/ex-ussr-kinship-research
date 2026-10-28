@@ -44,6 +44,7 @@ REQUIRED_FILES = {
 }
 
 CORROBORATED = {"corroborated", "strongly-corroborated"}
+REQUEST_STATUSES = {"draft", "approved", "sent", "registered", "answered", "declined", "closed"}
 VALID_CLAIM_STATUSES = {
     "",
     "hypothesis",
@@ -333,18 +334,59 @@ def main() -> int:
                 "с указанным происхождением и локатором оригинала, образа или официальной выписки"
             )
 
+    # Реестр запросов необязателен; статусы отправки и ответа должны быть подтверждены.
+    request_rows: list[dict[str, str]] = []
+    request_register = case_dir / "request-register.csv"
+    if request_register.is_file():
+        request_rows, request_errors = read_csv(
+            request_register,
+            {"request_id", "status", "target_person_ids", "related_claim_ids", "date_sent",
+             "tracking_number", "reply_artifact_ids", "user_authorization", "file"},
+        )
+        warnings.extend(request_errors)
+        duplicates = duplicate_ids(request_rows, "request_id")
+        if duplicates:
+            errors.append(f"Дублирующиеся ID запросов: {', '.join(duplicates)}")
+        for row in request_rows:
+            request_id = row.get("request_id") or "<без ID>"
+            status = row.get("status", "").strip()
+            if status not in REQUEST_STATUSES:
+                warnings.append(f"{request_id}: неизвестный статус запроса {status!r}")
+            for person_id in split_ids(row.get("target_person_ids", "")):
+                if person_id not in person_ids:
+                    errors.append(f"{request_id}: неизвестный person_id {person_id} в реестре запросов")
+            for claim_id in split_ids(row.get("related_claim_ids", "")):
+                if claim_id not in claim_by_id:
+                    errors.append(f"{request_id}: неизвестный claim_id {claim_id} в реестре запросов")
+            for artifact_id in split_ids(row.get("reply_artifact_ids", "")):
+                if artifact_id not in artifact_by_id:
+                    errors.append(f"{request_id}: неизвестный reply artifact_id {artifact_id}")
+            if status in ("sent", "registered", "answered"):
+                if not row.get("date_sent", "").strip():
+                    warnings.append(f"{request_id}: статус {status}, но date_sent пуст — отправка не подтверждена")
+                if not row.get("user_authorization", "").strip():
+                    warnings.append(f"{request_id}: статус {status} без записанного разрешения пользователя")
+            if status == "registered" and not row.get("tracking_number", "").strip():
+                warnings.append(f"{request_id}: статус registered без номера обращения")
+            if status == "answered" and not split_ids(row.get("reply_artifact_ids", "")):
+                warnings.append(f"{request_id}: статус answered, но ответ не зарегистрирован как артефакт")
+            file_name = row.get("file", "").strip()
+            if file_name and not (case_dir / file_name).is_file():
+                warnings.append(f"{request_id}: файл запроса не найден: {file_name}")
+
     # Итоговый отчёт: ссылки и статусы должны совпадать с реестрами.
     markers: dict[str, int] = {}
     report = case_dir / "final-report.md"
     if report.is_file():
         known_ids: dict[str, set[str]] = {
-            prefix: set() for prefix in ("A-", "C-", "R-", "P-")
+            prefix: set() for prefix in ("A-", "C-", "R-", "P-", "RQ-")
         }
         for rows, field in [
             (artifacts, "artifact_id"),
             (claims, "claim_id"),
             (relationships, "relationship_id"),
             (persons, "person_id"),
+            (request_rows, "request_id"),
         ]:
             for row in rows:
                 if row.get(field, "") and id_prefix(row[field]) != row[field]:
@@ -386,6 +428,7 @@ def main() -> int:
             Counter(row.get("status", "") or "пусто" for row in relationships)
         ),
         "report_markers": markers,
+        "requests_by_status": dict(Counter(row.get("status", "") or "пусто" for row in request_rows)),
     }
 
     result = {
@@ -396,6 +439,7 @@ def main() -> int:
             "claims": len(claims),
             "relationships": len(relationships),
             "searches": len(search_rows),
+            "requests": len(request_rows),
         },
         "summary": summary,
         "errors": errors,

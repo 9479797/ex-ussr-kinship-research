@@ -18,6 +18,7 @@ ASSET_FILES = {
     "search-log.csv": "search-log.csv",
     "final-report.template.md": "final-report.md",
     "research-state.template.md": "research-state.md",
+    "request-register.csv": "request-register.csv",
 }
 PHOTOS_README = "photos-readme.template.md"
 
@@ -86,6 +87,8 @@ def main() -> int:
     if not photos_readme.exists() and (assets_dir / PHOTOS_README).is_file():
         shutil.copyfile(assets_dir / PHOTOS_README, photos_readme)
 
+    (case_dir / "requests").mkdir(exist_ok=True)
+
     intake_path = case_dir / "case-intake.yaml"
     text = intake_path.read_text(encoding="utf-8")
     created_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
@@ -108,6 +111,7 @@ def main() -> int:
     for dest_name in ASSET_FILES.values():
         print(f"- {dest_name}")
     print("- photos/README.md")
+    print("- requests/")
     return 0
 
 
