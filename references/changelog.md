@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Use a suitable connected FamilySearch MCP for structured reads and task-authorized tree changes; preserve the selected destination, actual filters and scope, evidence provenance, privacy and read-back after ambiguous writes. Keep browser research available and avoid requiring a particular server or browser-session extraction ([#63](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/63)).
+
 ## 1.13.0 — 2026-10-28
 
 - Refine targeted reading of machine-recognised metric books: choose useful pre-reform name variants, open truncated case titles, distinguish parish sections and pages without recognised text, and preserve viewer captures as screenshots. Keep full-volume reading optional and qualify contributor access observations ([#62](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/62)).
