@@ -50,3 +50,9 @@ privacy:
 
 known_constraints: []
 working_hypotheses: []
+
+arca:  # при работе с древом в Arca (references/arca.md); иначе оставить пустым
+  project: ""  # ID проекта из list_projects
+  project_name: ""
+  access: ""  # read | edit | full, как его дал пользователь
+  case_label: ""  # метка лиц дела в Arca, если используется

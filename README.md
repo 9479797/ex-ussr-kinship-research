@@ -74,6 +74,17 @@ check staged files before contributing, especially if moving an existing case.
 
 Use static HTML with local or embedded images. Active HTML and network image sources are rejected; source links remain clickable. A failed render preserves any existing output PDF.
 
+## With an Arca family tree
+
+[Arca](https://arca.denull.ru) is a family tree app whose desktop version serves an MCP endpoint for AI agents (Agents… in its menu). Connect the agent there, give it access to a project, and the skill works in a hybrid way:
+
+- **From Arca:** the tree the user already has, read as their materials. Its links are hypotheses until documents confirm them, and the sources it cites are leads to the records themselves.
+- **Into Arca:** what the research establishes, never hypotheses. People, events with their godparents and witnesses, and family links go in at `single-source` or better, each cited to a source with the entry it is in, and the scan attached where the source allows. Records of the user's that the evidence contradicts are left to them, as a task to check.
+- **Searches and the queue as tasks:** each search is a task with the query, coverage and result in a comment, closed as done or not found. Planned checks are the agent's open tasks; what only the user can do (a sign-in, a CAPTCHA, a paid request) is a task for them.
+- **In the case folder:** the evidence ledger Arca has no place for: claim statuses, independence groups, artifact assessments, candidates, and the reasons behind each conclusion. So `audit_evidence.py` keeps working; `arca-links.csv` maps case IDs to Arca records.
+
+Everything the agent changes is logged in the project's history as its own sessions, which the user can review and revert. The rules are in [references/arca.md](references/arca.md).
+
 ## Repository layout
 
 ```
@@ -95,7 +106,8 @@ references/
   bessarabia-moldova.md          Bessarabia, Moldova, MASSR and the Dniester borderland
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
-assets/                          case intake, CSV registers, final report template,
+  arca.md                       working in an Arca family tree: what goes there, what stays in the case
+assets/                          case intake, CSV registers, Arca links register, final report template,
                                  photos README template, research-state template, readable PDF template (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
                                  familysearch.py, gwar.py, register_search.py and shared local analysis modules
