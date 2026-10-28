@@ -384,6 +384,17 @@ class RegistrationTests(unittest.TestCase):
                 self.assertEqual(item["source_url_or_path"], "https://gwar.mil.ru/heroes/" + suffix)
                 self.assertEqual(item["snapshot"], record)
 
+    def test_gwar_import_keeps_volost_uezd_and_gubernia(self):
+        path = self.directory / "gwar.json"
+        record = hit(1)
+        record["_source"].update({"birth_place": None, "birth_place_volost": "Условная вол.",
+                                  "birth_place_uezd": "Условный у.", "birth_place_gubernia": "Условная губ."})
+        common.save_json(path, {"source": "gwar", "hits": [record], "coverage": {"complete": True},
+                                "query": {"last_name": "Иванов"}})
+        register_search.register(self.case, path, "goal")
+        self.assertEqual(self.rows("artifact-register.csv")[0]["place_as_written"],
+                         "Условная вол., Условный у., Условная губ.")
+
     def test_gwar_search_score_changes_do_not_duplicate_source_cards(self):
         path = self.directory / "gwar.json"
         record = {**hit(1), "_score": 150.0}
