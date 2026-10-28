@@ -1,5 +1,9 @@
 # Release history
 
+## 1.16.0 — 2026-10-28
+
+- Add focused DNA-evidence guidance for platform copies, related matches, measured observations versus inferred ancestry, segment and ethnicity-estimate limits, and private task-authorized account work. Reuse claim-level independence, existing statuses, artifact categories and privacy/correspondence rules; qualify locality and endogamy clues and cite the provider's method descriptions ([#66](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/66)).
+
 ## 1.15.0 — 2026-10-28
 
 - Report register rows with fewer CSV fields than their header before missing values are normalized, identifying the row and field counts so truncated or misaligned evidence can be corrected. Preserve explicit empty cells and unknown optional values; add a synthetic regression for a short artifact row ([#65](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/65)).
