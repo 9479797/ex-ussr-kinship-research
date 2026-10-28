@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add Velikiya Opisi volunteer inventories and document indexes, with result-type and coverage filters, archival verification and claim-level source dependence ([#57](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/57)).
+
 ## 1.10.0 — 2026-10-27
 
 - Add the official DAKhMO metric-book catalog and the Ukrainian Wikisource archive directory; distinguish catalog holdings, volunteer navigation and individual scan provenance, rights and access ([#52](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/52)).
