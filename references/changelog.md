@@ -1,5 +1,9 @@
 # Release history
 
+## 1.15.0 — 2026-10-28
+
+- Report register rows with fewer CSV fields than their header before missing values are normalized, identifying the row and field counts so truncated or misaligned evidence can be corrected. Preserve explicit empty cells and unknown optional values; add a synthetic regression for a short artifact row ([#65](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/65)).
+
 ## 1.14.0 — 2026-10-28
 
 - Use a suitable connected FamilySearch MCP for structured reads and task-authorized tree changes; preserve the selected destination, actual filters and scope, evidence provenance, privacy and read-back after ambiguous writes. Keep browser research available and avoid requiring a particular server or browser-session extraction ([#63](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/63)).

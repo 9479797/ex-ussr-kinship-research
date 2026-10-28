@@ -77,6 +77,15 @@ class AuditCase(unittest.TestCase):
         self.assertTrue(any("person-register.csv: строка 4 содержит больше полей" in e for e in result["errors"]))
         self.assertEqual(result["counts"]["persons"], 3)
 
+    def test_row_with_missing_fields_is_reported(self):
+        # Строка короче заголовка: URL попадает в captured_at и т. д. — раньше аудит это пропускал.
+        self.append("artifact-register.csv", "A-0001,https://example.org,index,Title,2026-10-28,,index-copy,clear,G1")
+        result = self.audit()
+        self.assertTrue(any(
+            "artifact-register.csv: строка 2 содержит меньше полей, чем заголовок (9 из 23)" in e
+            for e in result["errors"]
+        ))
+
     def test_fresh_case_is_clean(self):
         # Плейсхолдеры шаблона отчёта (A-...., R-0001 при пустых реестрах) не дают ошибок.
         result = self.audit()
