@@ -78,6 +78,13 @@ def read_csv(path: Path, required: set[str]) -> tuple[list[dict[str, str]], list
                     # csv.DictReader складывает лишние поля в ключ None: обычно незакавыченная запятая.
                     errors.append(f"{path.name}: строка {reader.line_num} содержит больше полей, чем заголовок (незакавыченная запятая?)")
                     row.pop(None)
+                if any(value is None for value in row.values()):
+                    # Недостающие поля DictReader заполняет None: значения сдвинулись относительно заголовка.
+                    present = sum(value is not None for value in row.values())
+                    errors.append(
+                        f"{path.name}: строка {reader.line_num} содержит меньше полей, чем заголовок "
+                        f"({present} из {len(reader.fieldnames)}): значения могли сдвинуться в чужие колонки"
+                    )
                 rows.append({k: (v or "").strip() for k, v in row.items()})
             return rows, errors
     except OSError as exc:
