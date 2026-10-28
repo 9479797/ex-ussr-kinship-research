@@ -1,16 +1,19 @@
 <!doctype html>
 <!--
-  Шаблон читаемой PDF-версии отчёта (SKILL.md, шаг 12).
+  Шаблон самостоятельного HTML-отчёта (SKILL.md, шаг 12).
 
   Как пользоваться:
-  1. Скопировать файл в <дело>/pdf-source/report.html, рядом положить локальные изображения.
+  1. Скопировать файл в <дело>/report.html, рядом положить локальные изображения.
      Если нужны обрезка или уменьшение, работать с копиями; оригиналы в photos/ не трогать.
   2. Заменить все <…> на содержимое. Комментарии можно оставить: scripts/build_pdf.py проверяет только видимый текст.
   3. Писать на языке пользователя. Метки надёжности перевести, если язык не русский.
   4. Писать понятным языком, пояснять нужные читателю обозначения. Архивные шифры и ссылки на источники
      оставлять; обычные английские слова и идентификаторы сами по себе не блокируют сборку PDF.
-  5. Собрать: python scripts/build_pdf.py --html <дело>/pdf-source/report.html --out <дело>/<Фамилия_И_О>_семейная_история.pdf
-  6. Просмотреть каждую страницу. Частые правки вёрстки:
+  5. Проверить читаемость, ссылки и изображения в браузере и передать готовый HTML пользователю.
+     HTML — полноценный результат по умолчанию; сборка PDF для его выдачи не нужна.
+  6. Только если пользователь явно запросил PDF, экспортировать этот же HTML:
+     python scripts/build_pdf.py --html <дело>/report.html --out <дело>/report.pdf
+     Затем просмотреть страницы PDF. Частые правки печатной вёрстки:
      - большая пустота перед разделом — убрать class="pb" (принудительный разрыв) у заголовка;
      - фотографии разъехались по страницам — держать их в одном ряду .photos, уменьшив ширины;
      - инициалы переносятся на другую строку — ставить &nbsp; (И.&nbsp;И.&nbsp;Фамилия);
@@ -33,6 +36,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title><ФИО> — <подзаголовок, например «семейная история по документам»></title>
 <style>
   @page { size: A4; margin: 15mm 17mm 16mm 17mm; }
@@ -75,6 +79,17 @@
   .photos figure { margin: 0; }
   .pb { break-before: page; }
   .docfig img { width: 100%; max-height: 225mm; object-fit: contain; border: 1px solid var(--line); }
+  @media screen {
+    body { max-width: 64rem; margin: 0 auto; padding: clamp(1rem, 4vw, 3rem); font-size: 1rem; }
+    h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.15rem; }
+    table { display: block; overflow-x: auto; font-size: .95rem; }
+    header, .photos { flex-wrap: wrap; }
+    a { text-decoration: underline; text-underline-offset: .12em; }
+    .pb { break-before: auto; }
+    .docfig img { max-height: none; }
+  }
 </style>
 </head>
 <body>

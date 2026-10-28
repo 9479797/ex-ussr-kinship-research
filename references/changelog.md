@@ -1,5 +1,9 @@
 # Release history
 
+## 1.21.0 — 2026-10-29
+
+- Make a complete HTML report the default final deliverable; generate PDF only when the user explicitly requests it, reusing the HTML. A report for relatives does not imply PDF. Reuse the existing report template under its format-neutral name, add a screen layout, clarify the audit script's Markdown scope, and keep useful partial results independent of PDF tooling. Add a reasoning scenario for the default HTML report and retain explicit PDF-request coverage.
+
 ## 1.20.0 — 2026-10-29
 
 - Replace the app-specific family-tree integration with portable local GEDCOM exports, using 5.5.1 UTF-8 by default or the version required by the user or chosen software. Preserve source citations, evidence status, original files and the existing case registers; leave application choice, MCP setup and automatic external-tree synchronization outside the skill. Replace the integration scenarios with focused GEDCOM cases and retain the canonical tree-import guidance.
