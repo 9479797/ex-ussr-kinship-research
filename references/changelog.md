@@ -1,5 +1,14 @@
 # Release history
 
+## Unreleased
+
+- Read machine-recognised handwriting in scanned metric books by whole relevant volumes rather than search hits alone; search pre-reform letters that recognition preserves (ѳ, і, ѣ, ъ), open full case titles that inventory lists truncate, attribute hits only within the target parish's section of shared volumes, and save viewer captures as screenshots when a service withholds original files. Update the Yandex «Поиск по архивам» entry with access observed in a signed-in browser on 28.10.2026.
+- Add a WWI prisoner-of-war route: how Russian POW cards were compiled and distorted, how to link two cards cautiously, and the Danish Red Cross POW department archive at Rigsarkivet (card index of Russian POWs in Germany 1915–1918, 1915 lists and indexes), with its online order form, hourly fee and response time checked 28.10.2026.
+- Check neighbouring districts' and regions' civil-registration fonds when a 1920s village record is missing after later boundary changes.
+- Record script-loaded search results seen as an empty table by an HTML-only tool as invalid, not negative.
+- For family-facing reports, separate the story from the action plan, mark hypotheses consistently including in summaries, and run a cold read without case context before handing over.
+- Add six reasoning scenarios for these routes.
+
 ## 1.12.0 — 2026-10-28
 
 - Add official civil-registration request starting points and distinguish online filing from remote delivery; reuse existing correspondence tracking and verify each service's current conditions. Refine targeted reading of ZAGS alphabetic indexes and contextual reading of difficult scan fragments with existing image tools ([#60](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/60)).
