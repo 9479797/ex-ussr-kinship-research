@@ -84,7 +84,7 @@ def fs_items(data):
 
 
 # Report/hospital card routes reported by the contributor in PR #50 (2026-10-27);
-# POW card route opened with HTTP 200 on 2026-10-28.
+# POW card route reported by the contributor in PR #64 (2026-10-28).
 GWAR_CARD_PAGES = ("chelovek_donesenie", "chelovek_gospital", "chelovek_plen")
 
 

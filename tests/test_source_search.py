@@ -55,6 +55,20 @@ def hit(number):
 
 
 class GwarTests(unittest.TestCase):
+    def test_pow_cli_selects_card_index_and_default_all(self):
+        cases = (
+            (["--kind", "pows"], ["chelovek_plen"]),
+            ([], ["chelovek_donesenie", "chelovek_gospital", "chelovek_nagrazhdenie", "chelovek_plen"]),
+        )
+        for flags, expected in cases:
+            with self.subTest(flags=flags), tempfile.TemporaryDirectory() as tmp:
+                client = FakeClient(lambda path, body, as_json:
+                                    "public page" if not as_json else {"hits": {"total": 0, "hits": []}})
+                with patch.object(gwar, "source_client", return_value=client):
+                    result = gwar.main(["search", "--surname", "Условный", "--out", str(Path(tmp) / "gwar.json"), *flags])
+                self.assertEqual(result, 0)
+                self.assertEqual(client.calls[-1][1]["entities"], expected)
+
     def test_completed_cache_keeps_capture_time_without_new_requests(self):
         def handler(path, body, as_json):
             return "public page" if not as_json else {"hits": {"total": 1, "hits": [hit(1)]}}
