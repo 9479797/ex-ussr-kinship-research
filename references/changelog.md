@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add Vyatka archive, church-periodical and regional-library discovery routes; distinguish independent access checks from contributor observations and retain per-file provenance, rights and coverage limits. Check directory sections and index coverage before drawing negative conclusions about employment ([#67](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/67)).
+
 ## 1.16.0 — 2026-10-28
 
 - Add focused DNA-evidence guidance for platform copies, related matches, measured observations versus inferred ancestry, segment and ethnicity-estimate limits, and private task-authorized account work. Reuse claim-level independence, existing statuses, artifact categories and privacy/correspondence rules; qualify locality and endogamy clues and cite the provider's method descriptions ([#66](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/66)).
