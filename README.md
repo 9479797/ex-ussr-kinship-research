@@ -21,10 +21,10 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Source strategy.** Originals first, then official catalogs, indexes, published document collections, and only then trees and forums as leads.
 - **Evidence protocol.** Claims get explainable statuses, not percentages: `hypothesis`, `single-source`, `corroborated`, `strongly-corroborated`, `contradicted`, `unresolved`. Copies and mirrors of one record share an `independence_group`, so they never count as independent proof.
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
-- **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
+- **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks IDs and statuses in the working Markdown report, if present; the agent checks the delivered HTML against the registers. A summary shows what is still uncorroborated or marked illegible.
 - **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
 - **Government services.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)).
-- **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
+- **Final report.** A complete HTML report is the default deliverable, with each relationship laid out edge by edge, contradictions, failed searches and concrete next steps. PDF is an optional export only when you explicitly request it.
 - **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
 - **Connected FamilySearch MCP.** Use a connected server for structured searches, profiles, relatives and sources, and authorized tree changes with explicit scope and read-back. Keep indexed search separate from unindexed scan reading, and check the connector's actual browser, privacy and write capabilities. [Workflow and access limits](references/familysearch-mcp.md).
 - **WWI source search.** Search GWAR reports, hospital, award and prisoner-of-war records by person or locality, compare settlement spellings across saved cards to decode a distorted place name, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
@@ -67,16 +67,23 @@ Keep private case data outside the skill's Git checkout. From the skill folder:
 python scripts/init_case.py --case-dir ~/kinship-cases/my-case --research-question "Who were Maria's parents?" --subject-label "Maria"
 python scripts/hash_artifact.py ~/kinship-cases/my-case/scans/marriage-1902.jpg   # SHA-256 for every saved artifact
 python scripts/audit_evidence.py --case-dir ~/kinship-cases/my-case             # check registers before the final report
-python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.html --out ~/kinship-cases/my-case/report.pdf
 ```
 
 `init_case.py` refuses to create a case inside the skill folder, including with
 `--force`. Git ignores common legacy case-folder names as an additional safeguard;
 check staged files before contributing, especially if moving an existing case.
 
-`build_pdf.py` needs Chrome, Chromium or Edge installed (or `CHROME_PATH`). With `--png-dir` it also renders pages to PNG for review if `pypdfium2` is available.
+The agent prepares a complete HTML report, for example `my-case/report.html`, using `assets/report.template.html` or its existing tools. Open it directly in a browser or share the HTML with its local images. Short answers may remain text or Markdown; an explicitly requested format takes precedence. A family-facing report does not imply PDF.
 
-Use static HTML with local or embedded images. Active HTML and network image sources are rejected; source links remain clickable. A failed render preserves any existing output PDF.
+Only when you explicitly request PDF, the agent can export the same HTML:
+
+```bash
+python scripts/build_pdf.py --html ~/kinship-cases/my-case/report.html --out ~/kinship-cases/my-case/report.pdf
+```
+
+This optional export needs Chrome, Chromium or Edge installed (or `CHROME_PATH`). With `--png-dir` it also renders pages to PNG for review if `pypdfium2` is available. HTML delivery needs no PDF renderer.
+
+For PDF export, use static HTML with local or embedded images. The exporter rejects active HTML and network image sources; source links remain clickable. A failed render preserves any existing output PDF.
 
 ## Family trees in GEDCOM
 
@@ -112,7 +119,7 @@ references/
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
   gedcom.md                     portable family-tree exports with sources and evidence notes
 assets/                          case intake, CSV registers, final report template,
-                                 photos README template, research-state template, readable PDF template (report-pdf.template.html)
+                                 photos README template, research-state template, HTML report template (report.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
                                  familysearch.py, gwar.py, register_search.py and shared local analysis modules
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
