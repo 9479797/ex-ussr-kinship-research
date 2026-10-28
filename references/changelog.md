@@ -1,6 +1,6 @@
 # Release history
 
-## Unreleased
+## 1.12.0 — 2026-10-28
 
 - Add official civil-registration request starting points and distinguish online filing from remote delivery; reuse existing correspondence tracking and verify each service's current conditions. Refine targeted reading of ZAGS alphabetic indexes and contextual reading of difficult scan fragments with existing image tools ([#60](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/60)).
 - Expand source navigation for libraries, historic maps, repression records, Finland, Baltic and Polish collections and emigrant records; update moved addresses. Qualify contributor access observations, preserve record provenance and source dependence, and consolidate Commons discovery into the existing archival-copy guidance ([#61](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/61)).

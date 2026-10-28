@@ -1,5 +1,5 @@
 skill: ex-ussr-kinship-research
-version: "1.11.0"
+version: "1.12.0"
 
 # Условные ситуации работы с древом в Arca (references/arca.md), не автоматические unit-тесты.
 logic_cases:
