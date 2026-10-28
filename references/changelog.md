@@ -1,5 +1,9 @@
 # Release history
 
+## 1.18.0 — 2026-10-28
+
+- Add a focused forced-labour and displaced-person research route through Arolsen, German civil registers and local and Soviet records. Link current official Hessen catalogue guidance, qualify contributor observations, date formats, coverage, fees and access; reuse existing name, identity, evidence and correspondence protocols without exhaustive-search or manual-only gates ([#69](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/69)).
+
 ## 1.17.0 — 2026-10-28
 
 - Add Vyatka archive, church-periodical and regional-library discovery routes; distinguish independent access checks from contributor observations and retain per-file provenance, rights and coverage limits. Check directory sections and index coverage before drawing negative conclusions about employment ([#67](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/67)).
