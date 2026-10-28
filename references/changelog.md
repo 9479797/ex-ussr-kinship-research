@@ -1,13 +1,12 @@
 # Release history
 
-## Unreleased
+## 1.13.0 — 2026-10-28
 
-- Read machine-recognised handwriting in scanned metric books by whole relevant volumes rather than search hits alone; search pre-reform letters that recognition preserves (ѳ, і, ѣ, ъ), open full case titles that inventory lists truncate, attribute hits only within the target parish's section of shared volumes, and save viewer captures as screenshots when a service withholds original files. Update the Yandex «Поиск по архивам» entry with access observed in a signed-in browser on 28.10.2026.
-- Add a WWI prisoner-of-war route: how Russian POW cards were compiled and distorted, how to link two cards cautiously, and the Danish Red Cross POW department archive at Rigsarkivet (card index of Russian POWs in Germany 1915–1918, 1915 lists and indexes), with its online order form, hourly fee and response time checked 28.10.2026.
-- Check neighbouring districts' and regions' civil-registration fonds when a 1920s village record is missing after later boundary changes.
-- Record script-loaded search results seen as an empty table by an HTML-only tool as invalid, not negative.
-- For family-facing reports, separate the story from the action plan, mark hypotheses consistently including in summaries, and run a cold read without case context before handing over.
-- Add six reasoning scenarios for these routes.
+- Refine targeted reading of machine-recognised metric books: choose useful pre-reform name variants, open truncated case titles, distinguish parish sections and pages without recognised text, and preserve viewer captures as screenshots. Keep full-volume reading optional and qualify contributor access observations ([#62](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/62)).
+- Add the Danish Red Cross POW route at Rigsarkivet, distinguishing the approximately dated Russian-prisoner card index (1915–1918), Russian-prisoner lists (1917–1918) and German-prisoner lists (1915); record the limited surviving sample boxes and list packet. Verify document provenance, keep identity candidates separate and centralise paid-order conditions in the existing correspondence guide.
+- Check historical civil-registration jurisdictions and present-day custodians when later boundary changes move village records between regional archives.
+- Treat unverified search-result loading as incomplete coverage using existing statuses; an empty HTML table does not establish an absent record or a JavaScript failure.
+- Keep confidence consistent between family-report summaries and the main text; adapt narrative, plans and reader checks to the task without requiring a second reader or extra deliverables. Add six reasoning scenarios for these distinctions.
 
 ## 1.12.0 — 2026-10-28
 
