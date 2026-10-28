@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Use a connected Arca family tree as research material and write evaluated results with source citations and evidence marks, without repeated approval for ordinary operations. Respect the user's project and output choice, connection permissions and existing private-file rules; preserve user records and keep registers and pending work in the case folder ([#59](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/59), [#58](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/58)).
+
 ## 1.11.0 — 2026-10-28
 
 - Preserve the original settlement, volost, uyezd and gubernia when registering new GWAR leads, retaining source snapshots and deduplication; correct the official CDIAK domain ([#55](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/55)).
