@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Work in the user's Arca family tree when its MCP tools are connected, without a separate opt-in or confirmations of ordinary operations: read the existing tree as the user's materials, and write what the research establishes within the task and the connection's access, cited to its sources, each fact marked with how well it is proven to its register status and kept current as conclusions change; never overwrite the user's records. Registers, intermediate materials, the queue and the search log stay in the case folder; without Arca the workflow is unchanged.
+- Use a connected Arca family tree as research material and write evaluated results with source citations and evidence marks, without repeated approval for ordinary operations. Respect the user's project and output choice, connection permissions and existing private-file rules; preserve user records and keep registers and pending work in the case folder ([#59](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/59), [#58](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/58)).
 
 ## 1.11.0 — 2026-10-28
 
