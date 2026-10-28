@@ -24,6 +24,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Government services.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)).
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 - **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
+- **Optional FamilySearch MCP.** Use a connected server for structured searches, profiles, relatives and sources, and authorized tree changes with explicit scope and read-back. Keep indexed search separate from unindexed scan reading, and check the connector's actual browser, privacy and write capabilities. [Setup and workflow](references/familysearch-mcp.md).
 - **WWI source search.** Search GWAR reports, hospital and award records by person or locality, compare settlement spellings across saved cards to decode a distorted place name, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
 
 Release history: [changelog](references/changelog.md).
@@ -106,6 +107,7 @@ references/
 
   bessarabia-moldova.md          Bessarabia, Moldova, MASSR and the Dniester borderland
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
+  familysearch-mcp.md           optional connector setup, structured reads, scoped writes and verification
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
   arca.md                       working in an Arca family tree: what goes there, what stays in the case
 assets/                          case intake, CSV registers, final report template,
