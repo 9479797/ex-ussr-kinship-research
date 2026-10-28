@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Tõlke seis: 28. oktoober 2026. Haldaja vaatab tõlked üle kord kuus; ingliskeelne README võib sisaldada uuemaid muudatusi.
-
 **Tõenduspõhine genealoogiaoskus tehisintellektiagentidele (Codex, Claude Code ja muud Agent Skillsi käituskeskkonnad).** See muudab agendi hoolikaks perekonnaloo uurijaks endise NSV Liidu, Nõukogude Liidu ja Vene impeeriumi alal. Agent loeb kiriku- ja perekonnaseisuregistreid, sõjaväe-, küüditamis- ja repressioonitoimikuid ning indekseerimata arhiiviskaneeringuid. Iga leiu päritolu jääb jälgitavaks, dokumendid on tõlgendusest lahus ning tõendatud ja tõendamata asjaolud selgelt eristatud.
 
 Hõlmatud on kõik 15 endist liiduvabariiki: Venemaa, Ukraina, Valgevene, Moldova, Eesti, Läti, Leedu, Gruusia, Armeenia, Aserbaidžaan, Kasahstan, Kõrgõzstan, Tadžikistan, Türkmenistan ja Usbekistan. Arhiivid valitakse sündmuse ajal kehtinud jurisdiktsiooni ja dokumentide praeguse valdaja järgi; piirkondlik näide ei asenda kohalikku uurimist.
@@ -80,15 +78,13 @@ python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.htm
 
 Kasutage staatilist HTML-i kohalike või manustatud piltidega. Aktiivne HTML ja võrgust laaditavad pildiallikad lükatakse tagasi; allikalingid jäävad klõpsatavaks. Ebaõnnestunud renderdus säilitab olemasoleva PDF-i.
 
-## Arca sugupuuga
+## Sugupuu GEDCOM-vormingus
 
-[Arca](https://arca.denull.ru) on sugupuurakendus, mille töölauaversioon pakub tehisintellektiagentidele MCP-liidest (menüüs Agents…). Kui agent on ühendatud, kasutab perekonnaloo uurimise või sugupuu loomise taotlus automaatselt Arcat ülesande ja ühendusega antud ligipääsu piires; ilma Arcata ei muutu midagi.
+[GEDCOM](https://gedcom.io/specs/) on genealoogiliste andmete vahetamise standardvorming (`.ged`). Sugupuu koostamise või eksportimise soovi korral loob agent kohaliku faili koos allikate ja tõendatuse märkustega. Ühilduvuse huvides kasutab ta vaikimisi vormingut GEDCOM 5.5.1 ja UTF-8 kodeeringut; kui kasutaja nimetab muu toetatud versiooni, näiteks GEDCOM 7, kasutab ta seda.
 
-- **Arcast:** kasutaja olemasolevat sugupuud loetakse tema antud materjalina. Selle seosed on hüpoteesid, kuni dokumendid neid kinnitavad, ja viidatud allikad on vihjed algdokumentide leidmiseks.
-- **Arcasse:** uurimusega tuvastatud inimesed, sündmused koos ristivanemate ja tunnistajatega ning perekonnaseosed tasemel `single-source` või tugevamad. Igal elemendil on allika- ja kirjeviide ning tõendatuse märge (kinnitatud, üks allikas, vaidlustatud); märge muutub koos juhtumi järeldustega. Skaneeringute ülekanne järgib allika tingimusi ja kehtivaid privaatsusreegleid. Hüpoteesid jäävad juhtumisse; kasutaja kirjeid ei kirjutata kunagi üle, dokumenteeritud versioon lisatakse nende kõrvale. Kasutaja selgesõnaline projekti või väljundi sihtkoha valik on ülimuslik.
-- **Juhtumi kaustas:** registrid, vahematerjalid, tööjärjekord ja otsingulogi jäävad alles nagu ilma Arcata, seega töötab `audit_evidence.py` edasi.
+Olemasolev sugupuu on lähtematerjal ja annab uurimisvihjeid, mitte ei tõesta sugulust. Originaal säilib; kasutaja faili ei kirjutata üle. Kinnitamata andmed, vastuolud ja ebakindlus jäävad juhtumisse. Tõendiregistrid ja otsingulogi jäävad järelduste aluseks. Impordi ja ekspordi reeglid on failis [references/gedcom.md](references/gedcom.md).
 
-Kõik agendi muudatused salvestatakse projekti ajalukku eraldi seanssidena, mida kasutaja saab üle vaadata ja tagasi võtta. Reeglid on failis [references/arca.md](references/arca.md).
+Sugupuuprogrammi valib kasutaja. Rakenduste paigaldamine, MCP seadistamine ja automaatne sünkroonimine välise sugupuuga jäävad selle oskuse ulatusest välja.
 
 ## Hoidla struktuur
 
@@ -114,7 +110,7 @@ references/
   familysearch-indexes.md       sihitud brauseriuuringud, lubatud kohalikud koopiad ja hõlmatus
   familysearch-mcp.md           ühendatud vahendid, struktureeritud lugemine, piiritletud kirjutamine ja kontroll
   ww1-search.md                 GWAR-i isiku- ja paigaotsing ning allikapiltide asukoht
-  arca.md                       Arca sugupuu: mis läheb sinna ja mis jääb juhtumisse
+  gedcom.md                     sugupuude vahetamine GEDCOM-vormingus, allikad ja tõendatus
 assets/                          juhtumi lähteandmed, CSV-registrid, lõpparuande mall,
                                  fotode README-mall, uurimisseisundi mall, loetava PDF-i mall (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

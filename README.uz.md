@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Tarjima nusxasi sanasi: 2026-yil 28-oktabr. Loyiha yurituvchisi tarjimalarni har oy ko‘rib chiqadi; inglizcha README yangi o‘zgarishlarni o‘z ichiga olishi mumkin.
-
 **Sun’iy intellekt agentlari uchun dalilga ustuvorlik beruvchi genealogiya ko‘nikmasi (Codex, Claude Code va boshqa Agent Skills muhitlari).** U agentni sobiq SSSR, Sovet Ittifoqi va Rossiya imperiyasi hududidagi oila tarixini sinchiklab o‘rganuvchi tadqiqotchiga aylantiradi. Agent cherkov kitoblari va fuqarolik holati qaydlarini, harbiy, surgun va qatag‘on hujjatlarini, shuningdek indekslanmagan arxiv skanlarini o‘qiydi. Har bir topilmaning manbasini kuzatish imkonini saqlaydi, qaydni uning talqinidan ajratadi va nima isbotlanganini, nima isbotlanmaganini aniq aytadi.
 
 Qamrov barcha 15 sobiq sovet respublikasini o‘z ichiga oladi: Rossiya, Ukraina, Belarus, Moldova, Estoniya, Latviya, Litva, Gruziya, Armaniston, Ozarbayjon, Qozog‘iston, Qirg‘iziston, Tojikiston, Turkmaniston va O‘zbekiston. Arxivlar voqea paytidagi tarixiy yurisdiksiya va hujjatlarni hozir saqlayotgan muassasaga qarab tanlanadi; mintaqaviy misol mahalliy tadqiqot o‘rnini bosa olmaydi.
@@ -79,15 +77,13 @@ python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.htm
 
 Mahalliy yoki ichiga joylangan rasmlari bor statik HTML ishlating. Faol HTML va tarmoqdan olinadigan rasm manbalari rad etiladi; manba havolalari bosiladigan bo‘lib qoladi. Render muvaffaqiyatsiz bo‘lsa, oldingi chiqish PDF fayli saqlanadi.
 
-## Arca oilaviy shajarasi bilan
+## GEDCOM formatidagi oilaviy shajara
 
-[Arca](https://arca.denull.ru) — ish stoli versiyasi sun’iy intellekt agentlari uchun MCP nuqtasini taqdim etadigan oilaviy shajara ilovasi (menyusidagi Agents…). Agent unga ulangach, oilani tadqiq qilish yoki shajara tuzish so‘rovi vazifa va ulanish bergan kirish doirasida o‘z-o‘zidan Arca orqali bajariladi; Arca bo‘lmasa, hech narsa o‘zgarmaydi.
+[GEDCOM](https://gedcom.io/specs/) (`.ged`) genealogik ma’lumot almashishning standart formatidir. Shajara tuzish yoki eksport qilish so‘ralsa, agent manba havolalari va dalil darajasiga oid izohlar bilan mahalliy fayl tayyorlaydi. Moslik uchun odatiy tanlov — UTF-8 kodlashidagi GEDCOM 5.5.1; foydalanuvchi qo‘llab-quvvatlanadigan boshqa versiyani, masalan GEDCOM 7-ni tanlasa, shu versiya ishlatiladi.
 
-- **Arca-dan:** foydalanuvchining mavjud shajarasi uning materiallari sifatida o‘qiladi. Hujjatlar tasdiqlamaguncha aloqalar faraz hisoblanadi; unda ko‘rsatilgan manbalar qaydlarning o‘zini topishga yo‘nalish beradi.
-- **Arca-ga:** tadqiqot aniqlagan shaxslar, cho‘qintirishdagi tutingan ota-onalar va guvohlari bilan voqealar, shuningdek `single-source` yoki undan yuqori holatdagi oilaviy aloqalar yoziladi. Har biri tegishli qaydi ko‘rsatilgan manbaga havola va isbotlanish darajasi (tasdiqlangan, bitta manba, bahsli) bilan belgilanadi; xulosalar o‘zgarganda belgi ham yangilanadi. Skanlarni uzatish manba shartlari va mavjud maxfiylik qoidalariga amal qiladi. Farazlar ishda qoladi; foydalanuvchi qaydlari hech qachon ustidan yozilmaydi, hujjatli versiya ularning yoniga qo‘shiladi. Loyiha yoki chiqish manzili aniq tanlangan bo‘lsa, shu tanlov ustun turadi.
-- **Ish papkasida:** Arca bo‘lmaganidagi kabi reyestrlar, oraliq materiallar, navbat va qidiruv jurnali saqlanadi, shuning uchun `audit_evidence.py` ishlashda davom etadi.
+Mavjud shajara boshlang‘ich material va qidiruv uchun yo‘l-yo‘riq sifatida olinadi, o‘z-o‘zidan dalil hisoblanmaydi. Asl fayl saqlanadi va uning ustiga yozilmaydi; tasdiqlanmagan ma’lumotlar va noaniqlik tadqiqot ishida qoladi. Dalillar reyestrlari va qidiruv jurnali xulosalarning asosiy qaydi bo‘lib qoladi.
 
-Agentning barcha o‘zgarishlari loyiha tarixida alohida seanslar sifatida qayd qilinadi; foydalanuvchi ularni ko‘rib chiqishi va ortga qaytarishi mumkin. Qoidalar [references/arca.md](references/arca.md) da.
+Dasturni foydalanuvchi tanlaydi. Ilovani o‘rnatish, MCP ulanishini sozlash va tashqi shajara bilan avtomatik sinxronlash ko‘nikma doirasiga kirmaydi. Batafsil: [references/gedcom.md](references/gedcom.md).
 
 ## Repozitoriy tuzilishi
 
@@ -113,7 +109,7 @@ references/
   familysearch-indexes.md       brauzerda maqsadli tadqiqot, ruxsatli mahalliy nusxalar va qamrov
   familysearch-mcp.md           ulangan vositalar, tuzilmali o‘qish, cheklangan yozish va tekshirish
   ww1-search.md                 GWARda shaxs/joy qidiruvi va manba tasviri manzillari
-  arca.md                       Arca shajarasida ishlash: unga nima yoziladi, ishda nima qoladi
+  gedcom.md                     GEDCOM almashinuvi: manbalar, dalil darajasi va tadqiqot ishi
 assets/                          boshlang‘ich ma’lumotlar, CSV reyestrlar, yakuniy hisobot andozasi,
                                  rasmlar README andozasi, tadqiqot holati, o‘qishga qulay PDF andozasi (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

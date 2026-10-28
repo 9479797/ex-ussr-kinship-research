@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Terjime nusgasynyň senesi: 2026-njy ýylyň 28-nji oktýabry. Taslamany ýörediji terjimeleri her aý gözden geçirýär; iňlisçe README has täze üýtgeşmeleri öz içine alyp biler.
-
 **Emeli aň agentleri üçin subutnamany ileri tutýan nesilşynaslyk başarnygy (Codex, Claude Code we beýleki Agent Skills gurşawlary).** Ol agenti öňki SSSR, Sowet Soýuzy we Russiýa imperiýasy boýunça maşgala taryhyny ünsli öwrenýän gözlegçä öwürýär. Agent buthana kitaplaryny we raýat ýagdaýynyň ýazgylaryny, harby, sürgün we repressiýa resminamalaryny, şeýle hem indekslenmedik arhiw skanlaryny okaýar. Her tapyndynyň gelip çykyşyny yzarlap bolýan görnüşde saklaýar, ýazgyny onuň düşündirişinden aýyrýar we nämäniň subut edilendigini, nämäniň edilmändigini açyk aýdýar.
 
 Iş çägi öňki 15 sowet respublikasynyň hemmesini öz içine alýar: Russiýa, Ukraina, Belarus, Moldowa, Estoniýa, Latwiýa, Litwa, Gruziýa, Ermenistan, Azerbaýjan, Gazagystan, Gyrgyzystan, Täjigistan, Türkmenistan we Özbegistan. Arhiwler wakanyň bolan döwründäki taryhy dolandyryş degişliligine we ýazgylary häzir saklaýan edara görä saýlanýar; sebitleýin mysal ýerli gözlegiň ornuny tutmaýar.
@@ -79,15 +77,13 @@ python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.htm
 
 Ýerli ýa-da içine ýerleşdirilen suratlary bolan statik HTML ulanyň. Işjeň HTML we tordan alynýan surat çeşmeleri kabul edilmeýär; çeşme baglanyşyklary basylýan görnüşde galýar. Render şowsuz bolsa, öňki netijäniň PDF faýly saklanýar.
 
-## Arca maşgala şejeresi bilen
+## GEDCOM görnüşindäki maşgala şejeresi
 
-[Arca](https://arca.denull.ru) maşgala şejeresi programmasydyr; onuň iş stoly görnüşi emeli aň agentleri üçin MCP giriş nokadyny hödürleýär (menýusynda Agents…). Agent şol ýere birikdirilenden soň maşgala taryhyny öwrenmek ýa-da şejere gurmak talaby öz-özünden Arca arkaly, tabşyrygyň we birikmäniň berýän girişiniň çäginde ýerine ýetirilýär; Arca bolmasa, tertip üýtgemeýär.
+[GEDCOM](https://gedcom.io/specs/) (`.ged`) nesilşynaslyk maglumatlaryny alyşmagyň standart görnüşidir. Şejere düzmek ýa-da eksport etmek soralanda, agent çeşme salgylary we subutnama derejesi barada bellikler bilen ýerli faýl taýýarlaýar. Gabat gelmek üçin deslapky saýlaw UTF-8 kodlamasyndaky GEDCOM 5.5.1-dir; ulanyjy goldanylýan başga wersiýany, mysal üçin GEDCOM 7-ni saýlasa, şol ulanylýar.
 
-- **Arca-dan:** ulanyjynyň bar şejeresi onuň materialy hökmünde okalýar. Resminamalar tassyklaýança ondaky baglar çaklamadyr, getirilen çeşmeler bolsa ýazgylaryň özüne eltýän gözleg ugurlarydyr.
-- **Arca-a:** gözlegiň kesgitlän zatlary: adamlar, çokundyrma ene-atalary we şaýatlary bilen wakalar, şeýle hem `single-source` ýa-da has ýokary ýagdaýdaky maşgala baglary ýazylýar. Her birinde degişli ýazgy görkezilen çeşmä salgylanma we subut derejesi (tassyklanan, bir çeşme, jedelli) bolýar; netije üýtgese, bellik hem täzelenýär. Skanlary geçirmek çeşmäniň şertlerine we bar gizlinlik düzgünlerine eýerýär. Çaklamalar gözleg işinde galýar; ulanyjynyň ýazgylarynyň üstünden hiç wagt ýazylmaýar, resminamaly görnüş olaryň ýanyna goşulýar. Taslamanyň ýa-da netijäniň ýerleşýän ýeriniň açyk saýlawy ileri tutulýar.
-- **Gözleg işiniň bukjasynda:** Arca ulanylmaýan ýagdaýdaky ýaly sanawlar, aralyk materiallar, nobat we gözleg gündeligi galýar, şonuň üçin `audit_evidence.py` işlemegini dowam etdirýär.
+Bar bolan şejere başlangyç material we gözleg üçin ugur hökmünde ulanylýar, öz-özünden subutnama hasaplanmaýar. Asyl faýl saklanýar we üstünden ýazylmaýar; tassyklanmadyk maglumatlar we näbellilik gözleg işinde galýar. Subutnama sanawlary we gözleg gündeligi netijeleriň esasy hasaby bolup galýar.
 
-Agentiň ähli üýtgeşmeleri taslama taryhynda aýratyn sessiýalar hökmünde ýazylýar; ulanyjy olary gözden geçirip we yzyna gaýtaryp biler. Düzgünler [references/arca.md](references/arca.md) faýlyndadyr.
+Programmany ulanyjy saýlaýar. Programmany gurmak, MCP birikmesini sazlamak we daşarky şejere bilen awtomatik sinhronlamak başarnygyň çägine girmeýär. Giňişleýin: [references/gedcom.md](references/gedcom.md).
 
 ## Repozitoriýanyň gurluşy
 
@@ -113,7 +109,7 @@ references/
   familysearch-indexes.md       brauzerde maksatly gözleg, rugsatly ýerli nusgalar we gurşaw
   familysearch-mcp.md           birikdirilen gurallar, gurluşly okamak, çäklendirilen ýazmak we barlag
   ww1-search.md                 GWAR-da adam/ýer gözlegi we çeşme suratynyň ýerleşişi
-  arca.md                       Arca şejeresinde işlemek: näme geçirilýär, näme işde galýar
+  gedcom.md                     GEDCOM alyşmagy: çeşmeler, subutnama derejesi we gözleg işi
 assets/                          başlangyç maglumatlar, CSV sanawlary, jemleýji hasabat nusgasy,
                                  suratlar üçin README, gözleg ýagdaýy, düşnükli PDF nusgasy (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

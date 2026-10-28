@@ -1,5 +1,10 @@
 # Release history
 
+## 1.20.0 — 2026-10-29
+
+- Replace the app-specific family-tree integration with portable local GEDCOM exports, using 5.5.1 UTF-8 by default or the version required by the user or chosen software. Preserve source citations, evidence status, original files and the existing case registers; leave application choice, MCP setup and automatic external-tree synchronization outside the skill. Replace the integration scenarios with focused GEDCOM cases and retain the canonical tree-import guidance.
+- Update the English README and all 17 translations for the GEDCOM workflow, and remove the translation-status and monthly-maintenance notices from localized READMEs.
+
 ## 1.19.0 — 2026-10-28
 
 - Add a language bar below the README cover and complete README translations in Russian, Belarusian, Kazakh, Ukrainian, Polish, German, Romanian, Estonian, Latvian, Lithuanian, Georgian, Armenian, Azerbaijani, Kyrgyz, Tajik, Turkmen and Uzbek. Keep installation commands and reference links usable in every language; label translations as monthly maintainer-reviewed snapshots.
