@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Expand source navigation for libraries, historic maps, repression records, Finland, Baltic and Polish collections and emigrant records; update moved addresses. Qualify contributor access observations, preserve record provenance and source dependence, and consolidate Commons discovery into the existing archival-copy guidance ([#61](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/61)).
+- Use a connected Arca family tree as research material and write evaluated results with source citations and evidence marks, without repeated approval for ordinary operations. Respect the user's project and output choice, connection permissions and existing private-file rules; preserve user records and keep registers and pending work in the case folder ([#59](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/59), [#58](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/58)).
 
 ## 1.11.0 — 2026-10-28
 
