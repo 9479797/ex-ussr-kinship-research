@@ -16,10 +16,12 @@ from research_common import SourceError, atomic_bytes, configure_utf8_stdio, out
 
 STATUSES = ("draft", "approved", "sent", "registered", "answered", "declined", "closed")
 CHANNELS = ("email", "portal", "web-form", "post", "in-person")
+MODES = ("online", "hybrid", "offline")
+CHANNEL_MODE = {"email": "online", "portal": "online", "web-form": "online", "post": "offline", "in-person": "offline"}
 REGISTER = "request-register.csv"
 TEMPLATE = "request.template.md"
 FIELDS = [
-    "request_id", "created_at", "status", "addressee", "channel", "service_url", "target_person_ids",
+    "request_id", "created_at", "status", "addressee", "channel", "mode", "service_url", "target_person_ids",
     "purpose", "related_claim_ids", "user_authorization", "attachments", "date_sent", "tracking_number",
     "next_check", "reply_artifact_ids", "file", "notes",
 ]
@@ -86,6 +88,7 @@ def new_request(args: argparse.Namespace) -> dict[str, str]:
         raise SourceError(f"В навыке отсутствует шаблон {TEMPLATE}.")
     if args.channel not in CHANNELS:
         raise SourceError(f"Канал {args.channel!r} не поддерживается; допустимо: {', '.join(CHANNELS)}.")
+    mode = check_mode(args.mode) or CHANNEL_MODE[args.channel]
     persons = split_ids(args.persons)
     claims = split_ids(args.claims)
     if not args.purpose.strip() or not args.addressee.strip():
@@ -111,6 +114,7 @@ def new_request(args: argparse.Namespace) -> dict[str, str]:
             "status": "draft",
             "addressee": args.addressee.strip(),
             "channel": args.channel,
+            "mode": mode,
             "service_url": args.service_url or "",
             "target_person_ids": ";".join(persons),
             "purpose": args.purpose.strip(),
@@ -129,6 +133,12 @@ def new_request(args: argparse.Namespace) -> dict[str, str]:
     return row
 
 
+def check_mode(value: str) -> str:
+    if value and value not in MODES:
+        raise SourceError(f"Режим {value!r} не поддерживается; допустимо: {', '.join(MODES)}.")
+    return value or ""
+
+
 def replace_table_value(text: str, label: str, value: str) -> str:
     pattern = re.compile(r"^(\| " + re.escape(label) + r" \| ).*?( \|)$", re.MULTILINE)
     return pattern.sub(lambda m: m.group(1) + value + m.group(2), text, count=1)
@@ -138,6 +148,7 @@ def update_request(args: argparse.Namespace) -> dict[str, str]:
     case = outside_skill(args.case_dir)
     if args.status and args.status not in STATUSES:
         raise SourceError(f"Статус {args.status!r} не поддерживается; допустимо: {', '.join(STATUSES)}.")
+    mode = check_mode(args.mode)
     reply_ids = split_ids(args.reply_artifacts)
     check_ids("artifact_id", reply_ids, known_ids(case, "artifact-register.csv", "artifact_id"))
     date_sent = iso_date(args.date_sent, "--date-sent") if args.date_sent else ""
@@ -157,6 +168,7 @@ def update_request(args: argparse.Namespace) -> dict[str, str]:
             raise SourceError("Для статуса answered укажите --reply-artifacts с уже зарегистрированным ответом.")
         changes = {
             "status": status,
+            "mode": mode or row.get("mode", ""),
             "date_sent": date_sent or row.get("date_sent", ""),
             "tracking_number": args.tracking_number or row.get("tracking_number", ""),
             "next_check": next_check or row.get("next_check", ""),
@@ -173,6 +185,7 @@ def update_request(args: argparse.Namespace) -> dict[str, str]:
         if row.get("file") and file_path.is_file():
             text = file_path.read_text(encoding="utf-8")
             text = replace_table_value(text, "Статус", row["status"])
+            text = replace_table_value(text, "Режим", row["mode"] or "—")
             text = replace_table_value(text, "Отправлено", row["date_sent"] or "—")
             text = replace_table_value(text, "Номер обращения", row["tracking_number"] or "—")
             text = replace_table_value(text, "Следующая проверка", row["next_check"] or "—")
@@ -196,6 +209,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     new.add_argument("--addressee", required=True, help="Учреждение-хранитель или орган, к которому обращаются")
     new.add_argument("--channel", required=True, help=", ".join(CHANNELS))
     new.add_argument("--purpose", required=True, help="Какой вопрос или родственное звено закрывает ответ")
+    new.add_argument("--mode", default="", help=", ".join(MODES) + "; по умолчанию online для email/portal/web-form, offline для post/in-person; hybrid — онлайн-подача с личной явкой за результатом")
     new.add_argument("--service-url", default="", help="Официальная страница услуги или контактов")
     new.add_argument("--persons", default="", help="person_id через запятую")
     new.add_argument("--claims", default="", help="claim_id через запятую")
@@ -207,6 +221,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     update.add_argument("--case-dir", required=True)
     update.add_argument("--request-id", required=True)
     update.add_argument("--status", default="", help=", ".join(STATUSES))
+    update.add_argument("--mode", default="", help=", ".join(MODES))
     update.add_argument("--date-sent", default="", help="YYYY-MM-DD; для sent/registered/answered по умолчанию сегодня")
     update.add_argument("--tracking-number", default="", help="Номер обращения, ID письма или цепочки")
     update.add_argument("--next-check", default="", help="YYYY-MM-DD из подтверждения учреждения")

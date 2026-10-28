@@ -45,6 +45,7 @@ REQUIRED_FILES = {
 
 CORROBORATED = {"corroborated", "strongly-corroborated"}
 REQUEST_STATUSES = {"draft", "approved", "sent", "registered", "answered", "declined", "closed"}
+REQUEST_MODES = {"online", "hybrid", "offline"}
 VALID_CLAIM_STATUSES = {
     "",
     "hypothesis",
@@ -352,6 +353,9 @@ def main() -> int:
             status = row.get("status", "").strip()
             if status not in REQUEST_STATUSES:
                 warnings.append(f"{request_id}: неизвестный статус запроса {status!r}")
+            mode = row.get("mode", "").strip()
+            if mode and mode not in REQUEST_MODES:
+                warnings.append(f"{request_id}: неизвестный режим запроса {mode!r} (online, hybrid, offline)")
             for person_id in split_ids(row.get("target_person_ids", "")):
                 if person_id not in person_ids:
                     errors.append(f"{request_id}: неизвестный person_id {person_id} в реестре запросов")
@@ -429,6 +433,7 @@ def main() -> int:
         ),
         "report_markers": markers,
         "requests_by_status": dict(Counter(row.get("status", "") or "пусто" for row in request_rows)),
+        "requests_by_mode": dict(Counter(row.get("mode", "") or "пусто" for row in request_rows)),
     }
 
     result = {

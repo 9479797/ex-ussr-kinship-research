@@ -67,16 +67,32 @@ class DraftRequestCase(unittest.TestCase):
         self.assertEqual(row["request_id"], "RQ-0001")
         self.assertEqual(row["status"], "draft")
         self.assertEqual(row["target_person_ids"], "P-0001")
+        self.assertEqual(row["mode"], "online")
         path = self.case / row["file"]
         self.assertTrue(path.is_file())
         text = path.read_text(encoding="utf-8")
         self.assertIn("# RQ-0001: Запись о смерти 1977", text)
         self.assertIn("| Статус | draft |", text)
+        self.assertIn("| Режим | online |", text)
         self.assertIn("| Официальная страница | https://example.invalid/service |", text)
         self.assertNotIn("{", text)
         second = self.run_script("new", "--addressee", "Архив", "--channel", "email", "--purpose", "Второй")
         self.assertEqual(second.returncode, 0, second.stderr)
         self.assertEqual(self.rows()[1]["request_id"], "RQ-0002")
+
+    def test_mode_defaults_from_channel_and_can_be_overridden(self):
+        self.run_script("new", "--addressee", "Архив", "--channel", "post", "--purpose", "письмо")
+        self.run_script("new", "--addressee", "ЗАГС", "--channel", "portal", "--purpose", "справка", "--mode", "hybrid")
+        proc = self.run_script("new", "--addressee", "ЗАГС", "--channel", "portal", "--purpose", "x", "--mode", "fax")
+        self.assertEqual(proc.returncode, 2)
+        rows = self.rows()
+        self.assertEqual([row["mode"] for row in rows], ["offline", "hybrid"])
+        proc = self.run_script("update", "--request-id", "RQ-0001", "--mode", "hybrid", "--note", "выдача лично")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(self.rows()[0]["mode"], "hybrid")
+        text = (self.case / rows[0]["file"]).read_text(encoding="utf-8")
+        self.assertIn("| Режим | hybrid |", text)
+        self.assertEqual(self.audit()["summary"]["requests_by_mode"], {"hybrid": 2})
 
     def test_unknown_person_or_channel_is_rejected(self):
         proc = self.run_script("new", "--addressee", "Архив", "--channel", "portal", "--purpose", "x", "--persons", "P-0009")
@@ -130,10 +146,10 @@ class DraftRequestCase(unittest.TestCase):
 
     def test_audit_reports_broken_references_in_register(self):
         with (self.case / "request-register.csv").open("a", encoding="utf-8") as handle:
-            handle.write("RQ-0001,2026-10-28T00:00:00+00:00,mailed,Архив,email,,P-0007,x,C-0003,,,,,,A-0005,requests/missing.md,\n")
+            handle.write("RQ-0001,2026-10-28T00:00:00+00:00,mailed,Архив,email,fax,,P-0007,x,C-0003,,,,,,A-0005,requests/missing.md,\n")
         result = self.audit()
         joined = "\n".join(result["errors"] + result["warnings"])
-        for fragment in ("person_id P-0007", "claim_id C-0003", "artifact_id A-0005", "статус запроса 'mailed'", "requests/missing.md"):
+        for fragment in ("person_id P-0007", "claim_id C-0003", "artifact_id A-0005", "статус запроса 'mailed'", "режим запроса 'fax'", "requests/missing.md"):
             self.assertIn(fragment, joined)
 
 

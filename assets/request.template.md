@@ -5,6 +5,7 @@
 | Статус | {status} |
 | Адресат | {addressee} |
 | Канал | {channel} |
+| Режим | {mode} |
 | Официальная страница | {service_url} |
 | Лица дела | {target_person_ids} |
 | Проверяемые утверждения | {related_claim_ids} |
