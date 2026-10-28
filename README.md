@@ -21,6 +21,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
+- **Government services.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)).
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 - **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
 - **WWI source search.** Search GWAR reports, hospital and award records by person or locality, compare settlement spellings across saved cards to decode a distorted place name, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
@@ -91,6 +92,7 @@ SKILL.md                         main instructions (workflow, hard rules, langua
 references/
   source-strategy.md             source hierarchy, query patterns, catalogs, archive requests
   correspondence.md              recipients, mail integration, authorized sending and replies
+  government-portals.md          civil-registration services and request delivery routes
   evidence-protocol.md           artifact assessment, statuses, identity resolution, conflicts
   ex-ussr-locale-guide.md        jurisdictions, name variants, calendars, record types by period
   browser-and-captcha.md         browsing, sign-in, one CAPTCHA attempt and hand-off, rate limits
