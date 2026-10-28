@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Tərcümənin vəziyyəti: 28 oktyabr 2026. Layihəni müşayiət edən şəxs tərcümələri ayda bir dəfə nəzərdən keçirir; ingiliscə README-də daha yeni dəyişikliklər ola bilər.
-
 **Süni intellekt agentləri (Codex, Claude Code və digər Agent Skills mühitləri) üçün sübutları önə çəkən şəcərə araşdırması bacarığı.** O, agenti keçmiş SSRİ, Sovet İttifaqı və Rusiya imperiyası ərazilərində ailə tarixinin diqqətli tədqiqatçısına çevirir. Agent kilsə kitablarını və vətəndaşlıq vəziyyəti aktlarını, hərbi, deportasiya və repressiya işlərini, həmçinin indeksləşdirilməmiş arxiv skanlarını oxuyur. Hər tapıntının mənşəyini izlənə bilən şəkildə saxlayır, qeydləri onların şərhindən ayırır və nəyin sübut edildiyini, nəyin edilmədiyini aydın bildirir.
 
 Əhatə dairəsinə bütün 15 keçmiş sovet respublikası daxildir: Rusiya, Ukrayna, Belarus, Moldova, Estoniya, Latviya, Litva, Gürcüstan, Ermənistan, Azərbaycan, Qazaxıstan, Qırğızıstan, Tacikistan, Türkmənistan və Özbəkistan. Arxivlər hadisənin baş verdiyi dövrdəki inzibati mənsubiyyətə və sənədləri hazırda saxlayan quruma görə seçilir; regional nümunə yerli araşdırmanı əvəz etmir.
@@ -82,15 +80,13 @@ töhfə verməzdən əvvəl indeksə əlavə edilmiş faylları yoxlayın, xüsu
 
 Yerli və ya daxil edilmiş şəkillərlə statik HTML istifadə edin. Aktiv HTML və şəbəkədən yüklənən şəkil mənbələri rədd edilir; mənbə keçidləri kliklənə bilir. Render uğursuz olarsa, mövcud çıxış PDF-i saxlanılır.
 
-## Arca ailə şəcərəsi ilə
+## GEDCOM formatında ailə şəcərəsi
 
-[Arca](https://arca.denull.ru) ailə şəcərəsi tətbiqidir; onun masaüstü versiyası süni intellekt agentləri üçün MCP qoşulma nöqtəsi təqdim edir (menyuda Agents…). Agent qoşulduqdan sonra ailə şəcərəsini araşdırmaq və ya qurmaq sorğusu tapşırıq və qoşulmanın verdiyi giriş çərçivəsində öz-özünə Arca vasitəsilə icra olunur; Arca yoxdursa, heç nə dəyişmir.
+[GEDCOM](https://gedcom.io/specs/) (`.ged`) şəcərə məlumatlarının mübadiləsi üçün standart formatdır. Şəcərə qurmaq və ya ixrac etmək istəndikdə agent mənbə istinadları və sübut səviyyəsinə dair qeydlərlə yerli fayl hazırlayır. Uyğunluq üçün standart seçim UTF-8 kodlaşdırmalı GEDCOM 5.5.1-dir; istifadəçi dəstəklənən başqa versiyanı, məsələn GEDCOM 7-ni seçərsə, həmin versiya istifadə olunur.
 
-- **Arca-dan:** istifadəçinin mövcud şəcərəsi onun materialları kimi oxunur. Sənədlər təsdiqləyənə qədər əlaqələr hipotez olaraq qalır, istinad edilən mənbələr isə qeydlərin özünü tapmaq üçün ipucudur.
-- **Arca-ya:** araşdırmanın müəyyən etdiyi şəxslər, xaç valideynləri və şahidləri ilə hadisələr, `single-source` və ya daha yüksək statuslu ailə əlaqələri. Hər element konkret qeyd göstərilməklə mənbəyə bağlanır və sübut səviyyəsi ilə işarələnir (təsdiqlənib, bir mənbə, mübahisəli); iş üzrə nəticələr dəyişdikcə işarə də dəyişir. Skanların ötürülməsi mənbənin şərtlərinə və mövcud məxfilik qaydalarına tabedir. Hipotezlər işdə qalır; istifadəçinin qeydləri heç vaxt əvəzlənmir, sənədləşdirilmiş versiya onların yanında əlavə olunur. Layihənin və ya nəticənin saxlanacağı yerin açıq seçimi üstün tutulur.
-- **İş qovluğunda:** reyestrlər, aralıq materiallar, növbə və axtarış jurnalı Arca olmadan olduğu kimi saxlanılır, buna görə `audit_evidence.py` işləməyə davam edir.
+Mövcud şəcərə ilkin material və axtarış ipucu kimi istifadə olunur, özlüyündə sübut sayılmır. İlkin fayl saxlanılır və üzərinə yazılmır; təsdiqlənməmiş məlumatlar və qeyri-müəyyənlik araşdırma işində qalır. Sübut reyestrləri və axtarış jurnalı nəticələrin əsas uçotu olaraq qalır.
 
-Agentin bütün dəyişiklikləri layihənin tarixçəsində öz sessiyaları kimi qeyd olunur; istifadəçi onları yoxlaya və geri qaytara bilər. Qaydalar [references/arca.md](references/arca.md) faylındadır.
+Proqramı istifadəçi seçir. Tətbiqin quraşdırılması, MCP qoşulmasının sazlanması və xarici şəcərə ilə avtomatik sinxronlaşdırma bacarığın əhatəsinə daxil deyil. Ətraflı: [references/gedcom.md](references/gedcom.md).
 
 ## Repozitoriyanın quruluşu
 
@@ -116,7 +112,7 @@ references/
   familysearch-indexes.md       məqsədli brauzer araşdırması, icazəli yerli nüsxələr və əhatə
   familysearch-mcp.md           qoşulmuş alətlər, strukturlaşdırılmış oxuma, məhdud yazma və yoxlama
   ww1-search.md                 GWAR-da şəxs/yer axtarışı və mənbə şəkillərinin ünvanları
-  arca.md                       Arca şəcərəsi ilə iş: ora nə yazılır, işdə nə qalır
+  gedcom.md                     GEDCOM mübadiləsi: mənbələr, sübut səviyyəsi və araşdırma işi
 assets/                          işin qəbulu, CSV reyestrləri, yekun hesabat şablonu,
                                  şəkillər üçün README şablonu, tədqiqat vəziyyəti şablonu, oxunaqlı PDF şablonu (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

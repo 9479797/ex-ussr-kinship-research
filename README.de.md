@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Stand der Übersetzung: 28. Oktober 2026. Der Projektbetreuer prüft die Übersetzungen monatlich; die englische README kann neuere Änderungen enthalten.
-
 **Eine genealogische Fähigkeit für KI-Agenten (Codex, Claude Code und andere Agent-Skills-Laufzeitumgebungen), bei der Belege an erster Stelle stehen.** Sie macht einen Agenten zum sorgfältigen Erforscher der Familiengeschichte in der ehemaligen UdSSR, der Sowjetunion und dem Russischen Reich. Der Agent liest Kirchenbücher und Personenstandsregister, Militär-, Deportations- und Repressionsakten sowie nicht indexierte Archivscans. Er hält die Herkunft jedes Fundes nachvollziehbar fest, trennt Aufzeichnungen von ihrer Deutung und sagt klar, was bewiesen ist und was nicht.
 
 Der Umfang schließt alle 15 ehemaligen Sowjetrepubliken ein: Russland, die Ukraine, Belarus, Moldau, Estland, Lettland, Litauen, Georgien, Armenien, Aserbaidschan, Kasachstan, Kirgisistan, Tadschikistan, Turkmenistan und Usbekistan. Archive werden nach der historischen Zuständigkeit des Ereignisses und der heutigen verwahrenden Stelle ausgewählt; ein regionales Beispiel ersetzt keine örtliche Recherche.
@@ -82,15 +80,13 @@ prüfen Sie vor einem Beitrag die zum Commit vorgemerkten Dateien, besonders bei
 
 Verwenden Sie statisches HTML mit lokalen oder eingebetteten Bildern. Aktives HTML und Bildquellen aus dem Netz werden abgewiesen; Quellenverweise bleiben anklickbar. Bei fehlgeschlagener Ausgabe bleibt eine vorhandene Ausgabe-PDF erhalten.
 
-## Mit einem Arca-Stammbaum
+## Stammbaum in GEDCOM
 
-[Arca](https://arca.denull.ru) ist eine Stammbaum-App, deren Desktopversion einen MCP-Endpunkt für KI-Agenten anbietet (Agents… im Menü). Sobald der Agent dort verbunden ist, nutzt eine Anfrage zur Erforschung oder Erstellung des Stammbaums von selbst Arca, innerhalb der Aufgabe und der durch die Verbindung gewährten Zugriffsrechte; ohne Arca ändert sich nichts.
+[GEDCOM](https://gedcom.io/specs/) ist ein Standardformat zum Austausch genealogischer Daten (`.ged`). Auf Wunsch, einen Stammbaum zu erstellen oder zu exportieren, erzeugt der Agent eine lokale Datei mit Quellen und Anmerkungen zur Beleglage. Für die Kompatibilität verwendet er standardmäßig GEDCOM 5.5.1 in UTF-8; nennt der Nutzer eine andere unterstützte Version, etwa GEDCOM 7, verwendet er diese.
 
-- **Aus Arca:** der vorhandene Stammbaum des Nutzers, der als dessen Material eingelesen wird. Seine Verknüpfungen bleiben Hypothesen, bis Dokumente sie bestätigen; seine Quellenangaben dienen als Hinweise auf die eigentlichen Aufzeichnungen.
-- **In Arca:** was die Forschung feststellt: Personen, Ereignisse mit Taufpaten und Zeugen sowie Familienbeziehungen mit dem Status `single-source` oder besser. Für jeden Eintrag wird die Quelle mit der betreffenden Fundstelle angegeben und die Belegstärke markiert (bestätigt, eine Quelle, umstritten); die Markierung folgt den sich ändernden Schlussfolgerungen des Falls. Die Übertragung von Scans richtet sich nach den Bedingungen der Quelle und den bestehenden Datenschutzregeln. Hypothesen bleiben im Fall; Einträge des Nutzers werden niemals überschrieben, die dokumentierte Fassung wird daneben ergänzt. Eine ausdrückliche Wahl des Projekts oder Ausgabeziels hat Vorrang.
-- **Im Fallordner:** die Register, Zwischenmaterialien, Warteschlange und das Suchprotokoll, wie ohne Arca, damit `audit_evidence.py` weiter funktioniert.
+Ein vorhandener Stammbaum ist Ausgangsmaterial und liefert Recherchehinweise; er beweist keine Verwandtschaft. Das Original bleibt erhalten, die Datei des Nutzers wird nicht überschrieben. Unbelegte Angaben, Widersprüche und Unsicherheiten bleiben im Fall dokumentiert. Die Belegregister und das Suchprotokoll bleiben die Grundlage der Schlussfolgerungen. Die Regeln für Import und Export stehen in [references/gedcom.md](references/gedcom.md).
 
-Alle Änderungen des Agenten werden in der Projektgeschichte als eigene Sitzungen protokolliert, die der Nutzer prüfen und rückgängig machen kann. Die Regeln stehen in [references/arca.md](references/arca.md).
+Die Stammbaumsoftware wählt der Nutzer. Die Installation von Anwendungen, die MCP-Einrichtung und die automatische Synchronisierung mit einem externen Stammbaum liegen außerhalb des Umfangs dieser Fähigkeit.
 
 ## Aufbau des Repositorys
 
@@ -116,7 +112,7 @@ references/
   familysearch-indexes.md       gezielte Browserrecherche, erlaubte lokale Kopien und Abdeckung
   familysearch-mcp.md           verbundene Werkzeuge, strukturierte Lesezugriffe, begrenztes Schreiben und Kontrolle
   ww1-search.md                 GWAR-Personen-/Ortssuche und Fundstellen der Quellenbilder
-  arca.md                       Arbeit mit einem Arca-Stammbaum: was dort und was im Fall bleibt
+  gedcom.md                     Stammbaumaustausch in GEDCOM, Quellen und Beleglage
 assets/                          Fallaufnahme, CSV-Register, Abschlussberichtsvorlage,
                                  Foto-README-Vorlage, Forschungsstandsvorlage, lesbare PDF-Vorlage (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

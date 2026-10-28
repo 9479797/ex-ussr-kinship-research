@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Versiunea traducerii: 28 octombrie 2026. Administratorul revizuiește traducerile lunar; README-ul în engleză poate conține modificări mai recente.
-
 **Un skill de genealogie bazat pe dovezi pentru agenți AI (Codex, Claude Code și alte medii Agent Skills).** Transformă agentul într-un cercetător atent al istoriei familiei din fostul spațiu sovietic, Uniunea Sovietică și Imperiul Rus. Agentul citește registre parohiale și de stare civilă, dosare militare, de deportare și represiune, precum și scanări de arhivă neindexate. Păstrează proveniența fiecărei descoperiri, separă documentele de interpretare și spune clar ce este demonstrat și ce nu.
 
 Acoperă toate cele 15 foste republici sovietice: Rusia, Ucraina, Belarus, Moldova, Estonia, Letonia, Lituania, Georgia, Armenia, Azerbaidjan, Kazahstan, Kârgâzstan, Tadjikistan, Turkmenistan și Uzbekistan. Arhivele sunt alese după jurisdicția istorică a evenimentului și deținătorul actual al documentelor; un exemplu regional nu înlocuiește cercetarea locală.
@@ -80,15 +78,13 @@ python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.htm
 
 Folosiți HTML static cu imagini locale sau încorporate. HTML-ul activ și sursele de imagini din rețea sunt respinse; legăturile către surse rămân accesibile. Dacă randarea eșuează, PDF-ul existent este păstrat.
 
-## Cu un arbore genealogic Arca
+## Arbore genealogic în GEDCOM
 
-[Arca](https://arca.denull.ru) este o aplicație pentru arbori genealogici, a cărei versiune desktop oferă un endpoint MCP pentru agenți AI (Agents… în meniu). După conectarea agentului, o cerere de cercetare sau construire a arborelui folosește automat Arca, în limitele sarcinii și ale accesului acordat de conexiune; fără Arca, fluxul nu se schimbă.
+[GEDCOM](https://gedcom.io/specs/) este un format standard de schimb al datelor genealogice (`.ged`). La cererea de a construi sau exporta un arbore, agentul creează un fișier local cu surse și note privind susținerea prin dovezi. Pentru compatibilitate, folosește implicit GEDCOM 5.5.1 în UTF-8; dacă utilizatorul indică o altă versiune acceptată, de exemplu GEDCOM 7, o folosește pe aceea.
 
-- **Din Arca:** arborele existent al utilizatorului este citit ca material furnizat de acesta. Legăturile sale rămân ipoteze până la confirmarea documentară, iar sursele citate sunt piste către documentele propriu-zise.
-- **În Arca:** ceea ce stabilește cercetarea: persoane, evenimente cu nași și martori și relații de familie la nivel `single-source` sau mai bun. Fiecare element citează sursa și înregistrarea corespunzătoare și indică gradul de susținere (confirmat, o singură sursă, disputat); marcajul se actualizează odată cu concluziile cazului. Transferul scanărilor respectă condițiile sursei și regulile existente de confidențialitate. Ipotezele rămân în dosarul cazului; datele utilizatorului nu sunt suprascrise niciodată, versiunea documentată fiind adăugată alături. Alegerea explicită a proiectului sau a destinației rezultatului are prioritate.
-- **În directorul cazului:** registrele, materialele intermediare, lista de lucru și jurnalul de căutare rămân la fel ca fără Arca, astfel încât `audit_evidence.py` continuă să funcționeze.
+Un arbore existent este material inițial și oferă indicii de cercetare, nu dovada rudeniei. Originalul este păstrat; fișierul utilizatorului nu este suprascris. Informațiile neconfirmate, contradicțiile și incertitudinile rămân în dosar. Registrele de dovezi și jurnalul de căutare rămân baza concluziilor. Regulile de import și export sunt în [references/gedcom.md](references/gedcom.md).
 
-Toate modificările agentului sunt înregistrate în istoricul proiectului ca sesiuni proprii, pe care utilizatorul le poate verifica și anula. Regulile sunt în [references/arca.md](references/arca.md).
+Utilizatorul alege programul pentru arbore. Instalarea aplicațiilor, configurarea MCP și sincronizarea automată cu un arbore extern nu fac parte din domeniul acestei abilități.
 
 ## Structura depozitului
 
@@ -114,7 +110,7 @@ references/
   familysearch-indexes.md       cercetare țintită în browser, copii locale permise și acoperire
   familysearch-mcp.md           instrumente conectate, citiri structurate, scrieri delimitate și verificare
   ww1-search.md                 căutări GWAR după persoană/localitate și localizarea imaginilor-sursă
-  arca.md                       lucrul cu arborele Arca: ce se înregistrează acolo și ce rămâne în caz
+  gedcom.md                     schimb de arbori în GEDCOM, surse și susținerea prin dovezi
 assets/                          preluarea cazului, registre CSV, șablon de raport final,
                                  șablon README pentru fotografii, stare de cercetare, PDF lizibil (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Vertimo redakcija: 2026 m. spalio 28 d. Prižiūrėtojas vertimus peržiūri kas mėnesį; angliškame README gali būti naujesnių pakeitimų.
-
 **Įrodymais grindžiamas genealogijos įgūdis DI agentams (Codex, Claude Code ir kitoms Agent Skills vykdymo aplinkoms).** Jis paverčia agentą kruopščiu šeimos istorijos tyrėju buvusios SSRS, Sovietų Sąjungos ir Rusijos imperijos teritorijoje. Agentas skaito bažnytines ir civilinės būklės knygas, karines, tremties ir represijų bylas bei neindeksuotus archyvų skenavimus. Kiekvieno radinio kilmę galima atsekti; dokumentai atskiriami nuo interpretacijos ir aiškiai nurodoma, kas įrodyta, o kas ne.
 
 Aprėpiamos visos 15 buvusių sovietinių respublikų: Rusija, Ukraina, Baltarusija, Moldova, Estija, Latvija, Lietuva, Sakartvelas, Armėnija, Azerbaidžanas, Kazachstanas, Kirgizija, Tadžikistanas, Turkmėnistanas ir Uzbekistanas. Archyvai parenkami pagal istorinę įvykio jurisdikciją ir dabartinį dokumentų saugotoją; regioninis pavyzdys neatstoja vietinio tyrimo.
@@ -80,15 +78,13 @@ python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.htm
 
 Naudokite statinį HTML su vietiniais arba įterptais vaizdais. Aktyvus HTML ir tinklo vaizdų šaltiniai atmetami; šaltinių nuorodos lieka paspaudžiamos. Nepavykus atvaizduoti, esamas PDF failas išsaugomas.
 
-## Su Arca genealoginiu medžiu
+## Genealoginis medis GEDCOM formatu
 
-[Arca](https://arca.denull.ru) – genealoginio medžio programa, kurios darbalaukio versija teikia MCP sąsają DI agentams (meniu Agents…). Prijungus agentą, prašymas tirti ar kurti šeimos medį automatiškai naudoja Arca užduoties ir ryšiu suteiktos prieigos ribose; be Arca niekas nesikeičia.
+[GEDCOM](https://gedcom.io/specs/) yra standartinis genealoginių duomenų mainų formatas (`.ged`). Paprašius sudaryti ar eksportuoti medį, agentas sukuria vietinį failą su šaltiniais ir pastabomis apie įrodymų pagrįstumą. Dėl suderinamumo pagal nutylėjimą naudojamas GEDCOM 5.5.1 su UTF-8 koduote; jei naudotojas nurodo kitą palaikomą versiją, pavyzdžiui, GEDCOM 7, naudojama ji.
 
-- **Iš Arca:** esamas naudotojo medis skaitomas kaip jo pateikta medžiaga. Jo ryšiai laikomi hipotezėmis, kol juos patvirtina dokumentai, o cituojami šaltiniai – užuominomis į pačius įrašus.
-- **Į Arca:** tai, ką nustato tyrimas: asmenys, įvykiai su krikštatėviais ir liudytojais, šeimos ryšiai su `single-source` ar stipresne būsena. Kiekvienas elementas turi nuorodą į šaltinį ir konkretų įrašą bei įrodytumo žymą (patvirtinta, vienas šaltinis, ginčijama); ji keičiasi kartu su bylos išvadomis. Skenavimų perdavimas atitinka šaltinio sąlygas ir esamas privatumo taisykles. Hipotezės lieka byloje; naudotojo įrašai niekada neperrašomi, dokumentuota versija pridedama greta. Aiškus projekto ar išvesties paskirties pasirinkimas turi pirmenybę.
-- **Bylos aplanke:** registrai, tarpinė medžiaga, darbų eilė ir paieškos žurnalas lieka kaip ir be Arca, todėl `audit_evidence.py` veikia toliau.
+Esamas medis yra pradinė medžiaga ir paieškos užuominos, o ne giminystės įrodymas. Originalas išsaugomas; naudotojo failas neperrašomas. Nepatvirtinti duomenys, prieštaravimai ir neapibrėžtumas lieka byloje. Įrodymų registrai ir paieškos žurnalas lieka išvadų pagrindu. Importo ir eksporto taisyklės pateiktos [references/gedcom.md](references/gedcom.md).
 
-Visi agento pakeitimai registruojami projekto istorijoje kaip jo atskiros sesijos, kurias naudotojas gali peržiūrėti ir atšaukti. Taisyklės pateiktos [references/arca.md](references/arca.md).
+Medžio programą pasirenka naudotojas. Programų diegimas, MCP konfigūravimas ir automatinis sinchronizavimas su išoriniu medžiu nepatenka į šio įgūdžio taikymo sritį.
 
 ## Saugyklos struktūra
 
@@ -114,7 +110,7 @@ references/
   familysearch-indexes.md       tikslinis tyrimas naršykle, leistinos vietinės kopijos ir aprėptis
   familysearch-mcp.md           prijungtos priemonės, struktūrinis skaitymas, ribotas rašymas ir tikrinimas
   ww1-search.md                 GWAR asmens/vietovės paieška ir šaltinių vaizdų radimas
-  arca.md                       darbas Arca medyje: kas patenka į jį ir kas lieka byloje
+  gedcom.md                     medžių mainai GEDCOM formatu, šaltiniai ir įrodymų pagrįstumas
 assets/                          bylos pradiniai duomenys, CSV registrai, galutinės ataskaitos šablonas,
                                  nuotraukų README, tyrimo būsenos ir skaitomo PDF šablonai (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

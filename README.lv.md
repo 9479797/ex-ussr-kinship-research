@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Tulkojuma redakcija: 2026. gada 28. oktobris. Uzturētājs pārskata tulkojumus reizi mēnesī; angļu README var būt jaunākas izmaiņas.
-
 **Pierādījumos balstīta ģenealoģijas prasme AI aģentiem (Codex, Claude Code un citām Agent Skills izpildvidēm).** Tā padara aģentu par rūpīgu dzimtas vēstures pētnieku bijušās PSRS, Padomju Savienības un Krievijas impērijas teritorijā. Aģents lasa baznīcu grāmatas un civilstāvokļa reģistrus, militārās, deportāciju un represiju lietas, kā arī neindeksētus arhīvu skenējumus. Katra atraduma izcelsme ir izsekojama; dokumenti ir nošķirti no interpretācijas, un skaidri norādīts, kas ir pierādīts un kas nav.
 
 Aptvertas visas 15 bijušās padomju republikas: Krievija, Ukraina, Baltkrievija, Moldova, Igaunija, Latvija, Lietuva, Gruzija, Armēnija, Azerbaidžāna, Kazahstāna, Kirgizstāna, Tadžikistāna, Turkmenistāna un Uzbekistāna. Arhīvus izvēlas pēc notikuma vēsturiskās jurisdikcijas un dokumentu pašreizējā glabātāja; reģionāls piemērs neaizstāj vietējo izpēti.
@@ -80,15 +78,13 @@ python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.htm
 
 Izmantojiet statisku HTML ar vietējiem vai iegultiem attēliem. Aktīvs HTML un tīkla attēlu avoti netiek pieņemti; saites uz avotiem paliek klikšķināmas. Neveiksmīga renderēšana saglabā esošo PDF failu.
 
-## Ar Arca dzimtas koku
+## Dzimtas koks GEDCOM formātā
 
-[Arca](https://arca.denull.ru) ir dzimtas koka lietotne, kuras darbvirsmas versija piedāvā MCP galapunktu AI aģentiem (izvēlnē Agents…). Kad aģents ir pievienots, dzimtas izpētes vai koka veidošanas pieprasījums automātiski izmanto Arca uzdevuma un savienojuma piekļuves robežās; bez Arca nekas nemainās.
+[GEDCOM](https://gedcom.io/specs/) ir standarta formāts ģenealoģisko datu apmaiņai (`.ged`). Pēc lūguma izveidot vai eksportēt dzimtas koku aģents sagatavo lokālu failu ar avotiem un piezīmēm par pierādījumu stiprumu. Saderībai pēc noklusējuma izmanto GEDCOM 5.5.1 ar UTF-8 kodējumu; ja lietotājs norāda citu atbalstītu versiju, piemēram, GEDCOM 7, izmanto to.
 
-- **No Arca:** lietotāja esošo koku lasa kā viņa materiālus. Tā saites ir hipotēzes līdz dokumentāram apstiprinājumam, bet norādītie avoti ir pavedieni uz pašiem ierakstiem.
-- **Arca kokā:** izpētē noskaidroto: personas, notikumus ar krustvecākiem un lieciniekiem, kā arī ģimenes saites ar `single-source` vai spēcīgāku statusu. Katram ir atsauce uz avotu un konkrēto ierakstu, kā arī pierādītības atzīme (apstiprināts, viens avots, apstrīdēts); tā mainās līdz ar lietas secinājumiem. Skenējumu pārsūtīšana ievēro avota nosacījumus un esošos privātuma noteikumus. Hipotēzes paliek lietā; lietotāja ierakstus nekad nepārraksta, dokumentēto versiju pievienojot līdzās. Skaidri izvēlētam projektam vai rezultāta galamērķim ir priekšroka.
-- **Lietas mapē:** reģistri, starpmateriāli, darbu rinda un meklēšanas žurnāls saglabājas tāpat kā bez Arca, tāpēc `audit_evidence.py` turpina darboties.
+Esošais koks ir sākotnējais materiāls un meklēšanas pavedieni, nevis radniecības pierādījums. Oriģināls tiek saglabāts; lietotāja failu nepārraksta. Neapstiprinātas ziņas, pretrunas un nenoteiktība paliek lietā. Pierādījumu reģistri un meklēšanas žurnāls paliek secinājumu pamats. Importa un eksporta noteikumi ir [references/gedcom.md](references/gedcom.md).
 
-Visas aģenta izmaiņas saglabā projekta vēsturē kā atsevišķas sesijas, ko lietotājs var pārskatīt un atsaukt. Noteikumi ir [references/arca.md](references/arca.md).
+Dzimtas koka programmu izvēlas lietotājs. Lietotņu uzstādīšana, MCP konfigurēšana un automātiska sinhronizācija ar ārēju koku neietilpst šīs prasmes tvērumā.
 
 ## Repozitorija struktūra
 
@@ -114,7 +110,7 @@ references/
   familysearch-indexes.md       mērķēta pārlūka izpēte, atļautas vietējās kopijas un aptvērums
   familysearch-mcp.md           pievienoti rīki, strukturēta lasīšana, ierobežota rakstīšana un pārbaude
   ww1-search.md                 GWAR personu/vietu meklēšana un avota attēlu atrašana
-  arca.md                       darbs Arca kokā: ko saglabāt tajā un ko lietā
+  gedcom.md                     koku apmaiņa GEDCOM formātā, avoti un pierādījumu stiprums
 assets/                          lietas sākotnējie dati, CSV reģistri, gala pārskata veidne,
                                  fotogrāfiju README, izpētes stāvokļa un lasāma PDF veidnes (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py

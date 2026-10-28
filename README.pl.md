@@ -4,8 +4,6 @@
 
 Languages: [English](README.md) / [Русский](README.ru.md) / [Беларуская](README.be.md) / [Қазақша](README.kk.md) / [Українська](README.uk.md) / [Polski](README.pl.md) / [Deutsch](README.de.md) / [Română](README.ro.md) / [Eesti](README.et.md) / [Latviešu](README.lv.md) / [Lietuvių](README.lt.md) / [ქართული](README.ka.md) / [Հայերեն](README.hy.md) / [Azərbaycanca](README.az.md) / [Кыргызча](README.ky.md) / [Тоҷикӣ](README.tg.md) / [Türkmençe](README.tk.md) / [O‘zbekcha](README.uz.md)
 
-Stan tłumaczenia: 28 października 2026 r. Opiekun projektu przegląda tłumaczenia raz w miesiącu; angielski README może zawierać nowsze zmiany.
-
 **Umiejętność genealogiczna dla agentów AI (Codex, Claude Code i innych środowisk Agent Skills), która stawia dowody na pierwszym miejscu.** Zamienia agenta w uważnego badacza historii rodzinnej na terenach byłego ZSRR, Związku Radzieckiego i Imperium Rosyjskiego. Agent czyta księgi kościelne i akta stanu cywilnego, dokumentację wojskową, deportacyjną i represyjną oraz nieindeksowane skany archiwalne. Zachowuje pochodzenie każdego znaleziska, oddziela zapisy od interpretacji i jasno mówi, co zostało udowodnione, a co nie.
 
 Zakres obejmuje wszystkie 15 byłych republik radzieckich: Rosję, Ukrainę, Białoruś, Mołdawię, Estonię, Łotwę, Litwę, Gruzję, Armenię, Azerbejdżan, Kazachstan, Kirgistan, Tadżykistan, Turkmenistan i Uzbekistan. Archiwa dobierane są według historycznej jurysdykcji zdarzenia i obecnego dysponenta dokumentów; przykład regionalny nie zastępuje badań lokalnych.
@@ -82,15 +80,13 @@ przed przekazaniem zmian sprawdź pliki w indeksie, szczególnie przy przenoszen
 
 Używaj statycznego HTML z lokalnymi lub osadzonymi obrazami. Aktywny HTML i sieciowe źródła obrazów są odrzucane; odnośniki do źródeł pozostają klikalne. Nieudane renderowanie zachowuje istniejący wynikowy PDF.
 
-## Z drzewem rodzinnym Arca
+## Drzewo rodzinne w GEDCOM
 
-[Arca](https://arca.denull.ru) to aplikacja do drzew rodzinnych, której wersja komputerowa udostępnia punkt MCP dla agentów AI (Agents… w menu). Po podłączeniu agenta prośba o badanie lub budowę drzewa rodzinnego sama korzysta z Arca, w granicach zadania i dostępu przyznanego przez połączenie; bez Arca nic się nie zmienia.
+[GEDCOM](https://gedcom.io/specs/) to standardowy format wymiany danych genealogicznych (`.ged`). Na prośbę o zbudowanie lub wyeksportowanie drzewa agent tworzy lokalny plik ze źródłami i uwagami o sile dowodów. Domyślnie używa GEDCOM 5.5.1 w UTF-8 dla zgodności; jeśli użytkownik wskaże inną obsługiwaną wersję, na przykład GEDCOM 7, używa jej.
 
-- **Z Arca:** istniejące drzewo użytkownika, odczytywane jako jego materiały. Relacje pozostają hipotezami, dopóki nie potwierdzą ich dokumenty, a cytowane źródła są wskazówkami prowadzącymi do samych zapisów.
-- **Do Arca:** to, co ustalają badania: osoby, zdarzenia wraz z chrzestnymi i świadkami oraz relacje rodzinne o statusie `single-source` lub wyższym. Każdy element odwołuje się do źródła z konkretnym zapisem i ma oznaczenie siły dowodu (potwierdzone, jedno źródło, sporne); oznaczenie zmienia się wraz z wnioskami w sprawie. Przekazywanie skanów podlega warunkom źródła i istniejącym zasadom prywatności. Hipotezy pozostają w sprawie; wpisy użytkownika nigdy nie są nadpisywane, a udokumentowana wersja trafia obok nich. Wyraźny wybór projektu lub miejsca zapisania wyników ma pierwszeństwo.
-- **W folderze sprawy:** rejestry, materiały pośrednie, kolejka i dziennik wyszukiwania, tak jak bez Arca, więc `audit_evidence.py` nadal działa.
+Istniejące drzewo jest materiałem wyjściowym i zbiorem wskazówek, a nie dowodem pokrewieństwa. Oryginał zostaje zachowany; plik użytkownika nie jest nadpisywany. Niepotwierdzone informacje, sprzeczności i niepewność pozostają w sprawie. Rejestry dowodów i dziennik poszukiwań pozostają podstawą wniosków. Zasady importu i eksportu opisano w [references/gedcom.md](references/gedcom.md).
 
-Wszystkie zmiany agenta są zapisywane w historii projektu jako jego własne sesje, które użytkownik może przejrzeć i cofnąć. Zasady znajdują się w [references/arca.md](references/arca.md).
+Program do drzewa wybiera użytkownik. Instalacja aplikacji, konfiguracja MCP i automatyczna synchronizacja z zewnętrznym drzewem wykraczają poza zakres umiejętności.
 
 ## Układ repozytorium
 
@@ -116,7 +112,7 @@ references/
   familysearch-indexes.md       ukierunkowane badanie w przeglądarce, dozwolone lokalne kopie i pokrycie
   familysearch-mcp.md           podłączone narzędzia, odczyt strukturalny, zapis o określonym zakresie i weryfikacja
   ww1-search.md                 wyszukiwanie GWAR według osoby/miejscowości i lokalizatory obrazów źródłowych
-  arca.md                       praca z drzewem Arca: co trafia do niego, a co pozostaje w sprawie
+  gedcom.md                     wymiana drzew w GEDCOM, źródła i siła dowodów
 assets/                          przyjęcie materiałów, rejestry CSV, szablon raportu końcowego,
                                  szablon README zdjęć, stanu badań i czytelnego PDF (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
