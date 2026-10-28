@@ -1,5 +1,13 @@
 # Release history
 
+## 1.13.0 — 2026-10-28
+
+- Refine targeted reading of machine-recognised metric books: choose useful pre-reform name variants, open truncated case titles, distinguish parish sections and pages without recognised text, and preserve viewer captures as screenshots. Keep full-volume reading optional and qualify contributor access observations ([#62](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/62)).
+- Add the Danish Red Cross POW route at Rigsarkivet, distinguishing the approximately dated Russian-prisoner card index (1915–1918), Russian-prisoner lists (1917–1918) and German-prisoner lists (1915); record the limited surviving sample boxes and list packet. Verify document provenance, keep identity candidates separate and centralise paid-order conditions in the existing correspondence guide.
+- Check historical civil-registration jurisdictions and present-day custodians when later boundary changes move village records between regional archives.
+- Treat unverified search-result loading as incomplete coverage using existing statuses; an empty HTML table does not establish an absent record or a JavaScript failure.
+- Keep confidence consistent between family-report summaries and the main text; adapt narrative, plans and reader checks to the task without requiring a second reader or extra deliverables. Add six reasoning scenarios for these distinctions.
+
 ## 1.12.0 — 2026-10-28
 
 - Add official civil-registration request starting points and distinguish online filing from remote delivery; reuse existing correspondence tracking and verify each service's current conditions. Refine targeted reading of ZAGS alphabetic indexes and contextual reading of difficult scan fragments with existing image tools ([#60](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/60)).
