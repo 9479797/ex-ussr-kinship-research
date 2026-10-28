@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -22,8 +23,12 @@ except ImportError:  # pragma: no cover - reported to the caller
 
 
 def parse_box(value: str) -> tuple[int, int, int, int]:
-    parts = [int(part) for part in value.replace(";", ",").split(",")]
-    if len(parts) != 4 or parts[0] >= parts[2] or parts[1] >= parts[3]:
+    try:
+        parts = [int(part) for part in value.replace(";", ",").split(",")]
+    except ValueError as exc:
+        raise SourceError("--box ожидает четыре целых числа x0,y0,x1,y1.") from exc
+    if (len(parts) != 4 or min(parts) < 0
+            or parts[0] >= parts[2] or parts[1] >= parts[3]):
         raise SourceError(f"--box ожидает x0,y0,x1,y1 в пикселях исходника, получено {value!r}.")
     return parts[0], parts[1], parts[2], parts[3]
 
@@ -53,19 +58,34 @@ def sha256(path: Path) -> str:
 def crop(args: argparse.Namespace) -> dict:
     if Image is None:
         raise SourceError("Нужен пакет Pillow: pip install pillow")
-    source = Path(args.source)
+    source = Path(args.source).expanduser().resolve()
     if not source.is_file():
         raise SourceError(f"Файл не найден: {source}")
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+    if (not args.prefix or args.prefix in (".", "..")
+            or "/" in args.prefix or "\\" in args.prefix):
+        raise SourceError("--prefix должен быть именем файла без пути.")
+    if (not math.isfinite(args.scale) or args.scale <= 0
+            or args.context_width <= 0 or args.dpi <= 0 or args.page < 0):
+        raise SourceError("Масштаб, ширина и DPI должны быть положительными; номер страницы — неотрицательным.")
+    out_dir = Path(args.out_dir).expanduser().resolve()
+    paths = {
+        "context": out_dir / f"{args.prefix}-context.jpg",
+        "native": out_dir / f"{args.prefix}-native.png",
+        "enhanced": out_dir / f"{args.prefix}-enhanced.png",
+    }
+    for path in paths.values():
+        if path.exists() or path.is_symlink():
+            raise SourceError(f"Файл уже существует: {path}. Выберите другой --prefix.")
     box = parse_box(args.box)
+    source_hash = sha256(source)
     with tempfile.TemporaryDirectory() as tmp:
         image_path = source
         if source.suffix.lower() == ".pdf":
             if not args.page:
                 raise SourceError("Для PDF укажите --page.")
             image_path = render_pdf_page(source, args.page, args.dpi, Path(tmp))
-        page_image = Image.open(image_path).convert("RGB")
+        with Image.open(image_path) as image:
+            page_image = image.convert("RGB")
     width, height = page_image.size
     if box[2] > width or box[3] > height:
         raise SourceError(f"--box выходит за пределы изображения {width}x{height}.")
@@ -74,29 +94,25 @@ def crop(args: argparse.Namespace) -> dict:
     ImageDraw.Draw(context).rectangle(box, outline="red", width=max(4, width // 500))
     if context.width > args.context_width:
         ratio = args.context_width / context.width
-        context = context.resize((args.context_width, int(context.height * ratio)), Image.LANCZOS)
+        context = context.resize((args.context_width, max(1, int(context.height * ratio))), Image.LANCZOS)
     region = page_image.crop(box)
     enhanced = ImageOps.autocontrast(region, cutoff=1).filter(ImageFilter.UnsharpMask(radius=3, percent=180, threshold=2))
     if args.scale != 1:
-        enhanced = enhanced.resize((int(enhanced.width * args.scale), int(enhanced.height * args.scale)), Image.LANCZOS)
+        enhanced = enhanced.resize((max(1, int(enhanced.width * args.scale)), max(1, int(enhanced.height * args.scale))), Image.LANCZOS)
 
-    paths = {
-        "context": out_dir / f"{args.prefix}-context.jpg",
-        "native": out_dir / f"{args.prefix}-native.png",
-        "enhanced": out_dir / f"{args.prefix}-enhanced.png",
-    }
-    context.save(paths["context"], quality=85)
-    region.save(paths["native"])
-    enhanced.save(paths["enhanced"])
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for key, image in (("context", context), ("native", region), ("enhanced", enhanced)):
+        with paths[key].open("xb") as output:
+            image.save(output, format="JPEG" if key == "context" else "PNG", **({"quality": 85} if key == "context" else {}))
     return {
         "source": str(source),
-        "source_sha256": sha256(source),
+        "source_sha256": source_hash,
         "page": args.page or None,
         "dpi": args.dpi if source.suffix.lower() == ".pdf" else None,
         "page_size": [width, height],
         "box": list(box),
         "outputs": {key: str(path) for key, path in paths.items()},
-        "note": "Усиление контраста и резкости не добавляет штрихов; чтение фиксировать по native-копии.",
+        "note": "Обработка может создавать визуальные артефакты; чтение сверять с native-копией и оригиналом.",
     }
 
 
@@ -120,7 +136,7 @@ def main(argv=None) -> int:
     args = parse_args(argv)
     try:
         result = crop(args)
-    except SourceError as exc:
+    except (SourceError, OSError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"Ошибка: {exc}", file=sys.stderr)
         return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))

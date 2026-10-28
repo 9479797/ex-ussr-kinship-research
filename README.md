@@ -21,8 +21,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
-- **Government e-portal requests.** Choose the right state service for civil-status, archival, military and repression records (Russia, Ukraine, Belarus, Kazakhstan, Moldova, the Baltics and others), who may apply and what proves kinship; the agent prepares form data and text, the user signs in, signs and pays. Each request is tracked in `request-register.csv` with `scripts/draft_request.py` as `online`, `hybrid` (online filing, in-person pickup) or `offline`, and the audit flags unconfirmed sends and unregistered replies. See [government portals](references/government-portals.md).
-- **Human reading of unreadable scans.** When a handwritten row stays illegible at native resolution, `scripts/crop_scan.py` saves a context page with the region outlined, the untouched crop and a contrast-enhanced copy, so the user can read it; their reading is recorded as a claim with its reader named, never silently promoted. Requires Pillow (and poppler's `pdftoppm` for PDF input).
+- **Government services and scan reading.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)). The optional `scripts/crop_scan.py` helper creates a context image and native-resolution and enhanced crops for difficult handwriting; it requires Pillow, plus poppler's `pdftoppm` for PDF input. Existing image tools can serve the same purpose.
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 - **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
 - **WWI source search.** Search GWAR reports, hospital and award records by person or locality, compare settlement spellings across saved cards to decode a distorted place name, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
@@ -65,8 +64,6 @@ Keep private case data outside the skill's Git checkout. From the skill folder:
 python scripts/init_case.py --case-dir ~/kinship-cases/my-case --research-question "Who were Maria's parents?" --subject-label "Maria"
 python scripts/hash_artifact.py ~/kinship-cases/my-case/scans/marriage-1902.jpg   # SHA-256 for every saved artifact
 python scripts/audit_evidence.py --case-dir ~/kinship-cases/my-case             # check registers before the final report
-python scripts/draft_request.py new --case-dir ~/kinship-cases/my-case --addressee "Regional ZAGS archive" --channel portal --mode hybrid --purpose "Death record 1977" --persons P-0003   # request draft + register row
-python scripts/crop_scan.py --source scan.pdf --page 35 --box 600,2200,3000,2900 --out-dir ~/kinship-cases/my-case/sources/scan --prefix p35-rows   # unreadable rows: context, native and enhanced crops to show the user
 python scripts/build_pdf.py --html ~/kinship-cases/my-case/pdf-source/report.html --out ~/kinship-cases/my-case/report.pdf
 ```
 
@@ -85,7 +82,7 @@ SKILL.md                         main instructions (workflow, hard rules, langua
 references/
   source-strategy.md             source hierarchy, query patterns, catalogs, archive requests
   correspondence.md              recipients, mail integration, authorized sending and replies
-  government-portals.md          state e-portals and official request routes (ZAGS, archives, military, repression files) by country
+  government-portals.md          civil-registration services and request delivery routes
   evidence-protocol.md           artifact assessment, statuses, identity resolution, conflicts
   ex-ussr-locale-guide.md        jurisdictions, name variants, calendars, record types by period
   browser-and-captcha.md         browsing, sign-in, one CAPTCHA attempt and hand-off, rate limits
@@ -100,9 +97,9 @@ references/
   bessarabia-moldova.md          Bessarabia, Moldova, MASSR and the Dniester borderland
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
-assets/                          case intake, CSV registers (including request-register.csv), final report template,
-                                 photos README, research-state and request templates, readable PDF template (report-pdf.template.html)
-scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py, draft_request.py, crop_scan.py
+assets/                          case intake, CSV registers, final report template,
+                                 photos README template, research-state template, readable PDF template (report-pdf.template.html)
+scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
                                  familysearch.py, gwar.py, register_search.py and shared local analysis modules
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 tests/                           unit tests (python3 -m unittest discover -s tests)

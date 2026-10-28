@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add official civil-registration request starting points and distinguish online filing from remote delivery; reuse existing correspondence tracking and verify each service's current conditions. Refine targeted reading of ZAGS alphabetic indexes and provide an optional scan-crop helper that preserves originals and records source provenance ([#60](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/60)).
+
 ## 1.11.0 — 2026-10-28
 
 - Preserve the original settlement, volost, uyezd and gubernia when registering new GWAR leads, retaining source snapshots and deduplication; correct the official CDIAK domain ([#55](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/55)).
