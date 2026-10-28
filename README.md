@@ -21,7 +21,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks the final report: every cited ID must exist in the registers and every status must match them. A summary shows what is still uncorroborated or marked illegible.
 - **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
-- **Government services and scan reading.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)). The optional `scripts/crop_scan.py` helper creates a context image and native-resolution and enhanced crops for difficult handwriting; it requires Pillow, plus poppler's `pdftoppm` for PDF input. Existing image tools can serve the same purpose.
+- **Government services.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)).
 - **Final report.** Every relationship is laid out edge by edge, with contradictions, failed searches and concrete next steps.
 - **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
 - **WWI source search.** Search GWAR reports, hospital and award records by person or locality, compare settlement spellings across saved cards to decode a distorted place name, then locate the source image. [Workflow](references/ww1-search.md). Both helpers feed the existing artifact register and search log; they do not establish identities or kinship automatically.
@@ -75,6 +75,16 @@ check staged files before contributing, especially if moving an existing case.
 
 Use static HTML with local or embedded images. Active HTML and network image sources are rejected; source links remain clickable. A failed render preserves any existing output PDF.
 
+## With an Arca family tree
+
+[Arca](https://arca.denull.ru) is a family tree app whose desktop version serves an MCP endpoint for AI agents (Agents… in its menu). Once the agent is connected there, a request to research or build the family tree goes the Arca way by itself, within the task and the access the connection grants; without Arca, nothing changes.
+
+- **From Arca:** the tree the user already has, read as their materials. Its links are hypotheses until documents confirm them, and the sources it cites are leads to the records themselves.
+- **Into Arca:** what the research establishes: people, events with their godparents and witnesses, and family links at `single-source` or better. Each is cited to a source with the entry it is in and marked with how well it is proven (confirmed, one source, disputed); the mark follows the case as conclusions change. Scan transfers follow the source's terms and the existing privacy rules. Hypotheses stay in the case; the user's records are never overwritten, the documented version going in beside them. An explicit choice of project or output destination takes priority.
+- **In the case folder:** the registers, intermediate materials, queue and search log, as without Arca, so `audit_evidence.py` keeps working.
+
+Everything the agent changes is logged in the project's history as its own sessions, which the user can review and revert. The rules are in [references/arca.md](references/arca.md).
+
 ## Repository layout
 
 ```
@@ -97,6 +107,7 @@ references/
   bessarabia-moldova.md          Bessarabia, Moldova, MASSR and the Dniester borderland
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
   ww1-search.md                 GWAR WWI person/locality search and source-image locators
+  arca.md                       working in an Arca family tree: what goes there, what stays in the case
 assets/                          case intake, CSV registers, final report template,
                                  photos README template, research-state template, readable PDF template (report-pdf.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
