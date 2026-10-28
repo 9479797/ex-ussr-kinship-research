@@ -1,5 +1,9 @@
 # Release history
 
+## 1.19.0 — 2026-10-28
+
+- Add a language bar below the README cover and complete README translations in Russian, Belarusian, Kazakh, Ukrainian, Polish, German, Romanian, Estonian, Latvian, Lithuanian, Georgian, Armenian, Azerbaijani, Kyrgyz, Tajik, Turkmen and Uzbek. Keep installation commands and reference links usable in every language; label translations as monthly maintainer-reviewed snapshots.
+
 ## 1.18.0 — 2026-10-28
 
 - Add a focused forced-labour and displaced-person research route through Arolsen, German civil registers and local and Soviet records. Link current official Hessen catalogue guidance, qualify contributor observations, date formats, coverage, fees and access; reuse existing name, identity, evidence and correspondence protocols without exhaustive-search or manual-only gates ([#69](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/69)).
