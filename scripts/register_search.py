@@ -83,8 +83,9 @@ def fs_items(data):
                "summary": "Кандидат из текстового фрагмента индекса; личность и родство требуют проверки."}
 
 
-# Report/hospital card routes reported by the contributor in PR #50 (2026-10-27).
-GWAR_CARD_PAGES = ("chelovek_donesenie", "chelovek_gospital")
+# Report/hospital card routes reported by the contributor in PR #50 (2026-10-27);
+# POW card route opened with HTTP 200 on 2026-10-28.
+GWAR_CARD_PAGES = ("chelovek_donesenie", "chelovek_gospital", "chelovek_plen")
 
 
 def gwar_items(data):

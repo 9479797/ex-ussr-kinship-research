@@ -374,6 +374,7 @@ class RegistrationTests(unittest.TestCase):
         for kind, identifier, suffix in (
             ("chelovek_donesenie", "12", "chelovek_donesenie12/"),
             ("chelovek_gospital", "34", "chelovek_gospital34/"),
+            ("chelovek_plen", "78", "chelovek_plen78/"),
             ("unknown", "56", ""),
             ("chelovek_donesenie", "1/../../elsewhere", ""),
             ("chelovek_gospital", "１２", ""),
