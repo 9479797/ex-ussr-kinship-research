@@ -1,8 +1,10 @@
 # Release history
 
-## Unreleased
+## 1.17.0 — 2026-10-28
 
 - Add Vyatka archive, church-periodical and regional-library discovery routes; distinguish independent access checks from contributor observations and retain per-file provenance, rights and coverage limits. Check directory sections and index coverage before drawing negative conclusions about employment ([#67](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/67)).
+
+- Distinguish completed accessible checks from routes awaiting user action in research conclusions; reuse the existing access hand-off guidance and record actual blockers without inferring a need to install certificates from a TLS error. Add a focused reasoning scenario ([#68](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/68)).
 
 ## 1.16.0 — 2026-10-28
 
