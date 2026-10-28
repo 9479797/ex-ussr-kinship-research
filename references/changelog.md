@@ -1,5 +1,9 @@
 # Release history
 
+## Unreleased
+
+- Add the third-party RGADA Search index with metadata/PDF search modes, inventory provenance and bounded negative-result guidance ([#56](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/56), [#54](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/54)).
+
 ## 1.10.0 — 2026-10-27
 
 - Add the official DAKhMO metric-book catalog and the Ukrainian Wikisource archive directory; distinguish catalog holdings, volunteer navigation and individual scan provenance, rights and access ([#52](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/52)).
