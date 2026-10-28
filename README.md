@@ -104,6 +104,7 @@ references/
   photo-search.md                finding, identifying, dating and storing photos
   habsburg-galicia-bukovina.md   Galicia and Bukovina under the Habsburgs and after
   chechnya-deportation.md        Chechen families: 1944 deportation, special settlement, names and renamed villages
+  germany-forced-labour.md       Forced labourers in Germany 1941-1945: Arolsen Archives and German civil registers
 
   bessarabia-moldova.md          Bessarabia, Moldova, MASSR and the Dniester borderland
   familysearch-indexes.md       targeted browser research, permitted local snapshots and coverage
