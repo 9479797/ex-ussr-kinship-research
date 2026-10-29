@@ -73,7 +73,7 @@ python scripts/audit_evidence.py --case-dir ~/kinship-cases/my-case             
 `--force`. Git ignores common legacy case-folder names as an additional safeguard;
 check staged files before contributing, especially if moving an existing case.
 
-The agent prepares a complete HTML report, for example `my-case/report.html`, using `assets/report.template.html` or its existing tools. Open it directly in a browser or share the HTML with its local images. Short answers may remain text or Markdown; an explicitly requested format takes precedence. A family-facing report does not imply PDF.
+The agent prepares a complete HTML report, for example `my-case/report.html`, using `assets/report.template.html` or its existing tools. The default editorial layout puts a family tree in the header, with relationship evidence one click away, readable multilingual system-font fallbacks, and layouts for small screens and print. The tree follows the available evidence; missing relatives do not delay the report. Open it directly in a browser or share the HTML with its local images. Short answers may remain text or Markdown; an explicitly requested format takes precedence. A family-facing report does not imply PDF.
 
 Only when you explicitly request PDF, the agent can export the same HTML:
 
