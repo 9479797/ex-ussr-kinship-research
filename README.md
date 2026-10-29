@@ -23,6 +23,7 @@ The skill's instructions are written in Russian, but **the agent talks to you in
 - **Identity resolution.** Namesakes stay separate `person_id`s until distinguishing evidence appears: house number, parents, godparents, exact birth date or military unit.
 - **Audit script.** It checks referential integrity and flags weak corroboration before you write conclusions. An independence group counts only when a cited artifact belongs to it, so corroboration cannot be declared into existence. It also checks IDs and statuses in the working Markdown report, if present; the agent checks the delivered HTML against the registers. A summary shows what is still uncorroborated or marked illegible.
 - **Institutional requests.** Draft and, when authorized, send focused requests to archives, libraries, universities and museums using available email or official web tools. If needed, offer a supported mail integration or a ready-to-send letter. Record the outcome, avoid duplicate sends and treat replies as evidence. See [correspondence guidance](references/correspondence.md).
+- **Archive request form.** An anonymized [CANO vital-record request template](assets/cano-vital-record-request.template.docx) preserves the supplied form's layout for an editable case copy. Verify the archive's current form and submission requirements before use.
 - **Government services.** Choose an official civil-registration or archive request route, checking eligibility and how the result is delivered ([government portals](references/government-portals.md)).
 - **Final report.** A complete HTML report is the default deliverable, with each relationship laid out edge by edge, contradictions, failed searches and concrete next steps. PDF is an optional export only when you explicitly request it.
 - **Targeted indexed-record research.** Find relevant FamilySearch books by place or DGS through an existing lawful browser session, view specific records, and retain only evidence fragments permitted by the source. Local helpers search relatives, witnesses and name variants in saved fragments, preserving their context and file checksums. [Workflow and coverage limits](references/familysearch-indexes.md).
@@ -51,7 +52,7 @@ git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.codex/
 git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.claude/skills/ex-ussr-kinship-research
 ```
 
-For a single project, put the folder in `.claude/skills/` inside the repository. The scripts need only Python 3 and the standard library; `build_pdf.py` also needs a Chromium-based browser.
+For a single project, put the folder in `.claude/skills/` inside the repository. Most scripts need only Python 3 and the standard library. The optional `scan_montage.py` helper needs Pillow; `build_pdf.py` needs a Chromium-based browser.
 
 ## Use
 
@@ -121,7 +122,8 @@ references/
 assets/                          case intake, CSV registers, final report template,
                                  photos README template, research-state template, HTML report template (report.template.html)
 scripts/                         init_case.py, hash_artifact.py, audit_evidence.py, build_pdf.py
-                                 familysearch.py, gwar.py, register_search.py and shared local analysis modules
+                                 familysearch.py, gwar.py, register_search.py, scan_montage.py (needs Pillow)
+                                 and shared local analysis modules
 evals/discovery-and-logic.yaml   trigger and reasoning test cases
 tests/                           unit tests (python3 -m unittest discover -s tests)
 ```
