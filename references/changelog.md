@@ -1,5 +1,14 @@
 # Release history
 
+## 1.25.0 — 2026-10-29
+
+- Refine Perm and Bashkortostan source navigation with attributed contributor observations, correct the Basharchive project attribution, and distinguish routing diagnostics from demonstrated geographic restrictions. Explain restoring an allowed direct connection through the user's existing client without relying on another site's IP display ([#78](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/78), [#79](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/79)).
+- Clarify the evidence needed to assign a distant DNA match to a parental side; a sibling's non-match or absent X segment alone does not establish that side. Keep unproven surname links as hypotheses without requiring one particular evidence route ([#80](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/80)).
+- Add an optional local column-strip montage helper for reviewing saved scan series with Pillow. Preserve source images and existing output, reject ambiguous frame numbers and empty crops, and verify candidates against full records; retain existing image tools as alternatives ([#81](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/81)).
+- Refine requests for unnamed children and revision-list coverage split by estate, institution or owner. Add an editable anonymized CANO request specimen, with archive-specific requirements checked through the existing correspondence workflow ([#82](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/82), [#83](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/83)).
+- Add the FNP probate index as a qualified death-record lead, distinguishing notarial districts from established residence, exact-name behavior from broader matching, and contributor observations from verified form guidance ([#84](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/84)).
+- Add Soviet maternal-award records as a route to family information, with original regulations and an archive finding aid; distinguish qualifying children from complete family composition or biological relationships ([#85](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/85)).
+
 ## 1.24.0 — 2026-10-29
 
 - Add Rootera as a qualified 1897 census index route and explain how to handle reported placeholders in locked fields. Keep the support explanation attributed and dated, leave closed fields unknown, verify accessible data against archival originals, and correct earlier interpretations without losing the observation history. Distinguish published Latgale coverage from complete coverage of Latvia ([#76](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/76)).
