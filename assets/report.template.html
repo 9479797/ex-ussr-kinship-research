@@ -1,123 +1,273 @@
 <!doctype html>
 <!--
-  Шаблон самостоятельного HTML-отчёта (SKILL.md, шаг 12).
-
-  Как пользоваться:
-  1. Скопировать файл в <дело>/report.html, рядом положить локальные изображения.
-     Если нужны обрезка или уменьшение, работать с копиями; оригиналы в photos/ не трогать.
-  2. Заменить все <…> на содержимое. Комментарии можно оставить: scripts/build_pdf.py проверяет только видимый текст.
-  3. Писать на языке пользователя. Метки надёжности перевести, если язык не русский.
-  4. Писать понятным языком, пояснять нужные читателю обозначения. Архивные шифры и ссылки на источники
-     оставлять; обычные английские слова и идентификаторы сами по себе не блокируют сборку PDF.
-  5. Проверить читаемость, ссылки и изображения в браузере и передать готовый HTML пользователю.
-     HTML — полноценный результат по умолчанию; сборка PDF для его выдачи не нужна.
-  6. Только если пользователь явно запросил PDF, экспортировать этот же HTML:
-     python scripts/build_pdf.py --html <дело>/report.html --out <дело>/report.pdf
-     Затем просмотреть страницы PDF. Частые правки печатной вёрстки:
-     - большая пустота перед разделом — убрать class="pb" (принудительный разрыв) у заголовка;
-     - фотографии разъехались по страницам — держать их в одном ряду .photos, уменьшив ширины;
-     - инициалы переносятся на другую строку — ставить &nbsp; (И.&nbsp;И.&nbsp;Фамилия);
-     - последняя страница почти пустая — уменьшить @page margin или font-size на 0.2pt.
-
-  Структуру подбирать под вопрос и найденные данные. Сохранять ответ, его основания, неопределённость
-  и источники. При проверке родства показывать каждое звено и его надёжность. Остальные блоки сокращать
-  или удалять по ситуации; неизвестные сведения помечать прямо, а не ждать их ради заполнения шаблона.
-  Неподходящие блоки удалить целиком: build_pdf.py не соберёт PDF с незаполненными <…>.
-    Если фото нет — удалить <div> с портретом в шапке и блок «Фотографии».
-
-  Метки надёжности (класс → текст):
-    ok    «подтверждено»        — corroborated / strongly-corroborated
-    ok    «по документу»        — single-source по документу
-    fam   «по сведениям семьи»  — single-source по семейной памяти или странице семьи
-    maybe «вероятно»            — hypothesis, согласованная с документами
-    no    «не установлено»      — unresolved, гипотеза без опоры
-    no    «есть противоречия»   — contradicted; описать конфликтующие документы
+  Самостоятельный HTML-отчёт: редакционная вёрстка и семейное древо в шапке (SKILL.md, шаг 12).
+  Скопировать в <дело>/report.html и заполнить на языке пользователя; заменить lang="ru" на язык отчёта.
+  Удалить неподходящие блоки, пустые поля, неиспользуемые ссылки и изображения. Не требовать сведения
+  ради компоновки: один известный человек или неполная схема допустимы. Число поколений не задано.
+  Каждая связь в древе имеет собственную текстовую метку надёжности и ссылку на её основания ниже;
+  метка относится к связи, а не автоматически ко всем сведениям о человеке. Не выводить брак из
+  общей родительской связи и не назначать супруга вторым родителем без соответствующих сведений.
+  Метки и неопределённость согласовать с реестрами и основным текстом; копии не независимы.
+  Системные шрифты и локальные резервные семейства поддерживают разные алфавиты без загрузок.
+  Сохранять исходное написание имён, диакритику и знаки; для смешанных направлений использовать bdi
+  и подходящий lang/dir. Проверить текст нужных делу языков, читаемость, ссылки и локальные изображения.
+  Сохранять пояснения меток в печати. Фотографии и сканы брать из копий, оригиналы не изменять.
+  HTML — готовый результат по умолчанию. PDF экспортировать из него только по явному запросу:
+    python scripts/build_pdf.py --html <дело>/report.html --out <дело>/report.pdf
+  Классы меток: ok — corroborated или документальный single-source; fam — семейные сведения;
+  maybe — hypothesis; no — unresolved или contradicted. Различия пояснять текстом, не только цветом.
 -->
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><ФИО> — <подзаголовок, например «семейная история по документам»></title>
+<title><ФИО> — <Краткое описание исследования></title>
 <style>
-  @page { size: A4; margin: 15mm 17mm 16mm 17mm; }
-  :root { --ink:#1d1d1f; --muted:#5f6368; --line:#d9d6cf; --accent:#7a2e1f; --soft:#f6f3ee; --ok:#2e6b3a; --maybe:#8a6a12; --no:#8a2f2f; }
-  * { box-sizing: border-box; }
-  body { font-family: "PT Serif", Georgia, "Times New Roman", serif; color: var(--ink); font-size: 10.4pt; line-height: 1.45; margin: 0; background: #fff; }
-  h1 { font-size: 22pt; line-height: 1.15; margin: 0 0 4pt; font-weight: 700; }
-  h2 { font-size: 14pt; color: var(--accent); margin: 16pt 0 6pt; padding-bottom: 3pt; border-bottom: 1px solid var(--line); break-after: avoid; }
-  h3 { font-size: 11.5pt; margin: 11pt 0 4pt; break-after: avoid; }
-  p { margin: 0 0 6pt; }
-  .sub { color: var(--muted); font-size: 10pt; margin-bottom: 2pt; }
-  header { display: flex; gap: 16pt; align-items: flex-start; margin-bottom: 6pt; }
-  header img { width: 38mm; border-radius: 2pt; }
-  header .cap { font-size: 8pt; color: var(--muted); margin-top: 3pt; width: 38mm; }
-  .lead { background: var(--soft); border-left: 3pt solid var(--accent); padding: 8pt 10pt; margin: 10pt 0; }
-  .lead ul { margin: 0; padding-left: 14pt; }
-  .lead li { margin-bottom: 4pt; }
-  table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.5pt; }
-  th, td { text-align: left; vertical-align: top; padding: 4pt 6pt; border-bottom: 1px solid var(--line); }
-  th { font-family: Arial, Helvetica, sans-serif; font-size: 8.2pt; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); border-bottom: 1.5px solid var(--ink); }
-  tr { break-inside: avoid; }
-  td.d { white-space: nowrap; width: 21%; }
-  td.t { width: 15%; }
-  blockquote { margin: 6pt 0 8pt; padding: 6pt 10pt; border-left: 2pt solid var(--line); color: #333; font-style: italic; }
-  .tag { font-family: Arial, Helvetica, sans-serif; font-size: 7.6pt; font-weight: 700; padding: 1pt 5pt; border-radius: 8pt; white-space: nowrap; }
-  .ok { color: var(--ok); background: #e7f1e9; }
-  .maybe { color: var(--maybe); background: #f6efd9; }
-  .no { color: var(--no); background: #f5e3e3; }
-  .fam { color: #3d5a80; background: #e6edf5; }
-  .legend { font-size: 8.8pt; color: var(--muted); line-height: 1.6; }
-  .src li { margin-bottom: 3pt; font-size: 9.3pt; }
-  .small { font-size: 9pt; color: var(--muted); }
-  a { color: var(--accent); text-decoration: none; }
-  ol, ul { padding-left: 16pt; margin: 0 0 6pt; }
-  li { margin-bottom: 3pt; }
-  figure { margin: 8pt 0 10pt; break-inside: avoid; }
-  figure img { display: block; max-width: 100%; border-radius: 2pt; }
-  figcaption { font-size: 9pt; color: var(--muted); margin-top: 4pt; }
-  .photos { display: flex; gap: 12pt; align-items: flex-start; }
-  .photos figure { margin: 0; }
-  .pb { break-before: page; }
-  .docfig img { width: 100%; max-height: 225mm; object-fit: contain; border: 1px solid var(--line); }
-  @media screen {
-    body { max-width: 64rem; margin: 0 auto; padding: clamp(1rem, 4vw, 3rem); font-size: 1rem; }
-    h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
-    h2 { font-size: 1.4rem; }
-    h3 { font-size: 1.15rem; }
-    table { display: block; overflow-x: auto; font-size: .95rem; }
-    header, .photos { flex-wrap: wrap; }
-    a { text-decoration: underline; text-underline-offset: .12em; }
-    .pb { break-before: auto; }
-    .docfig img { max-height: none; }
-  }
+@page { size:A4; margin:16mm 17mm; }
+:root {
+ --paper:#ffffff; --canvas:#eeeae6; --ink:#242323; --muted:#625d5a; --line:#d5cfca;
+ --accent:#812f34; --accent-soft:#f8efed; --soft:#f6f3f0;
+ --ok:#285d39; --ok-bg:#eaf2e9; --maybe:#725011; --maybe-bg:#faf0d9;
+ --no:#842f34; --no-bg:#f8e9e7; --family:#344f70; --family-bg:#eaf0f7;
+ --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans","Noto Sans Armenian","Noto Sans Georgian","Noto Sans Hebrew","DejaVu Sans",Arial,sans-serif;
+ --serif:Georgia,"Times New Roman","Noto Serif","Noto Serif Armenian","Noto Serif Georgian","Noto Serif Hebrew","DejaVu Serif","Sylfaen",serif; --tree-gap:40px;
+ color-scheme:light;
+}
+* { box-sizing:border-box; }
+html { scroll-padding-top:24px; }
+body { margin:0; background:var(--canvas); color:var(--ink); font:1.0625rem/1.75 var(--serif); }
+a { color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px; }
+a:hover { text-decoration-thickness:2px; }
+a:focus-visible,summary:focus-visible,.table-wrap:focus-visible { outline:3px solid var(--accent); outline-offset:5px; }
+.report-shell { max-width:1180px; margin:32px auto; background:var(--paper); border-top:7px solid var(--ink); }
+.report-topline { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 20px; padding:17px 52px; border-bottom:1px solid var(--ink); color:var(--muted); font:600 .75rem/1.5 var(--sans); text-transform:none; letter-spacing:.12em; }
+.report-header { padding:40px 52px 32px; border-bottom:1px solid var(--ink); }
+.report-intro { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:0 48px; align-items:start; }
+.eyebrow { margin:0 0 10px; grid-column:1; font:600 .75rem/1.5 var(--sans); letter-spacing:.16em; text-transform:none; color:var(--accent); }
+h1 { overflow-wrap:anywhere; grid-column:1; font:400 clamp(3rem,7vw,5.75rem)/1.03 var(--serif); letter-spacing:normal; margin:0 0 16px; text-wrap:balance; }
+.subtitle { grid-column:1; font:1.125rem/1.55 var(--serif); max-width:42ch; color:var(--muted); margin:0 0 24px; }
+.report-meta { grid-column:2; grid-row:2/4; margin:6px 0 0; display:grid; gap:16px; padding-left:24px; border-left:1px solid var(--line); font:.8125rem/1.7 var(--sans); }
+.report-meta dt { font:600 .75rem/1.5 var(--sans); text-transform:none; letter-spacing:.06em; color:var(--muted); margin:0 0 3px; }
+.report-meta dd { margin:0; }
+.demo-note { grid-column:1/-1; padding:12px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); font:.75rem/1.65 var(--sans); color:var(--muted); }
+.demo-note strong { color:var(--ink); }
+.family-tree { margin:30px auto 0; width:100%; max-width:780px; min-width:0; }
+.tree-heading { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px 20px; margin-bottom:16px; }
+.tree-heading h2 { font:400 1.75rem/1.3 var(--serif); color:var(--ink); letter-spacing:-.025em; border:0; padding:0; margin:0; }
+.tree-heading>span { color:var(--muted); font:.75rem/1.5 var(--sans); }
+.tree-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--tree-gap); }
+.person-card { min-width:0; overflow-wrap:anywhere; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 12px; padding:10px 14px 12px; border:0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--paper); text-decoration:none; transition:background-color 160ms ease; }
+a.person-card:hover { background:var(--accent-soft); }
+.person-role { grid-column:1/-1; color:var(--muted); font:600 .75rem/1.4 var(--sans); letter-spacing:.07em; text-transform:none; }
+.person-name { grid-column:1/-1; color:var(--ink); font:400 1.375rem/1.3 var(--serif); letter-spacing:normal; overflow-wrap:anywhere; }
+.person-years { color:var(--muted); font:.75rem/1.6 var(--sans); font-variant-numeric:tabular-nums; }
+.person-status { color:var(--accent); font:600 .75rem/1.6 var(--sans); }
+.person-card.subject { background:var(--accent-soft); border-top:3px solid var(--accent); border-bottom:1px solid var(--accent); padding-top:8px; }
+.person-card.subject .person-role { color:var(--accent); }
+.person-card.subject .person-status { grid-column:1/-1; font-weight:400; color:var(--muted); }
+.spouse-group { position:relative; }
+.spouse-group::before { content:""; position:absolute; top:50%; left:calc(50% - var(--tree-gap)/2); width:var(--tree-gap); height:4px; border-top:1px solid var(--accent); border-bottom:1px solid var(--accent); }
+.tree-connectors { position:relative; width:100%; height:24px; color:var(--accent); }
+.tree-connectors::before { content:""; position:absolute; top:0; bottom:0; left:calc(25% - var(--tree-gap)/4); border-left:1px solid currentColor; }
+.mother-branch { position:absolute; top:0; left:calc(25% - var(--tree-gap)/4); width:calc(50% + var(--tree-gap)/2); height:10px; border-right:1px solid currentColor; border-bottom:1px solid currentColor; }
+.child-row .person-card { grid-column:1; }
+.tree-caption { font:.75rem/1.65 var(--sans); color:var(--muted); margin-top:14px; }
+.tree-caption span { display:block; margin-top:4px; }
+.report-nav { display:flex; flex-wrap:wrap; gap:4px 32px; margin:0 52px; padding:6px 0; border-bottom:1px solid var(--ink); font:600 .75rem/1.5 var(--sans); text-transform:none; letter-spacing:.06em; }
+.report-nav a { min-height:44px; display:inline-flex; align-items:center; text-decoration:none; }
+.report-nav a:hover { text-decoration:underline; }
+main { max-width:900px; padding:36px 52px 44px; margin:0 auto; }
+h2 { margin:44px 0 18px; padding:14px 0 0; border-top:1px solid var(--ink); color:var(--ink); font:400 clamp(1.625rem,3vw,2rem)/1.3 var(--serif); letter-spacing:-.025em; break-after:avoid; text-wrap:balance; }
+h3 { margin:28px 0 14px; color:var(--accent); font:600 .875rem/1.5 var(--sans); letter-spacing:.04em; }
+p { margin:0 0 18px; }
+p,li,td { overflow-wrap:break-word; }
+main>p { max-width:72ch; }
+.lead { padding:22px 24px 24px; background:var(--soft); border-top:3px solid var(--accent); border-bottom:1px solid var(--line); margin-bottom:24px; }
+.lead h2 { margin:0 0 14px; padding:0; border:0; color:var(--accent); font:600 .75rem/1.5 var(--sans); text-transform:none; letter-spacing:.12em; }
+.lead ul { margin:0; padding-left:18px; }
+.lead li { margin-bottom:12px; }
+.lead li:last-child { margin-bottom:0; }
+.tag { display:inline-block; max-width:100%; padding:2px 7px; margin:2px 0; border-radius:2px; font:600 .75rem/1.5 var(--sans); white-space:nowrap; }
+.ok { color:var(--ok); background:var(--ok-bg); }
+.maybe { color:var(--maybe); background:var(--maybe-bg); }
+.no { color:var(--no); background:var(--no-bg); }
+.fam { color:var(--family); background:var(--family-bg); }
+.evidence-guide { border-bottom:1px solid var(--line); color:var(--muted); margin:0 0 30px; font:.8125rem/1.7 var(--sans); }
+.evidence-guide h3 { padding:12px 0 0; margin:0; font:600 .8125rem/1.7 var(--sans); color:var(--ink); letter-spacing:normal; }
+.legend { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 24px; padding:8px 0 18px; }
+.legend .tag { display:table; margin-bottom:4px; }
+.table-wrap { max-width:100%; overflow-x:auto; margin:16px 0 20px; }
+table { width:100%; border-collapse:collapse; font:.875rem/1.65 var(--sans); }
+th,td { text-align:start; vertical-align:top; border-bottom:1px solid var(--line); padding:12px 16px 12px 0; }
+th { color:var(--muted); font:600 .75rem/1.5 var(--sans); text-transform:none; letter-spacing:.04em; border-bottom:1px solid var(--ink); }
+th:last-child,td:last-child { padding-right:0; }
+td.d { width:18%; min-width:90px; }
+td.t { width:17%; }
+tr { break-inside:avoid; }
+tr:target { background:var(--accent-soft); }
+blockquote { margin:28px 0; padding:2px 0 2px 20px; border-left:2px solid var(--accent); color:var(--accent); font:italic 1.375rem/1.5 var(--serif); }
+ol,ul { margin:0 0 22px; padding-left:22px; }
+li { margin-bottom:10px; }
+.small { color:var(--muted); font:.8125rem/1.65 var(--sans); }
+.src li { color:var(--muted); font:.8125rem/1.75 var(--sans); margin-bottom:18px; padding-left:4px; }
+.src li b { color:var(--ink); }
+:target { scroll-margin-top:24px; }
+.report-footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:20px 52px; border-top:1px solid var(--ink); color:var(--muted); font:.75rem/1.5 var(--sans); }
+.skip-link { position:absolute; top:8px; left:8px; padding:12px 16px; z-index:10; background:var(--paper); transform:translateY(-200%); font:1rem/1.5 var(--sans); }
+.skip-link:focus { transform:translateY(0); }
+@media(max-width:959px) {
+ .report-shell { margin:16px; }
+ .report-header { padding:32px; }
+ .report-topline,.report-footer { padding-left:32px; padding-right:32px; }
+ .report-nav { margin-left:32px; margin-right:32px; }
+ .report-intro { gap:0 24px; }
+ .person-card { display:flex; flex-direction:column; gap:4px; }
+ main { padding:32px; }
+}
+@media(max-width:600px) {
+ :root { --tree-gap:20px; }
+ body { font-size:1rem; }
+ .report-shell { margin:0; border-top-width:5px; }
+ .report-topline { padding:13px 20px; font-size:.75rem; letter-spacing:.06em; }
+ .report-header { padding:24px 20px; }
+ .report-intro { display:block; }
+ h1 { font-size:3rem; }
+ .subtitle { font-size:1rem; margin-bottom:18px; }
+ .report-meta { display:flex; flex-wrap:wrap; gap:10px 24px; padding:0; margin:0 0 18px; border:0; }
+ .demo-note { font-size:.75rem; }
+ .family-tree { margin-top:24px; }
+ .tree-heading { align-items:start; }
+ .tree-heading h2 { font-size:1.5rem; }
+ .person-card { padding:10px; }
+ .person-name { font-size:1.125rem; }
+ .person-role { letter-spacing:.03em; }
+ .person-card.subject { padding-top:8px; }
+ .tree-connectors { height:22px; }
+ .tree-caption { font-size:.75rem; }
+ .report-nav { margin:0 20px; gap:4px 20px; letter-spacing:.02em; }
+ main { padding:24px 20px; }
+ .lead { padding:20px; }
+ .legend { grid-template-columns:1fr; }
+ h2 { margin-top:36px; }
+ table { min-width:560px; }
+ th,td { padding-right:12px; }
+ .report-footer { padding:20px; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; scroll-behavior:auto !important; } }
+@media print {
+ body { background:white; font-size:10.5pt; }
+ .report-shell { max-width:none; margin:0; border:0; }
+ .report-topline,.report-footer { padding:8pt 0; font-size:8pt; }
+ .report-header { padding:16pt 0; }
+ .report-intro { gap:0 24pt; }
+ h1 { font-size:34pt; }
+ .subtitle { font-size:11pt; }
+ .demo-note { font-size:8pt; }
+ .family-tree { max-width:145mm; margin-top:18pt; break-inside:avoid; }
+ .person-card { padding:8pt; }
+ .person-name { font-size:12pt; }
+ .person-role,.person-years,.person-status,.tree-caption { font-size:8pt; }
+ .report-nav,.skip-link { display:none; }
+ main { padding:0; }
+ h2 { font-size:16pt; margin-top:20pt; }
+ .table-wrap { overflow:visible; }
+ table { min-width:0; font-size:8.5pt; }
+ th { font-size:8pt; }
+ .evidence-guide { break-inside:avoid; font-size:8.5pt; }
+ .legend { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ a { color:inherit; }
+ .person-card.subject { background:white; }
+}
+/* Local font fallbacks retain multilingual text without network requests. */
+bdi { unicode-bidi:isolate; }
+html :lang(ar), html :lang(he), html :lang(yi), html :lang(ka), html :lang(hy) { letter-spacing:normal; }
+.report-note { grid-column:1/-1; color:var(--muted); font:.8125rem/1.65 var(--sans); }
+.tree-connectors.uncertain::before { border-left-style:dashed; }
+.mother-branch.uncertain { border-right-style:dashed; border-bottom-style:dashed; }
+.spouse-group.uncertain::before { border-top-style:dashed; border-bottom-style:dashed; }
+.photos { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+.photos figure { margin:0; }
+figure img { display:block; max-width:100%; height:auto; }
+figcaption { font:.8125rem/1.65 var(--sans); color:var(--muted); margin-top:8px; }
+.docfig { margin:24px 0; break-inside:avoid; }
+.docfig img { width:100%; max-height:225mm; object-fit:contain; border:1px solid var(--line); }
+@media screen { .pb { break-before:auto; } .docfig img { max-height:none; } }
+@media print { .pb { break-before:page; } .tag { white-space:normal; } }
+
 </style>
 </head>
 <body>
 
-<!-- ШАПКА: портрет (если есть фото — иначе удалить первый <div>), ФИО (для женщин — с девичьей фамилией),
-     годы жизни, занятие или положение (крестьянин, мещанка, учитель, рабочий, офицер), источники, легенда меток. -->
-<header>
-  <div>
-    <img src="<portrait.jpg>" alt="<Портрет>">
-    <div class="cap"><Подпись к портрету: кто, когда, откуда></div>
+<a class="skip-link" href="#report-content">К тексту отчёта</a>
+<div class="report-shell">
+<div class="report-topline"><span>Семейная история · Исследование</span><span>Составлено <дата></span></div>
+<header class="report-header" id="top">
+  <div class="report-intro">
+    <p class="eyebrow">Семейная история по документам</p>
+    <h1><bdi dir="auto"><Фамилия Имя Отчество></bdi></h1>
+    <p class="subtitle"><Исследовательский вопрос или краткое описание истории></p>
+    <dl class="report-meta">
+      <div><dt>Период исследования</dt><dd><Известные даты или период; неизвестное не выдумывать></dd></div>
+      <div><dt>Основания</dt><dd><Основные источники обычными словами></dd></div>
+    </dl>
+    <p class="report-note"><Главное ограничение или оговорка, если нужны; иначе удалить абзац></p>
   </div>
-  <div>
-    <h1><Фамилия Имя Отчество (урождённая …)></h1>
-    <p class="sub"><дата рождения> — <дата смерти или «после N»> · <занятие / положение></p>
-    <p class="sub"><Вид документа, например «Семейная история по документам»>. Составлено <дата> по <перечень основных источников обычными словами>.</p>
-    <p class="legend" style="margin-top:8pt">
-      <span class="tag ok">подтверждено</span> — есть в документах из разных источников<br>
-      <span class="tag ok">по документу</span> — есть в одном надёжном документе<br>
-      <span class="tag fam">по сведениям семьи</span> — из семейных воспоминаний, документа нет<br>
-      <span class="tag maybe">вероятно</span> — сходится с документами, но прямого подтверждения нет<br>
-      <span class="tag no">не установлено</span> — данных пока недостаточно<br>
-      <span class="tag no">есть противоречия</span> — источники расходятся; конфликт описан ниже
-    </p>
-  </div>
+  <!-- СЕМЕЙНОЕ ДРЕВО: пример компоновки, не обязательный набор родственников.
+       Оставить основной узел и известные делу связи. При удалении узла удалить его соединитель,
+       соответствующую строку доказательств и лишние ссылки. Без супругов убрать spouse-group.
+       Общие дети не доказывают брак родителей; брак основного человека не доказывает родительство супруга.
+       Если известен один родитель, поставить его узел в первый столбец и удалить mother-branch,
+       оставив только вертикальный tree-connectors.
+       Гипотезы подписать прямо; соединитель можно пометить uncertain (пунктир).
+       Для более широкой семьи адаптировать строки и линии, сохраняя текстовое описание.
+       Если известен только один человек, оставить один узел без линий; это не задерживает отчёт. -->
+  <figure class="family-tree" aria-labelledby="tree-title" aria-describedby="tree-description">
+    <div class="tree-heading"><h2 id="tree-title">Семейное древо</h2><span><Краткое описание показанного фрагмента></span></div>
+    <div class="tree-row">
+      <a class="person-card" href="#relationship-parent-1">
+        <span class="person-role"><Роль родителя 1 относительно основного человека></span>
+        <bdi class="person-name" dir="auto"><Имя родителя 1></bdi>
+        <span class="person-years"><Известные годы и оговорки></span>
+        <span class="person-status"><Надёжность этой связи></span>
+      </a>
+      <a class="person-card" href="#relationship-parent-2">
+        <span class="person-role"><Роль родителя 2 относительно основного человека></span>
+        <bdi class="person-name" dir="auto"><Имя родителя 2></bdi>
+        <span class="person-years"><Известные годы и оговорки></span>
+        <span class="person-status"><Надёжность этой связи></span>
+      </a>
+    </div>
+    <div class="tree-connectors" aria-hidden="true"><span class="mother-branch"></span></div>
+    <div class="tree-row spouse-group">
+      <div class="person-card subject">
+        <span class="person-role">Основной человек</span>
+        <bdi class="person-name" dir="auto"><Имя основного человека></bdi>
+        <span class="person-years"><Известные годы и оговорки></span>
+      </div>
+      <a class="person-card" href="#relationship-spouse">
+        <span class="person-role"><Супруг / супруга основного человека></span>
+        <bdi class="person-name" dir="auto"><Имя супруга или супруги></bdi>
+        <span class="person-years"><Известные годы и оговорки></span>
+        <span class="person-status"><Надёжность брачной связи></span>
+      </a>
+    </div>
+    <div class="tree-connectors" aria-hidden="true"></div>
+    <div class="tree-row child-row">
+      <a class="person-card" href="#relationship-child">
+        <span class="person-role"><Ребёнок основного человека></span>
+        <bdi class="person-name" dir="auto"><Имя ребёнка></bdi>
+        <span class="person-years"><Известные годы и оговорки></span>
+        <span class="person-status"><Надёжность этой связи></span>
+      </a>
+    </div>
+    <figcaption class="tree-caption" id="tree-description">Сверху — родители, ниже — основной человек и его потомки. Двойная линия обозначает брак. Выберите родственника, чтобы перейти к основаниям связи.<span><Пояснить существенную неопределённость, отсутствие второй родительской связи и другие ограничения схемы></span></figcaption>
+  </figure>
 </header>
-
+<nav class="report-nav" aria-label="Разделы отчёта"><a href="#findings">Главное</a><a href="#family-connections">Родственные связи</a><a href="#chronology">Хронология</a><a href="#sources">Источники</a></nav>
+<main id="report-content">
 <!-- ГЛАВНОЕ: ответы на вопросы пользователя, главные находки и то, что пока не подтвердилось. -->
-<div class="lead">
+<div class="lead" id="findings">
+  <h2>Главное</h2>
   <ul>
     <li><b><Короткий вывод.></b> <Пояснение в 1–2 предложения.> <span class="tag ok">подтверждено</span></li>
     <li><b><…></b> <…> <span class="tag maybe">вероятно</span></li>
@@ -128,56 +278,72 @@
 <!-- КТО ОН / ОНА: рождение (место по документу и его принадлежность на дату события), сословие или социальное
      положение, конфессия (если важна для поиска), образование, занятия, брак, дата смерти, черты характера
      из семейных воспоминаний. Живые родственники — только имя и степень родства. -->
+
+<aside class="evidence-guide" aria-labelledby="evidence-guide-title">
+  <h3 id="evidence-guide-title">Как читать метки надёжности</h3>
+  <div class="legend">
+    <div><span class="tag ok">подтверждено</span> — независимые доказательные цепочки</div>
+    <div><span class="tag ok">по документу</span> — один документ; single-source</div>
+    <div><span class="tag fam">по сведениям семьи</span> — семейное воспоминание с записанным происхождением</div>
+    <div><span class="tag maybe">вероятно</span> — гипотеза, требующая проверки</div>
+    <div><span class="tag no">не установлено</span> — сведений пока недостаточно</div>
+    <div><span class="tag no">есть противоречия</span> — источники расходятся; конфликт описан в отчёте</div>
+  </div>
+</aside>
+
 <h2>Кто <он / она></h2>
 <p><…> <span class="tag ok">подтверждено</span></p>
 
 <h3>Семья</h3>
-<table>
-  <thead><tr><th>Кем приходится</th><th>Имя</th><th>Годы</th><th>Откуда известно</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Кем приходится</th><th scope="col">Имя</th><th scope="col">Годы</th><th scope="col">Откуда известно</th></tr></thead>
   <tbody>
     <tr><td><отец / мать / супруг(а) / ребёнок / восприемник></td><td><…></td><td><…></td><td><документ обычными словами> <span class="tag ok">по документу</span></td></tr>
   </tbody>
-</table>
+</table></div>
 <p class="small"><Оговорки: стиль календаря, варианты написания имени и фамилии, девичья и брачные фамилии.></p>
 
 <!-- КАК МЫ СВЯЗАНЫ (обязательно, если исследовался вопрос родства): цепочка от пользователя или известного
      предка к исследуемому лицу, по одному звену родитель–ребёнок в строке, у каждого звена своя метка.
      Ниже — почему документы относятся к одному и тому же человеку (даты, место, родители, номер двора). -->
-<h2>Как мы связаны</h2>
-<table>
-  <thead><tr><th>Звено</th><th>Чем подтверждается</th><th>Надёжность</th></tr></thead>
+<h2 id="family-connections">Как мы связаны</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Связь</th><th scope="col">Чем подтверждается</th><th scope="col">Надёжность</th></tr></thead>
   <tbody>
-    <tr><td><Имя — отец / мать — Имя></td><td><документы обычными словами></td><td class="t"><span class="tag ok">подтверждено</span></td></tr>
+    <tr id="relationship-parent-1"><td><Родитель 1 → основной человек></td><td><Документы и оговорки> <a href="#source-1">[1]</a></td><td class="t"><span class="tag ok"><Метка надёжности></span></td></tr>
+    <tr id="relationship-parent-2"><td><Родитель 2 → основной человек></td><td><Документы и оговорки></td><td class="t"><span class="tag ok"><Метка надёжности></span></td></tr>
+    <tr id="relationship-spouse"><td><Основной человек ↔ супруг / супруга></td><td><Документ о браке и оговорки></td><td class="t"><span class="tag ok"><Метка надёжности></span></td></tr>
+    <tr id="relationship-child"><td><Основной человек → ребёнок></td><td><Документы и оговорки></td><td class="t"><span class="tag ok"><Метка надёжности></span></td></tr>
   </tbody>
-</table>
+</table></div>
 <p><Почему это один и тот же человек в разных документах; какие однофамильцы исключены и как.></p>
 
 <!-- ХРОНОЛОГИЯ: одна строка — один период или событие. Даты обычными словами («март – авг. 1919»). -->
-<h2>Хронология</h2>
-<table>
-  <thead><tr><th>Когда</th><th>Что и где</th><th>Надёжность</th></tr></thead>
+<h2 id="chronology">Хронология</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Когда</th><th scope="col">Что и где</th><th scope="col">Надёжность</th></tr></thead>
   <tbody>
     <tr><td class="d"><период></td><td><событие, место></td><td class="t"><span class="tag ok">по документу</span></td></tr>
   </tbody>
-</table>
+</table></div>
 
 <!-- НЕОБЯЗАТЕЛЬНО — МЕСТА: если названия и административная принадлежность менялись. -->
 <h2>Места</h2>
-<table>
-  <thead><tr><th>Как в документе</th><th>Принадлежность на дату события</th><th>Сейчас</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Как в документе</th><th scope="col">Принадлежность на дату события</th><th scope="col">Сейчас</th></tr></thead>
   <tbody>
     <tr><td><…></td><td><губерния, уезд, волость, приход></td><td><…></td></tr>
   </tbody>
-</table>
+</table></div>
 
 <!-- ДОКУМЕНТЫ О ЧЕЛОВЕКЕ: главные найденные документы — метрики, акты ЗАГС, ревизии, справки, анкеты, дела. -->
 <h2>Документы о человеке</h2>
-<table>
-  <thead><tr><th>Документ</th><th>Когда и кем составлен</th><th>Что из него следует</th><th>Где хранится</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Документ</th><th scope="col">Когда и кем составлен</th><th scope="col">Что из него следует</th><th scope="col">Где хранится</th></tr></thead>
   <tbody>
     <tr><td><…></td><td><…></td><td><…></td><td><архив, шифр или «семейный архив»></td></tr>
   </tbody>
-</table>
+</table></div>
 
 <!-- НЕОБЯЗАТЕЛЬНО — ВОЕННАЯ СЛУЖБА: если человек служил. Ключевой эпизод с цитатой из первичного документа,
      таблица решений по инстанциям (например, путь наградного листа), таблица наград с пометкой «за что». -->
@@ -185,19 +351,19 @@
 <p><…></p>
 <blockquote>«<Цитата из документа>»</blockquote>
 <h3><Ключевой эпизод или подраздел></h3>
-<table>
-  <thead><tr><th><Кто></th><th>Дата</th><th><Решение></th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col"><Кто></th><th scope="col">Дата</th><th scope="col"><Решение></th></tr></thead>
   <tbody>
     <tr><td><…></td><td class="d"><…></td><td><…></td></tr>
   </tbody>
-</table>
+</table></div>
 <h3>Награды</h3>
-<table>
-  <thead><tr><th>Награда</th><th>Когда и каким документом</th><th>За что</th><th>В <семейном документе></th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Награда</th><th scope="col">Когда и каким документом</th><th scope="col">За что</th><th scope="col">В <семейном документе></th></tr></thead>
   <tbody>
     <tr><td><…></td><td><…></td><td><…></td><td><…></td></tr>
   </tbody>
-</table>
+</table></div>
 
 <!-- НЕОБЯЗАТЕЛЬНО — РЕПРЕССИЯ И РЕАБИЛИТАЦИЯ: нейтрально, только то, что нужно для ответа, со ссылкой на документ.
      Обвинение пересказывать только по делу; списки и справки не доказывают конкретных деяний. -->
@@ -245,12 +411,12 @@
 
 <!-- ГДЕ ИСКАЛИ И НЕ НАШЛИ: охват поиска и почему пустой результат не доказывает отсутствие. -->
 <h2>Где искали и не нашли</h2>
-<table>
-  <thead><tr><th>Где</th><th>Что искали</th><th>Почему это ещё не ответ</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Таблица отчёта; при необходимости прокручивается"><table>
+  <thead><tr><th scope="col">Где</th><th scope="col">Что искали</th><th scope="col">Почему это ещё не ответ</th></tr></thead>
   <tbody>
     <tr><td><база, архив, сайт></td><td><…></td><td><неполное покрытие, недоступно, другое написание></td></tr>
   </tbody>
-</table>
+</table></div>
 
 <!-- ЧТО ДАЛЬШЕ: доступные проверки сначала выполнить самому. Оставить только нерешённые шаги и необходимые
      действия пользователя; удалить пустые группы. Для архивного запроса — название, вопрос и известный шифр. -->
@@ -263,11 +429,15 @@
 <ul><li><b><Архив>:</b> <что запросить, шифр.></li></ul>
 
 <!-- ИСТОЧНИКИ: человекочитаемые библиографические ссылки с архивными шифрами и короткими ссылками на сайт. -->
-<h2>Источники</h2>
+<h2 id="sources">Источники</h2>
 <ol class="src">
-  <li><Документ, дата. Архив, фонд, опись, дело.> <a href="<URL>"><домен></a></li>
+  <li id="source-1"><Документ, дата. Архив, фонд, опись, дело.> <a href="<URL>"><домен></a></li>
 </ol>
 <p class="small"><Какие выводы могут измениться и от каких находок. Что не собиралось о живых людях.></p>
 
+
+</main>
+<footer class="report-footer"><span><Название дела или краткая подпись></span><a href="#top">К началу ↑</a></footer>
+</div>
 </body>
 </html>

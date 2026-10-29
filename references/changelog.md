@@ -1,5 +1,9 @@
 # Release history
 
+## 1.22.0 — 2026-10-29
+
+- Adopt an editorial HTML report design after comparing three alternatives. Put an evidence-qualified family tree in the header, link relationships to their supporting records, and adapt it to the known family without inventing relatives. Improve reading hierarchy, keyboard navigation, small-screen tables and print layout; keep evidence-label explanations in print. Use multilingual system-font fallbacks and preserve original alphabets without remote font downloads. Keep photos and thematic sections optional and PDF export explicit.
+
 ## 1.21.0 — 2026-10-29
 
 - Make a complete HTML report the default final deliverable; generate PDF only when the user explicitly requests it, reusing the HTML. A report for relatives does not imply PDF. Reuse the existing report template under its format-neutral name, add a screen layout, clarify the audit script's Markdown scope, and keep useful partial results independent of PDF tooling. Add a reasoning scenario for the default HTML report and retain explicit PDF-request coverage.
