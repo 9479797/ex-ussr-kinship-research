@@ -1,5 +1,9 @@
 # Release history
 
+## 1.23.0 — 2026-10-29
+
+- Add adaptable institutional request scenarios for event records, known files, household records, additional civil-register details and departmental files. Reuse existing authorization, access and negative-result guidance without requiring exhaustive searches before a useful request. Plan child-to-parent record searches from established facts, account for varying household-record fields, and distinguish migration petitions from completed moves ([#74](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/74)).
+
 ## 1.22.0 — 2026-10-29
 
 - Adopt an editorial HTML report design after comparing three alternatives. Put an evidence-qualified family tree in the header, link relationships to their supporting records, and adapt it to the known family without inventing relatives. Improve reading hierarchy, keyboard navigation, small-screen tables and print layout; keep evidence-label explanations in print. Use multilingual system-font fallbacks and preserve original alphabets without remote font downloads. Keep photos and thematic sections optional and PDF export explicit.
