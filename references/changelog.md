@@ -1,5 +1,9 @@
 # Release history
 
+## 1.24.0 — 2026-10-29
+
+- Add Rootera as a qualified 1897 census index route and explain how to handle reported placeholders in locked fields. Keep the support explanation attributed and dated, leave closed fields unknown, verify accessible data against archival originals, and correct earlier interpretations without losing the observation history. Distinguish published Latgale coverage from complete coverage of Latvia ([#76](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/76)).
+
 ## 1.23.0 — 2026-10-29
 
 - Add adaptable institutional request scenarios for event records, known files, household records, additional civil-register details and departmental files. Reuse existing authorization, access and negative-result guidance without requiring exhaustive searches before a useful request. Plan child-to-parent record searches from established facts, account for varying household-record fields, and distinguish migration petitions from completed moves ([#74](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/74)).
