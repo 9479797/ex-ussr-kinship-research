@@ -52,7 +52,7 @@ git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.codex/
 git clone https://github.com/DenisSergeevitch/ex-ussr-kinship-research ~/.claude/skills/ex-ussr-kinship-research
 ```
 
-For a single project, put the folder in `.claude/skills/` inside the repository. The scripts need only Python 3 and the standard library; `build_pdf.py` also needs a Chromium-based browser.
+For a single project, put the folder in `.claude/skills/` inside the repository. Most scripts need only Python 3 and the standard library. The optional `scan_montage.py` helper needs Pillow; `build_pdf.py` needs a Chromium-based browser.
 
 ## Use
 

@@ -27,7 +27,7 @@ def frame_number(path: Path) -> int | None:
 def select_frames(directory: Path, first: int | None, last: int | None) -> list[Path]:
     frames = []
     for path in sorted(directory.iterdir()):
-        if path.suffix.lower() not in IMAGE_SUFFIXES:
+        if not path.is_file() or path.suffix.lower() not in IMAGE_SUFFIXES:
             continue
         number = frame_number(path)
         if number is None:
@@ -53,8 +53,8 @@ def parse_box(value: str) -> tuple[float, float, float, float]:
 def make_strip(path: Path, box, half: str, rotate: int, width: int, contrast: float):
     from PIL import Image, ImageEnhance, ImageOps
 
-    image = Image.open(path)
-    image = ImageOps.exif_transpose(image).convert("L")
+    with Image.open(path) as source:
+        image = ImageOps.exif_transpose(source).convert("L")
     w, h = image.size
     if half == "right" or (half == "auto" and w > h):
         image = image.crop((w // 2, 0, w, h))
@@ -64,7 +64,10 @@ def make_strip(path: Path, box, half: str, rotate: int, width: int, contrast: fl
         image = image.rotate(rotate, expand=True)
     w, h = image.size
     x0, y0, x1, y1 = box
-    strip = image.crop((int(w * x0), int(h * y0), int(w * x1), int(h * y1)))
+    pixels = (int(w * x0), int(h * y0), int(w * x1), int(h * y1))
+    if pixels[2] <= pixels[0] or pixels[3] <= pixels[1]:
+        raise ValueError(f"область после округления пуста: {path.name}")
+    strip = image.crop(pixels)
     if contrast != 1.0:
         strip = ImageEnhance.Contrast(strip).enhance(contrast)
     height = max(1, round(width * strip.size[1] / strip.size[0]))
@@ -74,10 +77,21 @@ def make_strip(path: Path, box, half: str, rotate: int, width: int, contrast: fl
 def build_sheets(frames, box, half, rotate, width, contrast, per_sheet, out_dir: Path, prefix: str):
     from PIL import Image, ImageDraw
 
+    if "/" in prefix or "\\" in prefix:
+        raise ValueError("--prefix должен быть префиксом имени, а не путём")
+    numbers = [frame_number(path) for path in frames]
+    if len(numbers) != len(set(numbers)):
+        raise ValueError("номера кадров повторяются; выберите серию с однозначными номерами")
+    chunks = [frames[start : start + per_sheet] for start in range(0, len(frames), per_sheet)]
+    targets = [out_dir / f"{prefix}{frame_number(chunk[0]):04d}-{frame_number(chunk[-1]):04d}.jpg"
+               for chunk in chunks]
+    for target in targets:
+        if target.exists() or target.is_symlink():
+            raise FileExistsError(f"файл уже существует, перезапись запрещена: {target}")
+
     label_width = 70
     written = []
-    for start in range(0, len(frames), per_sheet):
-        chunk = frames[start : start + per_sheet]
+    for chunk, target in zip(chunks, targets):
         rows = []
         for path in chunk:
             strip = make_strip(path, box, half, rotate, width, contrast)
@@ -90,9 +104,8 @@ def build_sheets(frames, box, half, rotate, width, contrast, per_sheet, out_dir:
         for row in rows:
             sheet.paste(row, (0, y))
             y += row.size[1]
-        first, last = frame_number(chunk[0]), frame_number(chunk[-1])
-        target = out_dir / f"{prefix}{first:04d}-{last:04d}.jpg"
-        sheet.save(target, quality=82)
+        with target.open("xb") as output:
+            sheet.save(output, format="JPEG", quality=82)
         written.append(target)
     return written
 
@@ -134,8 +147,12 @@ def main(argv=None) -> int:
         return 1
     out_dir = Path(args.out).expanduser()
     out_dir.mkdir(parents=True, exist_ok=True)
-    written = build_sheets(frames, args.box, args.half, args.rotate, args.width, args.contrast,
-                           args.per_sheet, out_dir, args.prefix)
+    try:
+        written = build_sheets(frames, args.box, args.half, args.rotate, args.width, args.contrast,
+                               args.per_sheet, out_dir, args.prefix)
+    except (OSError, ValueError) as exc:
+        print(f"Ошибка: {exc}", file=sys.stderr)
+        return 2
     for path in written:
         print(path)
     print(f"Кадров: {len(frames)}; лент: {len(written)}", file=sys.stderr)
