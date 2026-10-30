@@ -1,5 +1,117 @@
 # Release history
 
+## 1.26.0 — 2026-10-29
+
+- Add two qualified holdings-discovery catalogs for the 1897 census and distinguish them from published statistics and personal records. Separate Soviet census guidance, verify catalog leads against archival inventories, and retain uncertainty when an inventory is unavailable or a locality is absent from a catalog. Add an attributed RGIA inventory 11 route for settlement and population summaries without assuming that names are present ([#87](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/87)).
+
+## 1.25.0 — 2026-10-29
+
+- Refine Perm and Bashkortostan source navigation with attributed contributor observations, correct the Basharchive project attribution, and distinguish routing diagnostics from demonstrated geographic restrictions. Explain restoring an allowed direct connection through the user's existing client without relying on another site's IP display ([#78](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/78), [#79](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/79)).
+- Clarify the evidence needed to assign a distant DNA match to a parental side; a sibling's non-match or absent X segment alone does not establish that side. Keep unproven surname links as hypotheses without requiring one particular evidence route ([#80](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/80)).
+- Add an optional local column-strip montage helper for reviewing saved scan series with Pillow. Preserve source images and existing output, reject ambiguous frame numbers and empty crops, and verify candidates against full records; retain existing image tools as alternatives ([#81](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/81)).
+- Refine requests for unnamed children and revision-list coverage split by estate, institution or owner. Add an editable anonymized CANO request specimen, with archive-specific requirements checked through the existing correspondence workflow ([#82](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/82), [#83](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/83)).
+- Add the FNP probate index as a qualified death-record lead, distinguishing notarial districts from established residence, exact-name behavior from broader matching, and contributor observations from verified form guidance ([#84](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/84)).
+- Add Soviet maternal-award records as a route to family information, with original regulations and an archive finding aid; distinguish qualifying children from complete family composition or biological relationships ([#85](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/85)).
+
+## 1.24.0 — 2026-10-29
+
+- Add Rootera as a qualified 1897 census index route and explain how to handle reported placeholders in locked fields. Keep the support explanation attributed and dated, leave closed fields unknown, verify accessible data against archival originals, and correct earlier interpretations without losing the observation history. Distinguish published Latgale coverage from complete coverage of Latvia ([#76](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/76)).
+
+## 1.23.0 — 2026-10-29
+
+- Add adaptable institutional request scenarios for event records, known files, household records, additional civil-register details and departmental files. Reuse existing authorization, access and negative-result guidance without requiring exhaustive searches before a useful request. Plan child-to-parent record searches from established facts, account for varying household-record fields, and distinguish migration petitions from completed moves ([#74](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/74)).
+
+## 1.22.0 — 2026-10-29
+
+- Adopt an editorial HTML report design after comparing three alternatives. Put an evidence-qualified family tree in the header, link relationships to their supporting records, and adapt it to the known family without inventing relatives. Improve reading hierarchy, keyboard navigation, small-screen tables and print layout; keep evidence-label explanations in print. Use multilingual system-font fallbacks and preserve original alphabets without remote font downloads. Keep photos and thematic sections optional and PDF export explicit.
+
+## 1.21.0 — 2026-10-29
+
+- Make a complete HTML report the default final deliverable; generate PDF only when the user explicitly requests it, reusing the HTML. A report for relatives does not imply PDF. Reuse the existing report template under its format-neutral name, add a screen layout, clarify the audit script's Markdown scope, and keep useful partial results independent of PDF tooling. Add a reasoning scenario for the default HTML report and retain explicit PDF-request coverage.
+
+## 1.20.0 — 2026-10-29
+
+- Replace the app-specific family-tree integration with portable local GEDCOM exports, using 5.5.1 UTF-8 by default or the version required by the user or chosen software. Preserve source citations, evidence status, original files and the existing case registers; leave application choice, MCP setup and automatic external-tree synchronization outside the skill. Replace the integration scenarios with focused GEDCOM cases and retain the canonical tree-import guidance.
+- Update the English README and all 17 translations for the GEDCOM workflow, and remove the translation-status and monthly-maintenance notices from localized READMEs.
+
+## 1.19.0 — 2026-10-28
+
+- Add a language bar below the README cover and complete README translations in Russian, Belarusian, Kazakh, Ukrainian, Polish, German, Romanian, Estonian, Latvian, Lithuanian, Georgian, Armenian, Azerbaijani, Kyrgyz, Tajik, Turkmen and Uzbek. Keep installation commands and reference links usable in every language; label translations as monthly maintainer-reviewed snapshots.
+
+## 1.18.0 — 2026-10-28
+
+- Add a focused forced-labour and displaced-person research route through Arolsen, German civil registers and local and Soviet records. Link current official Hessen catalogue guidance, qualify contributor observations, date formats, coverage, fees and access; reuse existing name, identity, evidence and correspondence protocols without exhaustive-search or manual-only gates ([#69](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/69)).
+
+## 1.17.0 — 2026-10-28
+
+- Add Vyatka archive, church-periodical and regional-library discovery routes; distinguish independent access checks from contributor observations and retain per-file provenance, rights and coverage limits. Check directory sections and index coverage before drawing negative conclusions about employment ([#67](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/67)).
+
+- Distinguish completed accessible checks from routes awaiting user action in research conclusions; reuse the existing access hand-off guidance and record actual blockers without inferring a need to install certificates from a TLS error. Add a focused reasoning scenario ([#68](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/68)).
+
+## 1.16.0 — 2026-10-28
+
+- Add focused DNA-evidence guidance for platform copies, related matches, measured observations versus inferred ancestry, segment and ethnicity-estimate limits, and private task-authorized account work. Reuse claim-level independence, existing statuses, artifact categories and privacy/correspondence rules; qualify locality and endogamy clues and cite the provider's method descriptions ([#66](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/66)).
+
+## 1.15.0 — 2026-10-28
+
+- Report register rows with fewer CSV fields than their header before missing values are normalized, identifying the row and field counts so truncated or misaligned evidence can be corrected. Preserve explicit empty cells and unknown optional values; add a synthetic regression for a short artifact row ([#65](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/65)).
+
+## 1.14.0 — 2026-10-28
+
+- Use a suitable connected FamilySearch MCP for structured reads and task-authorized tree changes; preserve the selected destination, actual filters and scope, evidence provenance, privacy and read-back after ambiguous writes. Keep browser research available and avoid requiring a particular server or browser-session extraction ([#63](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/63)).
+
+- Add GWAR prisoner-of-war cards through `--kind pows`, include them in the default selection, preserve direct card locators and document how to resume older checkpoints. Add a synthetic CLI regression for explicit POW selection and the expanded default query ([#64](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/64)).
+- Add qualified source routes for Moscow archive requests, Volga German personal books, Voronezh digital access, Moscow Oblast burial records, Odesa archival collections and German consular registers. Consolidate existing Voronezh navigation, distinguish official descriptions from contributor observations, and omit private-case details and unsupported negative coverage claims.
+
+## 1.13.0 — 2026-10-28
+
+- Refine targeted reading of machine-recognised metric books: choose useful pre-reform name variants, open truncated case titles, distinguish parish sections and pages without recognised text, and preserve viewer captures as screenshots. Keep full-volume reading optional and qualify contributor access observations ([#62](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/62)).
+- Add the Danish Red Cross POW route at Rigsarkivet, distinguishing the approximately dated Russian-prisoner card index (1915–1918), Russian-prisoner lists (1917–1918) and German-prisoner lists (1915); record the limited surviving sample boxes and list packet. Verify document provenance, keep identity candidates separate and centralise paid-order conditions in the existing correspondence guide.
+- Check historical civil-registration jurisdictions and present-day custodians when later boundary changes move village records between regional archives.
+- Treat unverified search-result loading as incomplete coverage using existing statuses; an empty HTML table does not establish an absent record or a JavaScript failure.
+- Keep confidence consistent between family-report summaries and the main text; adapt narrative, plans and reader checks to the task without requiring a second reader or extra deliverables. Add six reasoning scenarios for these distinctions.
+
+## 1.12.0 — 2026-10-28
+
+- Add official civil-registration request starting points and distinguish online filing from remote delivery; reuse existing correspondence tracking and verify each service's current conditions. Refine targeted reading of ZAGS alphabetic indexes and contextual reading of difficult scan fragments with existing image tools ([#60](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/60)).
+- Expand source navigation for libraries, historic maps, repression records, Finland, Baltic and Polish collections and emigrant records; update moved addresses. Qualify contributor access observations, preserve record provenance and source dependence, and consolidate Commons discovery into the existing archival-copy guidance ([#61](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/61)).
+- Use a connected Arca family tree as research material and write evaluated results with source citations and evidence marks, without repeated approval for ordinary operations. Respect the user's project and output choice, connection permissions and existing private-file rules; preserve user records and keep registers and pending work in the case folder ([#59](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/59), [#58](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/58)).
+
+## 1.11.0 — 2026-10-28
+
+- Preserve the original settlement, volost, uyezd and gubernia when registering new GWAR leads, retaining source snapshots and deduplication; correct the official CDIAK domain ([#55](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/55)).
+- Add the third-party RGADA Search index with metadata/PDF search modes, inventory provenance and bounded negative-result guidance ([#56](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/56), [#54](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/54)).
+- Add Velikiya Opisi volunteer inventories and document indexes, with result-type and coverage filters, archival verification and claim-level source dependence ([#57](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/57)).
+
+## 1.10.0 — 2026-10-27
+
+- Add the official DAKhMO metric-book catalog and the Ukrainian Wikisource archive directory; distinguish catalog holdings, volunteer navigation and individual scan provenance, rights and access ([#52](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/52)).
+
+- Refine targeted WWI locality/name searches, historical place and parish checks, OBD filter diagnostics, timed archive access and request-channel guidance. Keep contributor access observations qualified, use canonical locale guidance and avoid mandatory bulk searches. Preserve GWAR report/hospital card locators and allow the three source CLIs to run in isolated Python mode ([#50](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/50)).
+- Keep Cyrillic CLI output and error messages readable when Windows agents capture legacy-encoded pipes; share UTF-8 stream setup through the existing common helper and decode captured test output explicitly ([#51](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/51)).
+
+## 1.9.0 — 2026-10-27
+
+- Add targeted urban-directory and education-list research, qualified OCR and name-frequency clues, and flexible record routes for a child/parent name mismatch; keep private case details out of examples and record actual source-access limits ([#48](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/48)).
+- Add the optional Skills CLI installation route, explaining project and personal scope while retaining direct installation ([#41](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/41)).
+- Add a Bessarabia/Moldova research route with historical jurisdictions, Romanian name variants and ANA fond 211 inventory navigation; verify parish, volume structure, calendar and coverage for each document ([#43](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/43)).
+- Add verified ANA certificate-request guidance and FamilySearch Moldova collection descriptions, distinguishing public catalog access from image access and contributor observations from confirmed coverage.
+- Compare distorted place names against selected records of the same historical jurisdiction and contemporary settlement lists; preserve candidates and assess independence through the existing evidence protocol ([#44](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/44)).
+- Add offline `gwar.py places` to group saved settlement spellings and rank possible readings without identifying places automatically. Preserve record namespaces, conflicting snapshots and input evidence; keep settlement names containing administrative-unit letter sequences.
+- Choose evidence-led name and patronymic combinations when a search mode requires exact matches; keep variants as hypotheses without requiring exhaustive permutations.
+- Add targeted Chechnya deportation and special-settlement research routes, name and locality clues, and current archive-request starting points; keep field observations qualified, assess copies per record, and check surviving collections before concluding that a file was lost ([#45](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/45)).
+- Add the official Altai State Archive index for the 1917 agricultural and urban census, distinguish index entries from household forms and document their dependence, incomplete coverage and dated service conditions; select forms by the research question ([#46](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/46)).
+- Keep long scan reading resumable with small batches, compact delegated results where available and progress within the user's existing budget ([#40](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/40)).
+- Correct overgeneralizations about house numbers, name/kinship formulas, surname clusters and OBD personnel coverage; quarantine the reported unsafe former memorial domain and qualify unavailable-source observations ([#42](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/42)).
+
+- Register manually described source leads through the existing local helper with resource-scoped snapshots, unknown provenance and optional coverage; add an optional resumable-plan template, a malformed-CSV diagnostic and a warning for found searches lacking artifact links ([#47](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/47)).
+
+## 1.8.0 — 2026-10-27
+
+- Add targeted discovery routes for Zhnivo, Belarus’s SODD NAF archival catalog and hryc.by, preserving source provenance, access limits and verification against original documents ([#39](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/39)).
+- Refine Geneteka territory, parish, parent and pair searches, event-year and recent-index filters, and record-type coverage checks.
+- Add six reasoning scenarios for Belarusian and Ukrainian source selection, participant roles, OCR context and unavailable originals.
+
 ## 1.7.0 — 2026-10-26
 
 - Add targeted use of public funeral-agency burial catalogs to locate historical gravestones, with task-relevant private evidence, claim-based source dependence and a verified general catalog link ([#37](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/37)).

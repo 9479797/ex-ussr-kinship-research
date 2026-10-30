@@ -39,7 +39,7 @@ class LocalEvidenceTests(unittest.TestCase):
     def init_case(self):
         case = self.directory / "case"
         initialized = subprocess.run([sys.executable, str(SCRIPTS / "init_case.py"), "--case-dir", str(case),
-                                      "--research-question", "Проверить запись"], capture_output=True, text=True)
+                                      "--research-question", "Проверить запись"], capture_output=True, encoding="utf-8")
         self.assertEqual(initialized.returncode, 0, initialized.stderr)
         return case
 
@@ -76,7 +76,7 @@ class LocalEvidenceTests(unittest.TestCase):
         for name, content in protected.items():
             self.assertEqual((case / name).read_bytes(), content)
         audit = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(case), "--json"],
-                               capture_output=True, text=True)
+                               capture_output=True, encoding="utf-8")
         self.assertEqual(audit.returncode, 0, audit.stdout + audit.stderr)
         self.assertEqual(json.loads(audit.stdout)["errors"], [])
 
@@ -161,7 +161,7 @@ class LocalEvidenceTests(unittest.TestCase):
         common.save_json(self.fragment, sample_fragment())
         output = self.directory / "analysis.json"
         result = subprocess.run([sys.executable, str(SCRIPTS / "familysearch.py"), "browser-import", str(self.fragment),
-                                 "--surnames", "Sidorov", "--out", str(output)], capture_output=True, text=True)
+                                 "--surnames", "Sidorov", "--out", str(output)], capture_output=True, encoding="utf-8")
         self.assertEqual(result.returncode, 0, result.stderr)
         data = common.read_json(output)
         self.assertEqual(len(data["candidates"]), 1)

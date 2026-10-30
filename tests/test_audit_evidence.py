@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,8 @@ from pathlib import Path
 from scripts.audit_evidence import artifact_groups, has_direct_record
 
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+CLI_SCRIPTS = ("audit_evidence.py", "build_pdf.py", "familysearch.py", "gwar.py",
+               "hash_artifact.py", "init_case.py", "register_search.py")
 
 ARTIFACT = "{id},,title,url,,,,,,,P-0001,,,,direct,image-of-original,{group},clear,,,{claims},,"
 CLAIM = "{id},text,P-0001,birth,{artifacts},{groups},,{status},moderate,rationale,"
@@ -44,7 +47,7 @@ class AuditCase(unittest.TestCase):
     def audit(self) -> dict:
         proc = subprocess.run(
             [sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"],
-            capture_output=True, text=True,
+            capture_output=True, encoding="utf-8",
         )
         return json.loads(proc.stdout)
 
@@ -68,10 +71,79 @@ class AuditCase(unittest.TestCase):
             ARTIFACT.format(id="A-0002", group=second_group, claims="C-0001"),
         )
 
+    def test_row_with_extra_fields_is_reported_not_crash(self):
+        self.append("person-register.csv", PERSON.format(id="P-0003") + ",лишнее, поле")
+        result = self.audit()
+        self.assertTrue(any("person-register.csv: строка 4 содержит больше полей" in e for e in result["errors"]))
+        self.assertEqual(result["counts"]["persons"], 3)
+
+    def test_row_with_missing_fields_is_reported(self):
+        # Строка короче заголовка: URL попадает в captured_at и т. д. — раньше аудит это пропускал.
+        self.append("artifact-register.csv", "A-0001,https://example.org,index,Title,2026-10-28,,index-copy,clear,G1")
+        result = self.audit()
+        self.assertTrue(any(
+            "artifact-register.csv: строка 2 содержит меньше полей, чем заголовок (9 из 23)" in e
+            for e in result["errors"]
+        ))
+
     def test_fresh_case_is_clean(self):
         # Плейсхолдеры шаблона отчёта (A-...., R-0001 при пустых реестрах) не дают ошибок.
         result = self.audit()
         self.assertEqual(result["errors"], [])
+
+    def test_cyrillic_output_survives_legacy_pipe_encoding(self):
+        # На Windows вывод в pipe идёт в cp1252; PYTHONIOENCODING воспроизводит это на любой ОС.
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252"}
+        for script in CLI_SCRIPTS:
+            with self.subTest(script=script):
+                proc = subprocess.run([sys.executable, str(SCRIPTS / script), "--help"],
+                                      capture_output=True, encoding="utf-8", env=env)
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case)],
+                              capture_output=True, encoding="utf-8", env=env)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("Проверено дело", proc.stdout)
+        proc = subprocess.run([sys.executable, str(SCRIPTS / "hash_artifact.py"), str(self.case / "missing")],
+                              capture_output=True, encoding="utf-8", env=env)
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("Ошибка: файл не найден", proc.stderr)
+        for script in ("audit_evidence.py", "build_pdf.py", "hash_artifact.py", "init_case.py"):
+            with self.subTest(script=script, isolated=True):
+                proc = subprocess.run([sys.executable, "-I", str(SCRIPTS / script), "--help"],
+                                      capture_output=True, encoding="utf-8")
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+
+    def test_init_creates_research_state(self):
+        text = (self.case / "research-state.md").read_text(encoding="utf-8")
+        self.assertIn("## Очередь проверок", text)
+
+    def test_partial_report_without_claims_has_no_length_gate(self):
+        self.append("final-report.md", *[f"Ограничение поиска {n}: источник недоступен." for n in range(15)])
+        result = self.audit()
+        self.assertEqual(result["errors"], [])
+        self.assertFalse(any("реестр утверждений пуст" in w for w in result["warnings"]), result["warnings"])
+
+    def test_found_search_without_artifact_warns(self):
+        row = "S-0001,,,,q,,,,{status},{artifacts},,,"
+        self.append("search-log.csv", row.format(status="found", artifacts=""))
+        result = self.audit()
+        self.assertEqual(result["counts"]["searches"], 1)
+        self.assertTrue(
+            any("S-0001" in w and "artifact_ids пуст" in w for w in result["warnings"]), result["warnings"]
+        )
+
+    def test_partial_search_unknown_artifact_warns(self):
+        self.append("search-log.csv", "S-0001,,,,q,,,,partial,A-9999,,,")
+        result = self.audit()
+        self.assertTrue(any("S-0001" in w and "A-9999" in w for w in result["warnings"]), result["warnings"])
+
+    def test_found_search_with_artifact_or_not_found_is_clean(self):
+        row = "S-0001,,,,q,,,,{status},{artifacts},,,"
+        self.two_artifacts()
+        self.append("search-log.csv", row.format(status="found", artifacts="A-0001"),
+                    row.replace("S-0001", "S-0002").format(status="not-found", artifacts=""))
+        result = self.audit()
+        self.assertFalse(any("artifact_ids пуст" in w for w in result["warnings"]), result["warnings"])
 
     def test_declared_group_without_artifact_is_error(self):
         self.append("artifact-register.csv", ARTIFACT.format(id="A-0001", group="G1", claims="C-0001"))
