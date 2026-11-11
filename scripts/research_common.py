@@ -9,6 +9,7 @@ import os
 import re
 import socket
 import ssl
+import sys
 import tempfile
 import time
 import urllib.error
@@ -17,6 +18,14 @@ import urllib.request
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+def configure_utf8_stdio():
+    """Keep CLI output readable when an agent captures a legacy-encoded pipe."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8")
 
 
 class SourceError(Exception):

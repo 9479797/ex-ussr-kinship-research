@@ -55,6 +55,20 @@ def hit(number):
 
 
 class GwarTests(unittest.TestCase):
+    def test_pow_cli_selects_card_index_and_default_all(self):
+        cases = (
+            (["--kind", "pows"], ["chelovek_plen"]),
+            ([], ["chelovek_donesenie", "chelovek_gospital", "chelovek_nagrazhdenie", "chelovek_plen"]),
+        )
+        for flags, expected in cases:
+            with self.subTest(flags=flags), tempfile.TemporaryDirectory() as tmp:
+                client = FakeClient(lambda path, body, as_json:
+                                    "public page" if not as_json else {"hits": {"total": 0, "hits": []}})
+                with patch.object(gwar, "source_client", return_value=client):
+                    result = gwar.main(["search", "--surname", "Условный", "--out", str(Path(tmp) / "gwar.json"), *flags])
+                self.assertEqual(result, 0)
+                self.assertEqual(client.calls[-1][1]["entities"], expected)
+
     def test_completed_cache_keeps_capture_time_without_new_requests(self):
         def handler(path, body, as_json):
             return "public page" if not as_json else {"hits": {"total": 1, "hits": [hit(1)]}}
@@ -104,6 +118,75 @@ class GwarTests(unittest.TestCase):
         self.assertEqual(parsed["image_url"], "https://gwar.mil.ru/cdn/imagesfww/folder/test.jpg")
         self.assertEqual(gwar.source_client().base, gwar.BASE)
 
+    def test_places_group_spellings_by_volost_and_rank_by_target(self):
+        def card(number, place, **fields):
+            return {"_index": "gwar", "_type": "chelovek_donesenie", "_id": str(number),
+                    "_source": {"birth_place": place, **fields}}
+        state = {"query": {"last_name": "Иванов"}, "coverage": {"complete": True}, "hits": [
+            card(1, "Условная губ., Северный уезд, селение Новоберезицы"),
+            card(2, "Условная губ., Северный уезд, Заречная вол., д. Новобережка"),
+            card(3, "Условная губ., Северный уезд, Заречная вол., с. Новобережка"),
+            card(4, "с. Каменка", birth_place_gubernia="Условная губ.", birth_place_uezd="Северный уезд",
+                 birth_place_volost="Заречная вол.")]}
+        result = gwar.places([("first.json", state), ("copy.json", state)], "Новоберезицы")
+        self.assertEqual(result["cards"], 4)
+        self.assertTrue(result["coverage"]["complete"])
+        volost = next(group for group in result["groups"] if group["volost"] == "Заречная вол.")
+        self.assertEqual(volost["uezd"], "Северный уезд")
+        first, last = volost["settlements"][0], volost["settlements"][-1]
+        self.assertEqual(first["as_written"], "д. Новобережка")
+        self.assertGreater(first["similarity"], last["similarity"])
+        self.assertEqual(last["as_written"], "с. Каменка")
+        self.assertEqual(gwar.place_key("с. Новобережка"), gwar.place_key("д. Новобережка"))
+
+    def test_places_keep_incomplete_input_visible(self):
+        state = {"query": {}, "coverage": {"complete": False}, "hits": [hit(1)]}
+        result = gwar.places([("partial.json", state)])
+        self.assertFalse(result["coverage"]["complete"])
+        self.assertEqual(result["groups"][0]["settlements"][0]["as_written"], "Условное село")
+        with self.assertRaises(common.SourceError):
+            gwar.places([("other.json", {"rows": []})])
+
+
+    def test_places_preserve_settlements_named_like_administrative_units(self):
+        for name in ("Волково", "Губино", "с. Волково"):
+            parts = gwar.place_parts({"birth_place": "Тестовая губ., Северный уезд, Заречная вол., " + name})
+            self.assertEqual(parts["settlement"], name)
+            self.assertEqual(parts["volost"], "Заречная вол.")
+        self.assertEqual(gwar.similarity("Ая", "Уя"), 0.5)
+
+    def test_places_keep_namespaces_and_reject_conflicting_snapshots(self):
+        first, second = hit(1), hit(1)
+        second["_type"] = "chelovek_gospital"
+        state = {"hits": [first, second], "coverage": {"complete": True}}
+        result = gwar.places([("a.json", state)])
+        entry = result["groups"][0]["settlements"][0]
+        self.assertEqual(result["cards"], 2)
+        self.assertEqual(len(set(entry["card_keys"])), 2)
+        changed = hit(1)
+        changed["_source"]["birth_place"] = "Иное село"
+        with self.assertRaises(common.SourceError):
+            gwar.places([("a.json", state), ("b.json", {"hits": [changed], "coverage": {"complete": True}})])
+
+    def test_places_reject_malformed_cards_and_nonboolean_coverage(self):
+        for bad in (None, {}, {"_id": "1", "_source": []}):
+            with self.assertRaises(common.SourceError):
+                gwar.places([("bad.json", {"hits": [bad], "coverage": {"complete": True}})])
+        result = gwar.places([("bad-coverage.json", {"hits": [], "coverage": {"complete": "false"}})])
+        self.assertFalse(result["coverage"]["complete"])
+        with self.assertRaises(common.SourceError):
+            gwar.places([])
+
+    def test_places_never_overwrite_an_input_or_contact_the_site(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source.json"
+            common.save_json(source, {"source": "gwar", "hits": [hit(1)], "coverage": {"complete": True}})
+            original = source.read_bytes()
+            with patch.object(gwar, "source_client", side_effect=AssertionError("offline command")):
+                self.assertEqual(gwar.main(["places", "--input", str(source), "--out", str(source)]), 1)
+                self.assertEqual(source.read_bytes(), original)
+                self.assertEqual(gwar.main(["places", "--input", str(source), "--out", str(Path(tmp) / "places.json")]), 0)
+
 
 class RegistrationTests(unittest.TestCase):
     def setUp(self):
@@ -142,7 +225,7 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(snapshot.read_bytes()).hexdigest(), artifact["sha256"])
         for name, content in untouched.items():
             self.assertEqual((self.case / name).read_bytes(), content)
-        audit = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"], capture_output=True, text=True)
+        audit = subprocess.run([sys.executable, str(SCRIPTS / "audit_evidence.py"), "--case-dir", str(self.case), "--json"], capture_output=True, encoding="utf-8")
         self.assertEqual(audit.returncode, 0, audit.stdout + audit.stderr)
         self.assertIn("independence_group", audit.stdout)
 
@@ -172,6 +255,116 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(self.rows("artifact-register.csv"), [])
         self.assertEqual(self.rows("search-log.csv")[0]["result_status"], "partial")
 
+    def manual_input(self, **changes):
+        data = {"source": "manual", "source_or_domain": "archive.org", "query": {"surname": "Иванов", "place": "Условный уезд"},
+                "coverage": {"complete": True},
+                "items": [{"id": "https://archive.org/details/directory-1900#page=12", "source_title": "Адрес-календарь 1900, с. 12",
+                           "source_url_or_path": "https://archive.org/details/directory-1900", "names_as_written": "Иванов Пётр, мещанин",
+                           "snapshot": {"line": "Иванов Пётр, мещанин, Садовая, 5"}},
+                          {"id": "directory-1900:p13:l4", "source_title": "Адрес-календарь 1900, с. 13",
+                           "source_url_or_path": "https://archive.org/details/directory-1900", "names_as_written": "Иванова Анна",
+                           "language_script": "ru, кириллица"}]}
+        data.update(changes)
+        return data
+
+    def register_manual(self, data, name="manual.json"):
+        path = self.directory / name
+        common.save_json(path, data)
+        return register_search.register(self.case, path, "Найти адреса")
+
+    def test_manual_source_registers_leads_and_is_idempotent(self):
+        untouched = {name: (self.case / name).read_bytes() for name in ("claims-register.csv", "person-register.csv", "relationship-register.csv")}
+        data = self.manual_input()
+        first = self.register_manual(data)
+        second = self.register_manual(data)
+        self.assertEqual(first["added_artifacts"], 2)
+        self.assertEqual(first["artifact_ids"], ["A-0001", "A-0002"])
+        self.assertEqual(second["added_artifacts"], 0)
+        self.assertFalse(second["added_search_log"])
+        artifacts = self.rows("artifact-register.csv")
+        self.assertEqual(len(artifacts), 2)
+        for artifact in artifacts:
+            self.assertEqual(artifact["status"], "lead-only")
+            self.assertEqual(artifact["directness"], "lead-only")
+            self.assertTrue(artifact["source_url_or_path"].startswith("https://archive.org/"))
+            self.assertTrue(artifact["names_as_written"])
+            self.assertEqual(artifact["repository_or_archive"], "уточнить по источнику")
+        self.assertEqual(artifacts[1]["language_script"], "ru, кириллица")
+        snapshots = sorted((self.case / "sources" / "manual").glob("*.json"))
+        self.assertEqual(len(snapshots), 2)
+        saved = json.loads(snapshots[0].read_text(encoding="utf-8"))
+        self.assertIn(saved["record"]["id"], {item["id"] for item in data["items"]})
+        logs = self.rows("search-log.csv")
+        self.assertEqual(len(logs), 1)
+        self.assertEqual(logs[0]["source_or_domain"], "archive.org")
+        self.assertEqual(logs[0]["result_status"], "found")
+        self.assertEqual(logs[0]["artifact_ids"], "A-0001;A-0002")
+        for name, content in untouched.items():
+            self.assertEqual((self.case / name).read_bytes(), content)
+
+    def test_manual_sources_with_same_local_record_id_stay_separate(self):
+        item = {"id": "page-1", "source_title": "Локальная заметка", "snapshot": {"line": "Условный текст"}}
+        self.register_manual(self.manual_input(source_or_domain="Источник A", items=[item]))
+        second = self.register_manual(self.manual_input(source_or_domain="Источник B", items=[item]), "other.json")
+        self.assertEqual(second["added_artifacts"], 1)
+        self.assertEqual(len(self.rows("artifact-register.csv")), 2)
+        snapshots = [json.loads(path.read_text(encoding="utf-8")) for path in (self.case / "sources" / "manual").glob("*.json")]
+        self.assertEqual({item["record"]["source_or_domain"] for item in snapshots}, {"Источник A", "Источник B"})
+
+    def test_manual_unknown_coverage_stays_partial_and_originality_unknown(self):
+        data = self.manual_input()
+        del data["coverage"]
+        result = self.register_manual(data)
+        self.assertEqual(result["result_status"], "partial")
+        for artifact in self.rows("artifact-register.csv"):
+            self.assertEqual(artifact["originality"], "unknown")
+            self.assertEqual(artifact["source_type"], "unknown")
+            self.assertNotIn("установлен", artifact["provenance_level"])
+            self.assertEqual(artifact["independence_group"], "")
+        empty = self.register_manual({**data, "items": []}, "unknown-empty.json")
+        self.assertEqual(empty["result_status"], "partial")
+
+    def test_manual_source_empty_items_is_not_found(self):
+        report = self.register_manual(self.manual_input(items=[]))
+        self.assertEqual(report["result_status"], "not-found")
+        self.assertEqual(self.rows("artifact-register.csv"), [])
+        report = self.register_manual(self.manual_input(items=[], coverage={"complete": False}), "partial.json")
+        self.assertEqual(report["result_status"], "partial")
+        self.assertEqual([row["result_status"] for row in self.rows("search-log.csv")], ["not-found", "partial"])
+
+    def test_manual_source_rejects_bad_input(self):
+        item = self.manual_input()["items"][0]
+        def without(key):
+            data = self.manual_input()
+            del data[key]
+            return data
+        cases = {
+            "no domain": without("source_or_domain"),
+            "no items": without("items"),
+            "items not a list": self.manual_input(items={"id": "x"}),
+            "no id": self.manual_input(items=[{k: v for k, v in item.items() if k != "id"}]),
+            "unknown key": self.manual_input(items=[{**item, "foo": "bar"}]),
+            "no title": self.manual_input(items=[{k: v for k, v in item.items() if k != "source_title"}]),
+            "snapshot not dict": self.manual_input(items=[{**item, "snapshot": "text"}]),
+        }
+        for label, data in cases.items():
+            with self.subTest(label), self.assertRaises(common.SourceError):
+                self.register_manual(data, "bad.json")
+        self.assertEqual(self.rows("artifact-register.csv"), [])
+        self.assertEqual(self.rows("search-log.csv"), [])
+
+    def test_manual_source_changed_snapshot_for_same_id_is_rejected(self):
+        self.register_manual(self.manual_input())
+        snapshot = next((self.case / "sources" / "manual").glob("*.json"))
+        saved = json.loads(snapshot.read_text(encoding="utf-8"))
+        saved["record"]["snapshot"] = {"line": "подменённая строка"}
+        snapshot.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+        fields, rows = register_search.read_register(self.case / "artifact-register.csv", "artifact_id")
+        register_search.save_register(self.case / "artifact-register.csv", fields, [])
+        with self.assertRaises(common.SourceError) as caught:
+            self.register_manual(self.manual_input(), "again.json")
+        self.assertIn("не соответствует", str(caught.exception))
+
     def test_gwar_import_and_restart_between_register_writes(self):
         path = self.directory / "gwar.json"
         common.save_json(path, {"source": "gwar", "hits": [hit(1), hit(2)], "query": {"birth_place": "Условное село"},
@@ -188,6 +381,34 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(report["added_artifacts"], 0)
         self.assertEqual(len(self.rows("artifact-register.csv")), 2)
         self.assertEqual(len(self.rows("search-log.csv")), 1)
+        self.assertEqual(self.rows("artifact-register.csv")[0]["source_url_or_path"],
+                         "https://gwar.mil.ru/heroes/chelovek_donesenie1/")
+
+    def test_gwar_card_locators_keep_unknown_routes_in_snapshot(self):
+        for kind, identifier, suffix in (
+            ("chelovek_donesenie", "12", "chelovek_donesenie12/"),
+            ("chelovek_gospital", "34", "chelovek_gospital34/"),
+            ("chelovek_plen", "78", "chelovek_plen78/"),
+            ("unknown", "56", ""),
+            ("chelovek_donesenie", "1/../../elsewhere", ""),
+            ("chelovek_gospital", "１２", ""),
+        ):
+            with self.subTest(kind=kind, identifier=identifier):
+                record = {**hit(1), "_type": kind, "_id": identifier}
+                item, = register_search.gwar_items({"hits": [record]})
+                self.assertEqual(item["source_url_or_path"], "https://gwar.mil.ru/heroes/" + suffix)
+                self.assertEqual(item["snapshot"], record)
+
+    def test_gwar_import_keeps_volost_uezd_and_gubernia(self):
+        path = self.directory / "gwar.json"
+        record = hit(1)
+        record["_source"].update({"birth_place": None, "birth_place_volost": "Условная вол.",
+                                  "birth_place_uezd": "Условный у.", "birth_place_gubernia": "Условная губ."})
+        common.save_json(path, {"source": "gwar", "hits": [record], "coverage": {"complete": True},
+                                "query": {"last_name": "Иванов"}})
+        register_search.register(self.case, path, "goal")
+        self.assertEqual(self.rows("artifact-register.csv")[0]["place_as_written"],
+                         "Условная вол., Условный у., Условная губ.")
 
     def test_gwar_search_score_changes_do_not_duplicate_source_cards(self):
         path = self.directory / "gwar.json"
@@ -296,8 +517,9 @@ class HttpAndCliTests(unittest.TestCase):
 
     def test_command_help_is_available(self):
         for script in ("familysearch.py", "gwar.py", "register_search.py"):
-            result = subprocess.run([sys.executable, str(SCRIPTS / script), "--help"], capture_output=True, text=True)
-            self.assertEqual(result.returncode, 0, result.stderr)
+            for flags in ([], ["-I"]):
+                result = subprocess.run([sys.executable, *flags, str(SCRIPTS / script), "--help"], capture_output=True, encoding="utf-8")
+                self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_outputs_cannot_be_inside_skill(self):
         for path in (SCRIPTS / "private.json", SCRIPTS.parent):

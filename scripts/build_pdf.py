@@ -114,7 +114,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Собирает читаемую PDF-версию отчёта из HTML (SKILL.md, шаг 12)."
     )
-    parser.add_argument("--html", required=True, help="HTML-файл отчёта (обычно <дело>/pdf-source/report.html)")
+    parser.add_argument("--html", required=True, help="HTML-файл отчёта (обычно <дело>/report.html)")
     parser.add_argument("--out", help="Путь к PDF; по умолчанию рядом с HTML")
     parser.add_argument(
         "--check-only",
@@ -305,4 +305,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from research_common import configure_utf8_stdio
+
+    configure_utf8_stdio()
     raise SystemExit(main())

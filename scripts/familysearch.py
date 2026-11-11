@@ -6,9 +6,12 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # `python -I` omits the script folder
 
 from familysearch_browser import browser_import
-from research_common import SourceError, outside_skill, output_json, read_json
+from research_common import configure_utf8_stdio, SourceError, outside_skill, output_json, read_json
 
 
 def compile_patterns(config=None, surnames=(), beacons=()):
@@ -67,4 +70,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    configure_utf8_stdio()
     raise SystemExit(main())

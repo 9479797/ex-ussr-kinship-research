@@ -17,6 +17,7 @@ ASSET_FILES = {
     "relationship-register.csv": "relationship-register.csv",
     "search-log.csv": "search-log.csv",
     "final-report.template.md": "final-report.md",
+    "research-state.template.md": "research-state.md",
 }
 PHOTOS_README = "photos-readme.template.md"
 
@@ -111,4 +112,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from research_common import configure_utf8_stdio
+
+    configure_utf8_stdio()
     raise SystemExit(main())
