@@ -1,0 +1,59 @@
+name: Проверка новых версий генеалогического навыка
+
+on:
+  schedule:
+    - cron: '27 10 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  upstream-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Detect new upstream commits and notify
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/DenisSergeevitch/ex-ussr-kinship-research.git
+          git fetch --no-tags --quiet upstream main
+          missing="$(git rev-list --count HEAD..upstream/main)"
+          if [[ "$missing" -eq 0 ]]; then
+            echo "Upstream already included in the fork. No notification needed."
+            exit 0
+          fi
+          source_sha="$(git rev-parse upstream/main)"
+          short="${source_sha:0:12}"
+          title="Обновление оригинального kinship-навыка: ${short}"
+          if [[ "$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.has_issues')" != "true" ]]; then
+            echo "::error::New upstream changes exist, but GitHub Issues is disabled. Enable Settings > General > Features > Issues."
+            exit 1
+          fi
+          if gh issue list --repo "${GITHUB_REPOSITORY}" --state all --limit 500 --json title --jq '.[].title' | grep -Fxq -- "$title"; then
+            echo "This upstream SHA has already been reported."
+            exit 0
+          fi
+          gh label create upstream-update --repo "${GITHUB_REPOSITORY}" --color D4A017 --description "Изменения в исходном навыке требуют проверки" --force
+          body="$(mktemp)"
+          trap 'rm -f "$body"' EXIT
+          cat > "$body" <<EOF
+          @9479797
+
+          В исходном [ex-ussr-kinship-research](https://github.com/DenisSergeevitch/ex-ussr-kinship-research) обнаружено **${missing} новых коммитов**, ещё не включённых в твой форк.
+
+          - Новый upstream SHA: \`${source_sha}\`
+          - [Посмотреть изменения оригинала](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/compare)
+          - [Твой форк](https://github.com/${GITHUB_REPOSITORY})
+
+          **Действие:** сверить изменения, сохранить собственные дополнения и правила приватности, после проверки обновить форк. Автоматического слияния чужих изменений нет. После обновления форка Mac сможет забрать новую версию автоматически.
+          EOF
+          gh issue create --repo "${GITHUB_REPOSITORY}" --title "$title" --body-file "$body" --label upstream-update --assignee 9479797
