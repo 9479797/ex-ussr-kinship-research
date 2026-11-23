@@ -1,5 +1,29 @@
 # Release history
 
+## 1.52.0 — 2026-11-22
+
+- Add optional local screening of recognized PAGE/ALTO/JSON/TXT page text, with fuzzy term matching, retained alternatives, explicit unread inputs and partial-failure reporting. Verify candidate records against their images ([#309](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/309)).
+- Follow useful references and language versions from biographical articles, and choose metrical-book sections and maternal-family locations from the evidence available ([#310](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/310), [#313](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/313)).
+- Expand Baltic/German and interwar Polish biographical routes with explicit provenance, access and coverage limits ([#311](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/311), [#312](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/312)).
+- Add selected regional finding aids, supplementary record types and an Armenian tax-list route. Check actual pagination boundaries and compare like-for-like file digests ([#314](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/issues/314)).
+
+## 1.51.0 — 2026-11-21
+
+- Check damaged Cyrillic in saved HTML before using an empty local search as evidence, recovering original bytes when available. Record GWAR viewer, card and TLS observations for the affected route and client ([#306](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/306)).
+- Add a contributor-maintained archive-directory route, with a verified homepage link and provider-specific checks for actual holdings and online access ([#307](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/307)).
+
+## 1.50.0 — 2026-11-20
+
+- Distinguish a surname-only catalogue description from evidence identifying the requester, and revise candidates when linked document roles resolve the ambiguity ([#299](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/299)).
+- Add НІБУ and archival.name source routes, qualify Rahvusarhiiv copy-order guidance, and preserve dated observations about source fields and search behavior with stated access and coverage limits ([#300](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/300), [#301](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/301), [#302](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/302)).
+- Consider relevant conscription records for people described as civilians, and compare birth and later name forms as identity hypotheses ([#303](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/303), [#304](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/304)).
+
+## 1.49.0 — 2026-11-19
+
+- Check stated reply destinations within authorized case correspondence, and coordinate browser targets and shared focus during parallel research ([#292](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/292), [#293](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/293)).
+- Preserve completed coverage when paid access expires and keep useful remaining checks visible among routes awaiting access, without requiring unknown prices ([#294](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/294)).
+- Qualify provider observations about machine-derived names and places, joined date values and search failures. Trace register annotations to the correct row and compare uncertain digits with the same handwriting ([#296](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/296), [#297](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/297)).
+
 ## 1.48.0 — 2026-11-17
 
 - Verify image quality and frame identity when obtaining a higher-resolution scan from a viewer. Preserve the qualified Szukaj w Archiwach resolution observation without case-specific locators or promises about permanent links ([#290](https://github.com/DenisSergeevitch/ex-ussr-kinship-research/pull/290)).
